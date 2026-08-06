@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #f5f6f8;
+  --color-surface: rgb(255 255 255 / 0.88);
+  --color-surface-solid: #ffffff;
+  --color-surface-soft: #f0f2f5;
+  --color-text: #16181d;
+  --color-muted: #69707d;
+  --color-line: rgb(19 24 36 / 0.1);
+  --color-accent: #6857ff;
+  --color-accent-2: #9c4dff;
+  --color-accent-soft: rgb(104 87 255 / 0.11);
+  --color-green: #1e9d66;
+  --color-green-soft: rgb(30 157 102 / 0.12);
+  --color-amber: #bc7412;
+  --color-amber-soft: rgb(188 116 18 / 0.12);
+  --color-red: #d14a53;
+  --color-red-soft: rgb(209 74 83 / 0.1);
+  --shadow-card: 0 18px 50px rgb(20 26 40 / 0.08);
+}
+
+html[data-theme='dark'] {
+  --color-bg: #0e1014;
+  --color-surface: rgb(25 28 35 / 0.88);
+  --color-surface-solid: #191c23;
+  --color-surface-soft: #222630;
+  --color-text: #f3f5f8;
+  --color-muted: #9ca4b2;
+  --color-line: rgb(255 255 255 / 0.1);
+  --color-accent-soft: rgb(124 108 255 / 0.17);
+  --color-green-soft: rgb(43 190 127 / 0.15);
+  --color-amber-soft: rgb(230 156 50 / 0.14);
+  --color-red-soft: rgb(232 89 99 / 0.13);
+  --shadow-card: 0 24px 70px rgb(0 0 0 / 0.32);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply m-0 min-h-screen bg-bg text-text antialiased;
+    font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background:
+      radial-gradient(circle at 72% -8%, rgb(104 87 255 / 0.16), transparent 30%),
+      radial-gradient(circle at 8% 15%, rgb(156 77 255 / 0.09), transparent 26%),
+      var(--color-bg);
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+}
+
+@media print {
+  aside,
+  header button,
+  footer {
+    display: none !important;
+  }
+}
