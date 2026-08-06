@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { createEvidence, validateEvidence } from '../../shared/domain/evidence'
-import { getStore, setStore } from './_lib/store'
+import { createEvidence, validateEvidence } from './_lib/evidence.js'
+import { getStore, setStore } from './_lib/store.js'
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {

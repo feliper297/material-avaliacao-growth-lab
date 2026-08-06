@@ -20,6 +20,8 @@ npm run dev
 
 ## Deploy Vercel
 
-Root directory do projeto na Vercel: **`app`**
+- **Produção:** https://app-zeta-tan-38.vercel.app
+- **Projeto:** `feliper297s-projects/app`
+- **Root directory na Vercel:** `app` (deploy via `npx vercel deploy --prod --cwd app`)
 
-A API em produção usa funções serverless (`app/api/`) com persistência em memória (limitação documentada em ADR-007).
+A API em produção usa funções serverless (`app/api/`) com persistência em memória — dados podem resetar em cold start.

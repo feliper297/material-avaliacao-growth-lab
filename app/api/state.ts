@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import type { AppStore } from '../../shared/types/store'
-import { getStore, sanitizeIncoming, setStore } from './_lib/store'
+import type { AppStore } from './_lib/types.js'
+import { getStore, sanitizeIncoming, setStore } from './_lib/store.js'
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'GET') {
