@@ -1,4 +1,4 @@
-import type { Evidence } from '../../shared/types/store'
+import type { Evidence } from './types.js'
 
 export interface EvidenceInput {
   week: number
