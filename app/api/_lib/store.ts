@@ -1,4 +1,4 @@
-import { DEFAULT_STORE, type AppStore } from '../../shared/types/store.js'
+import { DEFAULT_STORE, type AppStore } from '../../shared/types/store'
 
 declare global {
   // eslint-disable-next-line no-var

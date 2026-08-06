@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getStore, setStore } from '../_lib/store.js'
+import { getStore, setStore } from '../_lib/store'
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   const id = req.query.id as string | undefined
