@@ -1,0 +1,15 @@
+{
+  "ksrc_id": "KSRC-2026-0065",
+  "slug": "inspired-cagan-product-discovery",
+  "title": "Inspirado (Inspired) — Marty Cagan — Discovery de Produto e Times Empoderados",
+  "source_hash": "sha256:42a310ae12dfda61b09f8afa56169fc3adedd88e550fcb1a09976c58743db835",
+  "origin_url": null,
+  "license": "proprietary-synthesis-only",
+  "chunks_count": 12,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-07-01T00:00:00.000Z",
+  "ingester_version": "manual-synthesis@1.0.0",
+  "use_folder": true,
+  "notes": "Síntese própria em PT-BR da 2ª edição (ed. brasileira Alta Books). Sem pasta raw/ por direitos autorais — nenhum texto literal do livro é versionado. Hash calculado sobre a concatenação de chunks/chunk-0001..0012.md."
+}

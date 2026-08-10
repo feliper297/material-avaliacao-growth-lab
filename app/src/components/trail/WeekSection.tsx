@@ -1,0 +1,283 @@
+import {
+  AimOutlined,
+  ApiOutlined,
+  BlockOutlined,
+  CheckOutlined,
+  CheckCircleFilled,
+  CodeOutlined,
+  DownOutlined,
+  EditOutlined,
+  GroupOutlined,
+  InboxOutlined,
+  LinkOutlined,
+  NodeIndexOutlined,
+  NumberOutlined,
+  QuestionOutlined,
+  ReadOutlined,
+  RobotOutlined,
+  SwapOutlined,
+  TableOutlined,
+  UpOutlined,
+} from '@ant-design/icons'
+import { Alert, Avatar, Button, Card, Col, List, Progress, Row, Space, Tag, Typography, theme as antdTheme } from 'antd'
+import { useState, type ComponentType } from 'react'
+import { weekAccentHex, type TrailWeek } from '../../../shared/data/weeks'
+import type { AppStore } from '../../../shared/types/store'
+import { getWeekProgress } from '../../../shared/domain/progress'
+
+const { Title, Text, Paragraph } = Typography
+
+const RESOURCE_ICONS: Record<string, ComponentType> = {
+  TableOutlined,
+  BlockOutlined,
+  GroupOutlined,
+  AimOutlined,
+  NodeIndexOutlined,
+  InboxOutlined,
+  SwapOutlined,
+  ApiOutlined,
+  NumberOutlined,
+  ReadOutlined,
+  EditOutlined,
+  RobotOutlined,
+  CodeOutlined,
+}
+
+function resourceIcon(key: string) {
+  const IconComponent = RESOURCE_ICONS[key] ?? QuestionOutlined
+  return <IconComponent />
+}
+
+interface WeekSectionProps {
+  week: TrailWeek
+  store: AppStore
+  onToggleComplete: (id: string) => void
+  onOpenPrompt: (topic: string, link: string, weekLabel: string) => void
+  onOpenQuiz: (week: TrailWeek) => void
+  onAddEvidence: (weekId: number) => void
+}
+
+export function WeekSection({
+  week,
+  store,
+  onToggleComplete,
+  onOpenPrompt,
+  onOpenQuiz,
+  onAddEvidence,
+}: WeekSectionProps) {
+  const { token } = antdTheme.useToken()
+  const progress = getWeekProgress(week, store)
+  const accent = weekAccentHex(week.id)
+  const [expanded, setExpanded] = useState(progress < 100)
+
+  return (
+    <div id={`week-${week.id}`} style={{ scrollMarginTop: 96, marginTop: 24 }}>
+      <Card styles={{ body: { padding: 0 } }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 12,
+            padding: '20px 24px',
+            borderBottom: expanded ? `1px solid ${token.colorBorderSecondary}` : 'none',
+          }}
+        >
+          <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+            <Row gutter={[16, 12]} align="top" wrap>
+              <Col xs={24} md={16}>
+                <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', width: '100%' }}>
+                  <Avatar shape="square" size={44} style={{ background: accent, fontWeight: 600, flex: 'none' }}>
+                    {String(week.id).padStart(2, '0')}
+                  </Avatar>
+                  <div style={{ minWidth: 0, flex: '1 1 auto' }}>
+                    <Text type="secondary" style={{ fontSize: 11, textTransform: 'uppercase' }}>
+                      Semana {week.id}
+                    </Text>
+                    <Title level={3} style={{ margin: '2px 0 0', textWrap: 'balance' }}>
+                      {week.title}
+                    </Title>
+                    <Paragraph type="secondary" style={{ margin: '4px 0 0', fontWeight: 400 }}>
+                      {week.objective}
+                    </Paragraph>
+                  </div>
+                </div>
+              </Col>
+              <Col xs={24} md={8}>
+                <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <Text strong style={{ fontSize: 12 }}>
+                    Progresso
+                  </Text>
+                  <Text strong style={{ fontSize: 16, color: accent }}>
+                    {progress}%
+                  </Text>
+                </Space>
+                <Progress percent={progress} showInfo={false} strokeColor={accent} strokeWidth={8} />
+              </Col>
+            </Row>
+          </div>
+          <Button
+            type="text"
+            size="small"
+            onClick={() => setExpanded((v) => !v)}
+            icon={expanded ? <UpOutlined /> : <DownOutlined />}
+            aria-label={expanded ? `Recolher semana ${week.id}` : `Expandir semana ${week.id}`}
+            aria-expanded={expanded}
+            style={{ flex: 'none' }}
+          />
+        </div>
+        <div style={{ padding: expanded ? '20px 24px 24px' : 0 }}>
+        {expanded && (
+        <>
+        <Row gutter={24}>
+          <Col xs={24} lg={16}>
+            <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 4 }}>
+              <Title level={4} style={{ margin: 0 }}>
+                Conteúdos selecionados
+              </Title>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {week.resources.length} itens · estudo curto
+              </Text>
+            </Space>
+            <List
+              itemLayout="horizontal"
+              dataSource={week.resources}
+              renderItem={(resource) => {
+                const completed = store.completed.includes(resource.id)
+                return (
+                  <List.Item style={{ display: 'block' }}>
+                    <List.Item.Meta
+                      avatar={
+                        <Avatar shape="square" style={{ background: `${accent}1a`, color: accent }}>
+                          {resourceIcon(resource.icon)}
+                        </Avatar>
+                      }
+                      title={resource.title}
+                      description={
+                        <Space size={6} wrap>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {resource.source}
+                          </Text>
+                          <Text type="secondary">·</Text>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {resource.duration}
+                          </Text>
+                          <Tag>{resource.type}</Tag>
+                        </Space>
+                      }
+                    />
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                        gap: 8,
+                        marginTop: 12,
+                      }}
+                    >
+                      <Button
+                        icon={<LinkOutlined />}
+                        href={resource.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Abrir ${resource.title} (${resource.source})`}
+                        style={{ flex: '0 1 auto' }}
+                      >
+                        Abrir
+                      </Button>
+                      <Button
+                        type="primary"
+                        icon={<RobotOutlined />}
+                        aria-label={`Estudar ${resource.title} com IA`}
+                        onClick={() => onOpenPrompt(resource.topic, resource.url, `Semana ${week.id} — ${week.title}`)}
+                        style={{ flex: '0 1 auto' }}
+                      >
+                        Estudar com IA
+                      </Button>
+                      <Button
+                        size="small"
+                        shape="circle"
+                        type={completed ? 'primary' : 'default'}
+                        icon={completed ? <CheckOutlined /> : undefined}
+                        style={{ flex: 'none' }}
+                        aria-label={completed ? `Marcar "${resource.title}" como pendente` : `Marcar "${resource.title}" como concluído`}
+                        aria-pressed={completed}
+                        onClick={() => onToggleComplete(resource.id)}
+                      />
+                    </div>
+                  </List.Item>
+                )
+              }}
+            />
+          </Col>
+
+          <Col xs={24} lg={8}>
+            <Card size="small" title="Entrega da semana">
+              <List
+                size="small"
+                dataSource={week.deliverables}
+                renderItem={(d) => (
+                  <List.Item>
+                    <Space align="start">
+                      <CheckCircleFilled style={{ color: token.colorSuccess }} />
+                      <Text style={{ fontSize: 12 }}>{d}</Text>
+                    </Space>
+                  </List.Item>
+                )}
+              />
+            </Card>
+            <Alert
+              style={{ marginTop: 12 }}
+              type="info"
+              showIcon
+              title="Explique o conceito sem copiar a IA, mostre aplicação na sprint e registre o antes/depois ou a decisão tomada."
+            />
+          </Col>
+        </Row>
+
+        <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
+          <Col xs={24} md={12}>
+            <Card size="small">
+              <Row justify="space-between" align="middle" gutter={12}>
+                <Col flex="auto">
+                  <Text strong>Teste de conhecimento</Text>
+                  <br />
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    {store.quizzes[String(week.id)] != null
+                      ? `Última nota: ${store.quizzes[String(week.id)]}/3`
+                      : 'Três perguntas para verificar entendimento.'}
+                  </Text>
+                </Col>
+                <Col>
+                  <Button type="primary" onClick={() => onOpenQuiz(week)}>
+                    Fazer teste
+                  </Button>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+          <Col xs={24} md={12}>
+            <Card size="small">
+              <Row justify="space-between" align="middle" gutter={12}>
+                <Col flex="auto">
+                  <Text strong>Aplicação prática</Text>
+                  <br />
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    Registre Figma, fluxo, diagrama, protótipo ou documentação.
+                  </Text>
+                </Col>
+                <Col>
+                  <Button type="primary" onClick={() => onAddEvidence(week.id)}>
+                    Adicionar evidência
+                  </Button>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+        </Row>
+        </>
+        )}
+        </div>
+      </Card>
+    </div>
+  )
+}

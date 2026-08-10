@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0019",
+  "slug": "atomic-design",
+  "title": "Atomic Design",
+  "source_hash": "sha256:0b130d59151fdc7d4fbad530b008d8f431cdef435b1021a9a3d055a2989e7bb4",
+  "origin_url": null,
+  "license": "unknown",
+  "chunks_count": 187,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-11T00:43:41.886Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}

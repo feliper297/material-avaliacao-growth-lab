@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0034",
+  "slug": "a-lei-do-triunfo-napoleon-hill",
+  "title": "A Lei do Triunfo - Napoleon Hill",
+  "source_hash": "sha256:17608b6c67333a8450e08b0f78e953633f9c0022a34450458c81625502d49ef6",
+  "origin_url": null,
+  "license": "unknown",
+  "chunks_count": 1077,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-11T00:44:49.351Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}

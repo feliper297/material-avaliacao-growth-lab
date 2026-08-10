@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0029",
+  "slug": "usability-engineering-0125184069-9780125184069compress",
+  "title": "usability-engineering-0125184069-9780125184069_compress",
+  "source_hash": "sha256:70c05a632f5c0a4dcfa2008ed393da821870418ad737cbe12d68f3dfb885b217",
+  "origin_url": null,
+  "license": "unknown",
+  "chunks_count": 634,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-11T00:44:25.600Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}

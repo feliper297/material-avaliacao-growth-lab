@@ -1,0 +1,11 @@
+node_modules/
+dist/
+server/data/store.json
+.env
+.env.*
+*.local
+.DS_Store
+.vite/
+*.tsbuildinfo
+.pixel-brain/runs/
+.vercel/

@@ -1,0 +1,15 @@
+{
+  "ksrc_id": "KSRC-2026-0066",
+  "slug": "product-design-psychology-de-bres",
+  "title": "Product Design Psychology (Wouter de Bres) — Psicologia Comportamental Aplicada a Design de Produto",
+  "source_hash": "sha256:23803183f8b38d76f2356064e19ebf5dd6c4b8838a8b5a3a3f97915fdfe5c0af",
+  "origin_url": "https://productdesignpsychology.com/",
+  "license": "proprietary-synthesis-only",
+  "chunks_count": 12,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-07-03T00:00:00.000Z",
+  "ingester_version": "manual-synthesis@1.0.0",
+  "use_folder": true,
+  "notes": "Sintese propria em PT-BR do site Product Design Psychology (Wouter de Bres, 40 capitulos em 4 secoes). Sem pasta raw/ por direitos autorais — nenhum texto literal do site e versionado. Hash sobre a concatenacao de chunks/chunk-0001..0012.md. Cada chunk sintetiza tematicamente ~3-4 capitulos de uma secao."
+}

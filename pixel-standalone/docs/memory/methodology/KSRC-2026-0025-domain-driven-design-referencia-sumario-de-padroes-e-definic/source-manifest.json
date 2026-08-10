@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0025",
+  "slug": "domain-driven-design-referencia-sumario-de-padroes-e-definic",
+  "title": "Domain-Driven Design Referência - Sumário de Padrões e Definições - Autor (Eric Evans)",
+  "source_hash": "sha256:d7773b14dc87bc945be5cf52efd05ff024fbf76e32aa38121cac8c9601da6a4c",
+  "origin_url": null,
+  "license": "unknown",
+  "chunks_count": 58,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-11T00:44:08.960Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}

@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0039",
+  "slug": "domain-driven-design-distilled",
+  "title": "domain-driven-design-distilled",
+  "source_hash": "sha256:227a0a13622945fa3984c0b9cdf3b66c7578a556f297a34db91d4517d7f12a7a",
+  "origin_url": null,
+  "license": "unknown",
+  "chunks_count": 142,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-11T00:45:11.313Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}

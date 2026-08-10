@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"c:\\Workspace\\material-avaliacao-growth-lab-master\\.claude\\hooks\\secret-scan-gate.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"c:\\Workspace\\material-avaliacao-growth-lab-master\\.claude\\hooks\\pixel-visual-ask.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

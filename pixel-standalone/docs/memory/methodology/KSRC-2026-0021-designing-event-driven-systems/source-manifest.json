@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0021",
+  "slug": "designing-event-driven-systems",
+  "title": "Designing-Event-Driven-Systems",
+  "source_hash": "sha256:6172f599ce693fdda14870e58af09f77ac4d007f0768a71e4dc9023945f7dbcf",
+  "origin_url": null,
+  "license": "unknown",
+  "chunks_count": 191,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-11T00:43:55.107Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}

@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0020",
+  "slug": "sam-newman-building-microservices-oreilly-media-2015",
+  "title": "Sam Newman-Building Microservices-O'Reilly Media (2015)",
+  "source_hash": "sha256:9eb12ab7b2ecbb338dd5244bbfc679010df37bec106bd12ea96f2acb3a8e2340",
+  "origin_url": null,
+  "license": "unknown",
+  "chunks_count": 424,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-11T00:43:48.909Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}

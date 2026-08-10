@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0017",
+  "slug": "lean-analytics",
+  "title": "lean-analytics",
+  "source_hash": "sha256:8f8c7ffecd7adfad877c0127c501c168bd436017824cce1fb861416d69e7594b",
+  "origin_url": null,
+  "license": "unknown",
+  "chunks_count": 192,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-11T00:43:35.805Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}

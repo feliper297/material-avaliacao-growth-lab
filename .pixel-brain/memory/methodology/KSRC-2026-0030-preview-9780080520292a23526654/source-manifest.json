@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0030",
+  "slug": "preview-9780080520292a23526654",
+  "title": "preview-9780080520292_A23526654",
+  "source_hash": "sha256:65b9341f8f12a5eec288a0156cf26e08b4c4f302df2e4b2daea9f2f672821a0d",
+  "origin_url": null,
+  "license": "unknown",
+  "chunks_count": 19,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-11T00:44:27.478Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}

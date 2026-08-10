@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0016",
+  "slug": "o-paradoxo-da-escolha",
+  "title": "o-paradoxo-da-escolha",
+  "source_hash": "sha256:0c34367ed64923f77a9da03236b21d54b5fd263e42550173838f4a688ca5ff05",
+  "origin_url": null,
+  "license": "unknown",
+  "chunks_count": 80,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-11T00:43:29.303Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}

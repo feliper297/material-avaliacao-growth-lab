@@ -1,0 +1,6 @@
+server/data/store.json
+node_modules
+dist
+*.local
+
+.vercel

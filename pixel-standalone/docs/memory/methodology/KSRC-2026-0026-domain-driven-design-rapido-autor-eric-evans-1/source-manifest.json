@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0026",
+  "slug": "domain-driven-design-rapido-autor-eric-evans-1",
+  "title": "Domain Driven Design Rapido - Autor (Eric Evans) (1)",
+  "source_hash": "sha256:effbc16d881b67ae307d2e432bfac822e3859ff55e62d8f03ef7d098c7b6c5a6",
+  "origin_url": null,
+  "license": "unknown",
+  "chunks_count": 157,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-11T00:44:11.816Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}

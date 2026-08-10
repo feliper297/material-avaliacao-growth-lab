@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0043",
+  "slug": "agenticdesignpatterns",
+  "title": "Agentic_Design_Patterns",
+  "source_hash": "sha256:494ca3502695610328ad8a713cb696ebad1f52e67b3ee90d0f1682c1902747be",
+  "origin_url": null,
+  "license": "unknown",
+  "chunks_count": 1039,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-11T00:45:27.989Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}

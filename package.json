@@ -1,0 +1,16 @@
+{
+  "name": "growth-lab",
+  "version": "0.0.0",
+  "description": "Growth Lab - Avaliação Dupla",
+  "private": true,
+  "scripts": {
+    "dev": "cd app && npm run dev",
+    "dev:client": "cd app && npm run dev:client",
+    "dev:server": "cd app && npm run dev:server",
+    "build": "cd app && npm run build",
+    "lint": "cd app && npm run lint",
+    "test": "cd app && npm run test",
+    "preview": "cd app && npm run preview",
+    "install-app": "cd app && npm install"
+  }
+}

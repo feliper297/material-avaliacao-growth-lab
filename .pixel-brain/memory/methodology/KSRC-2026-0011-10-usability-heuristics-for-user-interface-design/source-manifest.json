@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0011",
+  "slug": "10-usability-heuristics-for-user-interface-design",
+  "title": "10 Usability Heuristics for User Interface Design",
+  "source_hash": "sha256:0bdf4b7e3180117a58133022573fa38874bc036cbd0a0fb8124cfabff16ca560",
+  "origin_url": "https://www.nngroup.com/articles/ten-usability-heuristics/",
+  "license": "Nielsen Norman Group, all rights reserved (educational fair-use snippet)",
+  "chunks_count": 18,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-09T20:42:34.186Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}

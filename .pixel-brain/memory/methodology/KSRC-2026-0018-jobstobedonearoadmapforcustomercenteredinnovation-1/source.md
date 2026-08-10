@@ -1,0 +1,29 @@
+---
+id: KSRC-2026-0018
+slug: jobstobedonearoadmapforcustomercenteredinnovation-1
+title: JobsToBeDoneARoadmapforCustomerCenteredInnovation-1
+source_type: book
+origin_owner: project owner
+license: unknown
+date_added: 2026-05-11
+last_reviewed: 2026-05-11
+namespace: methodology
+domain: second-brain
+project: pixel-runtime
+agents: ["quill", "scout", "pixel", "nova"]
+status: active
+authority: 7
+freshness: stable
+summary: JobsToBeDoneARoadmapforCustomerCenteredInnovation-1
+ingestion:
+  source_hash: "sha256:3805fd402d5067f326e9383560a8078a0c023394fc023728c48c79e2de0dba99"
+  chunks_count: 225
+  embedding_model: Xenova/multilingual-e5-small
+  embedding_dims: 384
+  ingested_at: "2026-05-11T00:43:39.000Z"
+  ingester_version: pixel-runtime-memory-intake@0.1.0
+---
+
+# JobsToBeDoneARoadmapforCustomerCenteredInnovation-1
+
+JobsToBeDoneARoadmapforCustomerCenteredInnovation-1

@@ -1,0 +1,14 @@
+{
+  "ksrc_id": "KSRC-2026-0023",
+  "slug": "introducao-a-arquitetura-de-design-de-software-autor-paulo-s",
+  "title": "Introdução à arquitetura de design de software - Autor (Paulo Silveira)",
+  "source_hash": "sha256:0ed3aa80389acc630f394dfc1933a5f0fc9b3d24d228a2dbd613a200b98f3c41",
+  "origin_url": null,
+  "license": "unknown",
+  "chunks_count": 345,
+  "embedding_model": "Xenova/multilingual-e5-small",
+  "embedding_dims": 384,
+  "ingested_at": "2026-05-11T00:44:05.038Z",
+  "ingester_version": "pixel-runtime-memory-intake@0.1.0",
+  "use_folder": true
+}
