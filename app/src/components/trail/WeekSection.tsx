@@ -234,11 +234,11 @@ export function WeekSection({
           </Col>
         </Row>
 
-        <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
-          <Col xs={24} md={12}>
-            <Card size="small">
-              <Row justify="space-between" align="middle" gutter={12}>
-                <Col flex="auto">
+        <Row gutter={[16, 16]} style={{ marginTop: 20, alignItems: 'stretch' }}>
+          <Col xs={24} md={12} style={{ display: 'flex' }}>
+            <Card size="small" style={{ width: '100%' }} styles={{ body: { height: '100%', display: 'flex', alignItems: 'center' } }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, width: '100%' }}>
+                <div>
                   <Text strong>Teste de conhecimento</Text>
                   <br />
                   <Text type="secondary" style={{ fontSize: 12 }}>
@@ -246,31 +246,27 @@ export function WeekSection({
                       ? `Última nota: ${store.quizzes[String(week.id)]}/3`
                       : 'Três perguntas para verificar entendimento.'}
                   </Text>
-                </Col>
-                <Col>
-                  <Button type="primary" onClick={() => onOpenQuiz(week)}>
-                    Fazer teste
-                  </Button>
-                </Col>
-              </Row>
+                </div>
+                <Button type="primary" style={{ flex: 'none' }} onClick={() => onOpenQuiz(week)}>
+                  Fazer teste
+                </Button>
+              </div>
             </Card>
           </Col>
-          <Col xs={24} md={12}>
-            <Card size="small">
-              <Row justify="space-between" align="middle" gutter={12}>
-                <Col flex="auto">
+          <Col xs={24} md={12} style={{ display: 'flex' }}>
+            <Card size="small" style={{ width: '100%' }} styles={{ body: { height: '100%', display: 'flex', alignItems: 'center' } }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, width: '100%' }}>
+                <div>
                   <Text strong>Aplicação prática</Text>
                   <br />
                   <Text type="secondary" style={{ fontSize: 12 }}>
                     Registre Figma, fluxo, diagrama, protótipo ou documentação.
                   </Text>
-                </Col>
-                <Col>
-                  <Button type="primary" onClick={() => onAddEvidence(week.id)}>
-                    Adicionar evidência
-                  </Button>
-                </Col>
-              </Row>
+                </div>
+                <Button type="primary" style={{ flex: 'none' }} onClick={() => onAddEvidence(week.id)}>
+                  Adicionar evidência
+                </Button>
+              </div>
             </Card>
           </Col>
         </Row>
