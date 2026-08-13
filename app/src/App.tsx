@@ -15,6 +15,7 @@ import {
   Row,
   Slider,
   Space,
+  Spin,
   Statistic,
   Steps,
   Tag,
@@ -22,6 +23,8 @@ import {
   Typography,
 } from 'antd'
 import ptBR from 'antd/locale/pt_BR'
+import { useAuth } from './hooks/useAuth'
+import { LoginScreen } from './components/auth/LoginScreen'
 import {
   ApiOutlined,
   AppstoreOutlined,
@@ -36,7 +39,7 @@ import {
   FileSearchOutlined,
   HomeOutlined,
   LinkOutlined,
-  MenuOutlined,
+  LogoutOutlined,
   PlusOutlined,
   PrinterOutlined,
   RobotOutlined,
@@ -63,29 +66,45 @@ const NAV_ITEMS: { href: string; label: string }[] = [
 ]
 
 export default function App() {
+  const auth = useAuth()
   const store = useStore()
+
+  const isDark = store.store.theme === 'dark'
+
+  if (auth.status === 'loading') {
+    return (
+      <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
+        <Spin size="large" />
+      </div>
+    )
+  }
+
+  if (auth.status === 'unauthenticated') {
+    return (
+      <ConfigProvider
+        locale={ptBR}
+        theme={{ algorithm: antdTheme.defaultAlgorithm, token: { colorPrimary: '#0958d9' } }}
+      >
+        <AntApp>
+          <LoginScreen />
+        </AntApp>
+      </ConfigProvider>
+    )
+  }
+
   return (
     <ConfigProvider
       locale={ptBR}
       theme={{
-        algorithm: store.store.theme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
-        // Ant Design's default colorPrimary (#1677ff) renders white button/link text at ~4.10:1,
-        // just under WCAG 2.1 AA's 4.5:1 for normal text. blue-7, the next-darker step of the same
-        // hue (https://ant.design/docs/spec/colors), measures 6.16:1 while staying 100% Ant Design.
+        algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: { colorPrimary: '#0958d9' },
-        components:
-          store.store.theme === 'dark'
-            ? {
-                // Dark algorithm's colorTextDescription (alpha .45) renders the Slider's
-                // un-reached marks at ~4.3:1 on the dark card background, just under WCAG
-                // 1.4.3's 4.5:1. Scoped to Slider only so other muted text is unaffected.
-                Slider: { colorTextDescription: 'rgba(255, 255, 255, 0.65)' },
-              }
-            : undefined,
+        components: isDark
+          ? { Slider: { colorTextDescription: 'rgba(255, 255, 255, 0.65)' } }
+          : undefined,
       }}
     >
       <AntApp>
-        <AppShell {...store} />
+        <AppShell {...store} onSignOut={auth.signOut} userEmail={auth.session?.user.email} />
       </AntApp>
     </ConfigProvider>
   )
@@ -105,11 +124,12 @@ function AppShell({
   updateScore,
   setTheme,
   exportProgress,
-}: ReturnType<typeof useStore>) {
+  onSignOut,
+  userEmail,
+}: ReturnType<typeof useStore> & { onSignOut: () => void; userEmail?: string }) {
   const { message, modal } = AntApp.useApp()
   const { token } = antdTheme.useToken()
 
-  const [collapsed, setCollapsed] = useState(false)
   const [evidenceOpen, setEvidenceOpen] = useState(false)
   const [evidenceWeek, setEvidenceWeek] = useState(1)
   const [quizWeek, setQuizWeek] = useState<TrailWeek | null>(null)
@@ -181,11 +201,6 @@ function AppShell({
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider
-        breakpoint="lg"
-        collapsedWidth={0}
-        collapsed={collapsed}
-        onBreakpoint={setCollapsed}
-        trigger={null}
         width={280}
         theme={store.theme}
         className="no-print"
@@ -230,7 +245,6 @@ function AppShell({
             style={{ border: 'none' }}
             onClick={({ key }) => {
               document.getElementById(key.replace('#', ''))?.scrollIntoView({ behavior: 'smooth' })
-              setCollapsed(true)
             }}
           />
 
@@ -261,12 +275,6 @@ function AppShell({
           }}
         >
           <Space wrap>
-            <Button
-              type="text"
-              icon={<MenuOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
-              aria-label={collapsed ? 'Abrir menu' : 'Fechar menu'}
-            />
             {saveStatus === 'saving' && <Text type="secondary">Salvando…</Text>}
             {saveStatus === 'error' && <Text type="danger">Erro ao salvar</Text>}
           </Space>
@@ -288,6 +296,19 @@ function AppShell({
             <Button type="primary" icon={<PrinterOutlined />} onClick={() => window.print()}>
               Imprimir
             </Button>
+            <Button
+              icon={<LogoutOutlined />}
+              onClick={() => {
+                modal.confirm({
+                  title: 'Sair da conta?',
+                  content: userEmail,
+                  okText: 'Sair',
+                  cancelText: 'Cancelar',
+                  onOk: onSignOut,
+                })
+              }}
+              aria-label="Sair"
+            />
           </Space>
         </Header>
 

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AppStore } from '../../shared/types/store'
 import type { EvidenceInput } from '../../shared/domain/evidence'
 import { DEFAULT_STORE } from '../../shared/types/store'
-import { api } from '../services/api'
+import { supabaseApi as api } from '../services/supabaseApi'
 
 export type LoadStatus = 'loading' | 'ready' | 'error'
 export type SaveStatus = 'idle' | 'saving' | 'success' | 'error'
