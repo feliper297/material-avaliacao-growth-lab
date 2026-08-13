@@ -8,6 +8,18 @@ body {
   min-height: 100vh;
 }
 
+.app-main-layout {
+  box-sizing: border-box;
+}
+
+.app-content-scroll {
+  box-sizing: border-box;
+}
+
+.app-sider-fixed {
+  box-sizing: border-box;
+}
+
 @media print {
   .no-print {
     display: none !important;

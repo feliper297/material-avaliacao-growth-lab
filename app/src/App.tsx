@@ -58,6 +58,9 @@ import { useStore } from './hooks/useStore'
 const { Sider, Header, Content } = Layout
 const { Title, Text, Paragraph } = Typography
 
+const SIDEBAR_WIDTH = 280
+const CONTENT_PADDING = 32
+
 const NAV_ITEMS: { href: string; label: string }[] = [
   { href: '#overview', label: 'Visão geral' },
   ...WEEKS.map((w) => ({ href: `#week-${w.id}`, label: `S${w.id} · ${w.title}` })),
@@ -204,10 +207,18 @@ function AppShell({
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider
-        width={280}
+        width={SIDEBAR_WIDTH}
         theme={store.theme}
-        className="no-print"
-        style={{ borderRight: `1px solid ${token.colorBorderSecondary}` }}
+        className="no-print app-sider-fixed"
+        style={{
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          height: '100vh',
+          overflowY: 'auto',
+          zIndex: 10,
+          borderRight: `1px solid ${token.colorBorderSecondary}`,
+        }}
       >
         <div style={{ padding: 20 }}>
           <Space align="center" style={{ marginBottom: 20 }}>
@@ -257,12 +268,21 @@ function AppShell({
         </div>
       </Sider>
 
-      <Layout>
+      <Layout
+        className="app-main-layout"
+        style={{
+          marginLeft: SIDEBAR_WIDTH,
+          width: `calc(100% - ${SIDEBAR_WIDTH}px)`,
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
         <Header
           className="no-print"
           style={{
-            position: 'sticky',
-            top: 0,
+            flexShrink: 0,
             zIndex: 20,
             display: 'flex',
             flexWrap: 'wrap',
@@ -272,7 +292,7 @@ function AppShell({
             rowGap: 4,
             background: token.colorBgContainer,
             borderBottom: `1px solid ${token.colorBorderSecondary}`,
-            padding: '10px clamp(12px, 4vw, 24px)',
+            padding: `${CONTENT_PADDING}px`,
             height: 'auto',
             minHeight: 64,
           }}
@@ -308,7 +328,16 @@ function AppShell({
           </Space>
         </Header>
 
-        <Content style={{ padding: 24, maxWidth: 1120, margin: '0 auto', width: '100%' }}>
+        <Content
+          className="app-content-scroll"
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: CONTENT_PADDING,
+            width: '100%',
+            boxSizing: 'border-box',
+          }}
+        >
           <Card
             id="overview"
             style={{ marginBottom: 16, background: token.colorPrimaryBg, borderColor: token.colorPrimaryBorder }}
