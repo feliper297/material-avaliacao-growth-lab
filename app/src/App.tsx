@@ -280,28 +280,25 @@ function AppShell({
         }}
       >
         <Header
-          className="no-print"
+          className="no-print app-header"
           style={{
             flexShrink: 0,
-            zIndex: 20,
+            height: 56,
+            lineHeight: '56px',
+            padding: `0 ${CONTENT_PADDING}px`,
             display: 'flex',
-            flexWrap: 'wrap',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: 8,
-            rowGap: 4,
+            gap: token.marginSM,
             background: token.colorBgContainer,
             borderBottom: `1px solid ${token.colorBorderSecondary}`,
-            padding: `${CONTENT_PADDING}px`,
-            height: 'auto',
-            minHeight: 64,
           }}
         >
-          <Space wrap>
+          <Space size={token.marginSM} style={{ minWidth: 0 }}>
             {saveStatus === 'saving' && <Text type="secondary">Salvando…</Text>}
             {saveStatus === 'error' && <Text type="danger">Erro ao salvar</Text>}
           </Space>
-          <Space wrap>
+          <Space size={token.marginXS} wrap={false}>
             <Button
               icon={store.theme === 'dark' ? <BulbFilled /> : <BulbOutlined />}
               onClick={() => setTheme(store.theme === 'light' ? 'dark' : 'light')}
@@ -434,7 +431,7 @@ function AppShell({
             />
           ))}
 
-          <div id="evidences" style={{ scrollMarginTop: 96, marginTop: 40 }}>
+          <div id="evidences" style={{ scrollMarginTop: 72, marginTop: 40 }}>
             <Row justify="space-between" align="bottom" wrap gutter={[16, 16]}>
               <Col>
                 <Title level={3} style={{ marginBottom: 4 }}>
@@ -514,7 +511,7 @@ function AppShell({
             </div>
           </div>
 
-          <div id="assessment" style={{ scrollMarginTop: 96, marginTop: 40 }}>
+          <div id="assessment" style={{ scrollMarginTop: 72, marginTop: 40 }}>
             <Title level={3} style={{ marginBottom: 4 }}>
               Régua de evolução
             </Title>
