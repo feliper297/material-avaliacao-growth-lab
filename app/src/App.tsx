@@ -67,9 +67,6 @@ const NAV_ITEMS: { href: string; label: string }[] = [
 
 export default function App() {
   const auth = useAuth()
-  const store = useStore()
-
-  const isDark = store.store.theme === 'dark'
 
   if (auth.status === 'loading') {
     return (
@@ -92,6 +89,13 @@ export default function App() {
     )
   }
 
+  return <AuthenticatedApp onSignOut={auth.signOut} />
+}
+
+function AuthenticatedApp({ onSignOut }: { onSignOut: () => void }) {
+  const store = useStore()
+  const isDark = store.store.theme === 'dark'
+
   return (
     <ConfigProvider
       locale={ptBR}
@@ -104,7 +108,7 @@ export default function App() {
       }}
     >
       <AntApp>
-        <AppShell {...store} onSignOut={auth.signOut} />
+        <AppShell {...store} onSignOut={onSignOut} />
       </AntApp>
     </ConfigProvider>
   )
@@ -190,7 +194,7 @@ function AppShell({
           </Title>
           <Paragraph type="secondary">{error}</Paragraph>
           <Paragraph type="secondary" style={{ fontSize: 12 }}>
-            Verifique se o BFF está rodando: <Text code>npm run dev:server</Text>
+            Tente sair e entrar novamente. Se o erro persistir, verifique sua conexão com a internet.
           </Paragraph>
         </Card>
       </div>
