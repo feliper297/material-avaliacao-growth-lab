@@ -104,7 +104,7 @@ export default function App() {
       }}
     >
       <AntApp>
-        <AppShell {...store} onSignOut={auth.signOut} userEmail={auth.session?.user.email} />
+        <AppShell {...store} onSignOut={auth.signOut} />
       </AntApp>
     </ConfigProvider>
   )
@@ -125,8 +125,7 @@ function AppShell({
   setTheme,
   exportProgress,
   onSignOut,
-  userEmail,
-}: ReturnType<typeof useStore> & { onSignOut: () => void; userEmail?: string }) {
+}: ReturnType<typeof useStore> & { onSignOut: () => void }) {
   const { message, modal } = AntApp.useApp()
   const { token } = antdTheme.useToken()
 
@@ -298,17 +297,10 @@ function AppShell({
             </Button>
             <Button
               icon={<LogoutOutlined />}
-              onClick={() => {
-                modal.confirm({
-                  title: 'Sair da conta?',
-                  content: userEmail,
-                  okText: 'Sair',
-                  cancelText: 'Cancelar',
-                  onOk: onSignOut,
-                })
-              }}
-              aria-label="Sair"
-            />
+              onClick={() => onSignOut()}
+            >
+              Sair
+            </Button>
           </Space>
         </Header>
 
