@@ -175,14 +175,9 @@ export function WeekSection({
         <>
         <Row gutter={24} align="top">
           <Col xs={24} lg={16}>
-            <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 4 }}>
-              <Title level={4} style={{ margin: 0 }}>
-                Conteúdos selecionados
-              </Title>
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                {week.resources.length} itens · estudo curto
-              </Text>
-            </Space>
+            <Title level={4} style={{ margin: 0, marginBottom: 4 }}>
+              Conteúdos selecionados
+            </Title>
             <Space orientation="vertical" size={12} style={{ width: '100%' }}>
               {week.resources.map((resource) => {
                 const completed = store.completed.includes(resource.id)
@@ -274,14 +269,9 @@ export function WeekSection({
           </Col>
 
           <Col xs={24} lg={8}>
-            <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 4 }}>
-              <Title level={4} style={{ margin: 0 }}>
-                Entrega da semana
-              </Title>
-              <Text type="secondary" style={{ fontSize: 12, visibility: 'hidden' }} aria-hidden>
-                alinhamento
-              </Text>
-            </Space>
+            <Title level={4} style={{ margin: 0, marginBottom: 4 }}>
+              Entrega da semana
+            </Title>
             <Card size="small">
               <List
                 size="small"
