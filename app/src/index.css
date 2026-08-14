@@ -24,6 +24,90 @@ body {
   line-height: normal;
 }
 
+.final-evaluation-dimension-card {
+  height: 100%;
+}
+
+.final-evaluation-dimension-card .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 148px;
+  padding-top: 24px;
+  padding-bottom: 36px;
+}
+
+.final-evaluation-dimension-card .ant-card-body > * {
+  width: 100%;
+}
+
+.week-evaluation-panel-card .ant-card-body {
+  padding-bottom: 28px;
+}
+
+.evaluation-score-slider .ant-slider-mark-text {
+  display: none !important;
+}
+
+.evaluation-scale-labels {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin-top: 6px;
+  padding-inline: 5px;
+  font-size: 12px;
+  line-height: 1;
+  text-align: center;
+}
+
+.evaluation-feedback-below-scale {
+  margin-top: 16px;
+}
+
+/* Leitura: só os pontos das marcas — handle oculto evita “dois pontinhos”. */
+.evaluation-score-slider--readonly .ant-slider-handle {
+  display: none !important;
+}
+
+.evaluation-score-slider--readonly .ant-slider-dot {
+  width: 10px;
+  height: 10px;
+  inset-block-start: -3px;
+  border-width: 2px;
+}
+
+.evaluation-score-slider--readonly .ant-slider-dot-active {
+  border-color: var(--eval-accent, #0958d9);
+  background-color: #fff;
+}
+
+/* Edição: só o handle como ponto — dots ocultos evitam sobreposição. */
+.evaluation-score-slider--editable .ant-slider-dot {
+  display: none !important;
+}
+
+.evaluation-score-slider--editable .ant-slider-handle {
+  width: 10px !important;
+  height: 10px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  inset-block-start: -3px !important;
+}
+
+.evaluation-score-slider--editable .ant-slider-handle::before {
+  display: none !important;
+}
+
+.evaluation-score-slider--editable .ant-slider-handle::after {
+  width: 10px !important;
+  height: 10px !important;
+  inset: 0 !important;
+  border-radius: 50%;
+  background-color: #fff !important;
+  border: 2px solid var(--eval-accent, #0958d9) !important;
+  box-shadow: none !important;
+}
+
 @media print {
   .no-print {
     display: none !important;

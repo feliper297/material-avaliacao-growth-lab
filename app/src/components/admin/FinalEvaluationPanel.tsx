@@ -6,16 +6,17 @@ import {
   Col,
   Input,
   Row,
-  Slider,
   Space,
   Statistic,
   Tag,
   Typography,
+  theme as antdTheme,
 } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import type { Evaluation } from '../../../shared/types/evaluation'
 import { SCORE_DIMENSIONS } from '../../../shared/types/store'
 import { calculateAverage } from '../../../shared/domain/progress'
+import { ColoredScoreDisplay, EvaluationScoreSlider, FeedbackDisplay } from './evaluationDisplay'
 
 const { Title, Text, Paragraph } = Typography
 const { TextArea } = Input
@@ -33,6 +34,7 @@ export function FinalEvaluationPanel({
   saving,
   onSave,
 }: FinalEvaluationPanelProps) {
+  const { token } = antdTheme.useToken()
   const [scores, setScores] = useState<Record<string, number>>({})
   const [notes, setNotes] = useState('')
   const [dirty, setDirty] = useState(false)
@@ -77,12 +79,13 @@ export function FinalEvaluationPanel({
         />
       )}
 
-      <Row gutter={[16, 16]}>
+      <Row gutter={[16, 16]} style={{ alignItems: 'stretch' }}>
         {SCORE_DIMENSIONS.map((dimension, index) => {
           const evaluated = evaluation?.scores[String(index)] != null
+          const scoreValue = scores[String(index)] ?? 3
           return (
-            <Col xs={24} md={12} key={dimension}>
-              <Card size="small">
+            <Col xs={24} md={12} key={dimension} style={{ display: 'flex' }}>
+              <Card size="small" className="final-evaluation-dimension-card" style={{ width: '100%' }}>
                 <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 4 }}>
                   <Space size={6}>
                     <Text strong style={{ fontSize: 12 }}>
@@ -94,17 +97,19 @@ export function FinalEvaluationPanel({
                       </Tag>
                     )}
                   </Space>
-                  <Tag>{scores[String(index)] ?? 3}/5</Tag>
+                  <Tag color={readOnly && evaluated ? token.colorPrimary : undefined} style={{ fontWeight: 600 }}>
+                    {scoreValue}/5
+                  </Tag>
                 </Space>
-                <Slider
-                  min={1}
-                  max={5}
-                  step={1}
-                  marks={{ 1: '1', 2: '2', 3: '3', 4: '4', 5: '5' }}
-                  value={scores[String(index)] ?? 3}
-                  disabled={readOnly}
-                  onChange={(value) => updateScore(index, value)}
-                />
+                {readOnly ? (
+                  <ColoredScoreDisplay value={scoreValue} accent={token.colorPrimary} />
+                ) : (
+                  <EvaluationScoreSlider
+                    value={scoreValue}
+                    accent={token.colorPrimary}
+                    onChange={(value) => updateScore(index, value)}
+                  />
+                )}
               </Card>
             </Col>
           )
@@ -112,16 +117,19 @@ export function FinalEvaluationPanel({
 
         <Col span={24}>
           <Card size="small" title="Parecer geral">
-            <TextArea
-              rows={5}
-              value={notes}
-              disabled={readOnly}
-              onChange={(e) => {
-                setNotes(e.target.value)
-                setDirty(true)
-              }}
-              placeholder="Síntese final: evolução observada, pontos fortes, gaps críticos e recomendação para o próximo ciclo."
-            />
+            {readOnly ? (
+              <FeedbackDisplay text={notes} />
+            ) : (
+              <TextArea
+                rows={5}
+                value={notes}
+                onChange={(e) => {
+                  setNotes(e.target.value)
+                  setDirty(true)
+                }}
+                placeholder="Síntese final: evolução observada, pontos fortes, gaps críticos e recomendação para o próximo ciclo."
+              />
+            )}
           </Card>
         </Col>
 

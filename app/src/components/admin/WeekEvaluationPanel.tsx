@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Button, Card, Input, Slider, Space, Tag, Typography } from 'antd'
+import { Button, Card, Input, Space, Tag, Typography, theme as antdTheme } from 'antd'
 import type { Evaluation } from '../../../shared/types/evaluation'
+import {
+  ColoredScoreDisplay,
+  EvaluationScoreSlider,
+  FeedbackDisplay,
+} from './evaluationDisplay'
 
 const { Text, Paragraph } = Typography
 const { TextArea } = Input
@@ -22,6 +27,7 @@ export function WeekEvaluationPanel({
   saving,
   onSave,
 }: WeekEvaluationPanelProps) {
+  const { token } = antdTheme.useToken()
   const [overall, setOverall] = useState(evaluation?.scores.overall ?? 3)
   const [notes, setNotes] = useState(evaluation?.notes ?? '')
 
@@ -31,15 +37,19 @@ export function WeekEvaluationPanel({
   }, [evaluation])
 
   const evaluated = evaluation != null
+  const displayScore = evaluation?.scores.overall ?? overall
 
   return (
     <Card
+      className="week-evaluation-panel-card"
       size="small"
       title={
         <Space>
           <Text strong>Avaliação do avaliador</Text>
           {evaluated ? (
-            <Tag color={accent}>Semana {weekId} · {evaluation.scores.overall}/5</Tag>
+            <Tag color={accent} style={{ fontWeight: 600 }}>
+              Semana {weekId} · {evaluation.scores.overall}/5
+            </Tag>
           ) : (
             <Tag>Ainda não avaliado</Tag>
           )}
@@ -54,28 +64,35 @@ export function WeekEvaluationPanel({
       ) : (
         <>
           <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 8 }}>
-            <Text type="secondary" style={{ fontSize: 12 }}>
+            <Text style={{ fontSize: 12, color: token.colorTextSecondary }}>
               Nota geral da semana (conteúdo, aplicação e evidências)
             </Text>
-            <Tag>{overall}/5</Tag>
+            <Tag color={accent} style={{ fontWeight: 600, margin: 0 }}>
+              {displayScore}/5
+            </Tag>
           </Space>
-          <Slider
-            min={1}
-            max={5}
-            step={1}
-            marks={{ 1: '1', 2: '2', 3: '3', 4: '4', 5: '5' }}
-            value={overall}
-            disabled={readOnly}
-            onChange={setOverall}
-          />
-          <TextArea
-            rows={3}
-            value={notes}
-            disabled={readOnly}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Feedback qualitativo: o que evoluiu, o que falta e próxima ação."
-            style={{ marginTop: 12 }}
-          />
+
+          <div>
+            {readOnly ? (
+              <ColoredScoreDisplay value={displayScore} accent={accent} />
+            ) : (
+              <EvaluationScoreSlider value={overall} accent={accent} onChange={setOverall} />
+            )}
+
+            {readOnly ? (
+              <FeedbackDisplay text={notes} belowScale />
+            ) : (
+              <div className="evaluation-feedback-below-scale">
+                <TextArea
+                  rows={3}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Feedback qualitativo: o que evoluiu, o que falta e próxima ação."
+                />
+              </div>
+            )}
+          </div>
+
           {!readOnly && onSave && (
             <div style={{ marginTop: 12, textAlign: 'right' }}>
               <Button type="primary" loading={saving} onClick={() => onSave(overall, notes)}>
@@ -83,6 +100,7 @@ export function WeekEvaluationPanel({
               </Button>
             </div>
           )}
+
           {readOnly && evaluation?.updatedAt && (
             <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 8 }}>
               Atualizado em {new Date(evaluation.updatedAt).toLocaleString('pt-BR')}
