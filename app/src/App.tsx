@@ -58,7 +58,6 @@ import { WeekSection } from './components/trail/WeekSection'
 import { useStore } from './hooks/useStore'
 import { useProfile } from './hooks/useProfile'
 import { useEvaluations } from './hooks/useEvaluations'
-import { WeekEvaluationPanel } from './components/admin/WeekEvaluationPanel'
 import { FinalEvaluationPanel } from './components/admin/FinalEvaluationPanel'
 import { BackOfficePanel } from './components/admin/BackOfficePanel'
 import { openPrintReport } from './utils/progressReport'
@@ -673,26 +672,23 @@ function AppShell({
                 week={week}
                 store={store}
                 readOnly={readOnly}
+                evaluation={getWeekEvaluation(week.id)}
+                evaluationReadOnly={!isAdmin}
+                evaluationSaving={evaluationSaving}
+                onSaveEvaluation={async (overall, notes) => {
+                  try {
+                    await onSaveWeekEvaluation(week.id, overall, notes)
+                    message.success(`Avaliação da semana ${week.id} salva.`)
+                  } catch (err) {
+                    message.error(err instanceof Error ? err.message : 'Falha ao salvar avaliação.')
+                  }
+                }}
                 onToggleComplete={handleToggle}
                 onOpenPrompt={(topic, link, weekLabel) => setPrompt({ topic, link, week: weekLabel })}
                 onOpenQuiz={(resource, week) => setQuizTarget({ resource, week })}
                 onAddEvidence={(id) => openEvidenceModal(id)}
                 onEditEvidence={(evidence) => openEvidenceModal(evidence.week, evidence)}
                 onDeleteEvidence={confirmDeleteEvidence}
-              />
-              <WeekEvaluationPanel
-                weekId={week.id}
-                accent={weekAccentHex(week.id)}
-                evaluation={getWeekEvaluation(week.id)}
-                readOnly={!isAdmin}
-                saving={evaluationSaving}
-                onSave={async (overall, notes) => {
-                  try {
-                    await onSaveWeekEvaluation(week.id, overall, notes)
-                  } catch (err) {
-                    message.error(err instanceof Error ? err.message : 'Falha ao salvar avaliação.')
-                  }
-                }}
               />
             </div>
           ))}

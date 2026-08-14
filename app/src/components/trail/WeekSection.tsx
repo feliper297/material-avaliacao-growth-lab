@@ -28,8 +28,10 @@ import { getResourceQuiz } from '../../../shared/data/resource-quizzes'
 import { getQuizAnswers, getQuizScore, hasDetailedQuizResult, isLegacyQuizResult } from '../../../shared/domain/quiz'
 import type { AppStore, Evidence } from '../../../shared/types/store'
 import { getWeekProgress } from '../../../shared/domain/progress'
+import type { Evaluation } from '../../../shared/types/evaluation'
 import { EvidenceItem, InlineQuizResult, QuizResultSummary } from './EvidenceItem'
 import { QuizReview } from './QuizReview'
+import { WeekEvaluationPanel } from '../admin/WeekEvaluationPanel'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -59,6 +61,10 @@ interface WeekSectionProps {
   week: TrailWeek
   store: AppStore
   readOnly?: boolean
+  evaluation?: Evaluation
+  evaluationReadOnly?: boolean
+  evaluationSaving?: boolean
+  onSaveEvaluation?: (overall: number, notes: string) => Promise<void>
   onToggleComplete: (id: string) => void
   onOpenPrompt: (topic: string, link: string, weekLabel: string) => void
   onOpenQuiz: (resource: TrailResource, week: TrailWeek) => void
@@ -71,6 +77,10 @@ export function WeekSection({
   week,
   store,
   readOnly = false,
+  evaluation,
+  evaluationReadOnly = true,
+  evaluationSaving,
+  onSaveEvaluation,
   onToggleComplete,
   onOpenPrompt,
   onOpenQuiz,
@@ -355,6 +365,16 @@ export function WeekSection({
             </Card>
           </Col>
         </Row>
+
+        <WeekEvaluationPanel
+          weekId={week.id}
+          accent={accent}
+          evaluation={evaluation}
+          readOnly={evaluationReadOnly}
+          saving={evaluationSaving}
+          embedded
+          onSave={onSaveEvaluation}
+        />
         </>
         )}
         </div>
