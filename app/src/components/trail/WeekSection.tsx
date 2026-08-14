@@ -173,7 +173,7 @@ export function WeekSection({
         <div style={{ padding: expanded ? '20px 24px 24px' : 0 }}>
         {expanded && (
         <>
-        <Row gutter={24}>
+        <Row gutter={24} align="top">
           <Col xs={24} lg={16}>
             <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 4 }}>
               <Title level={4} style={{ margin: 0 }}>
@@ -274,7 +274,15 @@ export function WeekSection({
           </Col>
 
           <Col xs={24} lg={8}>
-            <Card size="small" title="Entrega da semana">
+            <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 4 }}>
+              <Title level={4} style={{ margin: 0 }}>
+                Entrega da semana
+              </Title>
+              <Text type="secondary" style={{ fontSize: 12, visibility: 'hidden' }} aria-hidden>
+                alinhamento
+              </Text>
+            </Space>
+            <Card size="small">
               <List
                 size="small"
                 dataSource={week.deliverables}
