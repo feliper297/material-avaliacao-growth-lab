@@ -384,15 +384,20 @@ function AppShell({
             borderBottom: `1px solid ${token.colorBorderSecondary}`,
           }}
         >
-          <Space size={token.marginSM} style={{ minWidth: 0 }}>
+          <Space size={token.marginSM} style={{ minWidth: 0 }} align="center">
             {isAdmin && (
-              <Select
-                style={{ minWidth: 220 }}
-                placeholder="Selecionar participante"
-                value={selectedLearnerId ?? undefined}
-                onChange={onSelectLearner}
-                options={learners.map((l) => ({ value: l.userId, label: l.email }))}
-              />
+              <>
+                <Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
+                  Selecione o Avaliado:
+                </Text>
+                <Select
+                  style={{ minWidth: 240 }}
+                  placeholder="Selecione o Avaliado"
+                  value={selectedLearnerId ?? undefined}
+                  onChange={onSelectLearner}
+                  options={learners.map((l) => ({ value: l.userId, label: l.email }))}
+                />
+              </>
             )}
             {saveStatus === 'saving' && <Text type="secondary">Salvando…</Text>}
             {saveStatus === 'error' && <Text type="danger">Erro ao salvar</Text>}
@@ -544,8 +549,12 @@ function AppShell({
                 readOnly={!isAdmin}
                 saving={evaluationSaving}
                 onSave={async (overall, notes) => {
-                  await onSaveWeekEvaluation(week.id, overall, notes)
-                  message.success('Avaliação da semana salva.')
+                  try {
+                    await onSaveWeekEvaluation(week.id, overall, notes)
+                    message.success(`Avaliação da semana ${week.id} salva.`)
+                  } catch (err) {
+                    message.error(err instanceof Error ? err.message : 'Falha ao salvar avaliação.')
+                  }
                 }}
               />
             </div>
@@ -640,8 +649,12 @@ function AppShell({
             readOnly={!isAdmin}
             saving={evaluationSaving}
             onSave={async (scores, notes) => {
-              await onSaveFinalEvaluation(scores, notes)
-              message.success('Avaliação final salva.')
+              try {
+                await onSaveFinalEvaluation(scores, notes)
+                message.success('Avaliação final salva.')
+              } catch (err) {
+                message.error(err instanceof Error ? err.message : 'Falha ao salvar avaliação final.')
+              }
             }}
           />
         </Content>

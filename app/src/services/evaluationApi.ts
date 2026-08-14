@@ -28,6 +28,9 @@ function mapEvaluation(row: {
   }
 }
 
+const evaluationSelect =
+  'id, learner_id, evaluator_id, scope, week, scores, notes, updated_at'
+
 export const evaluationApi = {
   async ensureProfile(email: string): Promise<Profile> {
     const { data: { user } } = await supabase.auth.getUser()
@@ -81,10 +84,9 @@ export const evaluationApi = {
   async getEvaluations(learnerId: string): Promise<Evaluation[]> {
     const { data, error } = await supabase
       .from('evaluations')
-      .select('id, learner_id, evaluator_id, scope, week, scores, notes, updated_at')
+      .select(evaluationSelect)
       .eq('learner_id', learnerId)
-      .order('scope')
-      .order('week')
+      .order('week', { ascending: true, nullsFirst: false })
 
     if (error) throw new Error(error.message)
 
@@ -95,51 +97,50 @@ export const evaluationApi = {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Usuário não autenticado.')
 
-    const payload = {
-      learner_id: input.learnerId,
-      evaluator_id: user.id,
-      scope: 'week' as const,
-      week: input.week,
+    const { data: existing, error: findError } = await supabase
+      .from('evaluations')
+      .select('id')
+      .eq('learner_id', input.learnerId)
+      .eq('scope', 'week')
+      .eq('week', input.week)
+      .maybeSingle()
+
+    if (findError) throw new Error(findError.message)
+
+    const row = {
       scores: { overall: input.overall },
       notes: input.notes,
+      evaluator_id: user.id,
       updated_at: new Date().toISOString(),
+    }
+
+    if (existing?.id) {
+      const { data, error } = await supabase
+        .from('evaluations')
+        .update(row)
+        .eq('id', existing.id)
+        .select(evaluationSelect)
+        .single()
+
+      if (error) throw new Error(error.message)
+      return mapEvaluation(data)
     }
 
     const { data, error } = await supabase
       .from('evaluations')
-      .upsert(payload, { onConflict: 'learner_id,week', ignoreDuplicates: false })
-      .select('id, learner_id, evaluator_id, scope, week, scores, notes, updated_at')
+      .insert({
+        learner_id: input.learnerId,
+        evaluator_id: user.id,
+        scope: 'week',
+        week: input.week,
+        scores: row.scores,
+        notes: row.notes,
+        updated_at: row.updated_at,
+      })
+      .select(evaluationSelect)
       .single()
 
-    if (error) {
-      const { data: existing } = await supabase
-        .from('evaluations')
-        .select('id')
-        .eq('learner_id', input.learnerId)
-        .eq('scope', 'week')
-        .eq('week', input.week)
-        .maybeSingle()
-
-      if (existing) {
-        const { data: updated, error: updateError } = await supabase
-          .from('evaluations')
-          .update({
-            scores: payload.scores,
-            notes: payload.notes,
-            evaluator_id: user.id,
-            updated_at: payload.updated_at,
-          })
-          .eq('id', existing.id)
-          .select('id, learner_id, evaluator_id, scope, week, scores, notes, updated_at')
-          .single()
-
-        if (updateError) throw new Error(updateError.message)
-        return mapEvaluation(updated)
-      }
-
-      throw new Error(error.message)
-    }
-
+    if (error) throw new Error(error.message)
     return mapEvaluation(data)
   },
 
@@ -147,44 +148,46 @@ export const evaluationApi = {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Usuário não autenticado.')
 
-    const payload = {
-      learner_id: input.learnerId,
-      evaluator_id: user.id,
-      scope: 'final' as const,
-      week: null,
-      scores: input.scores,
-      notes: input.notes,
-      updated_at: new Date().toISOString(),
-    }
-
-    const { data: existing } = await supabase
+    const { data: existing, error: findError } = await supabase
       .from('evaluations')
       .select('id')
       .eq('learner_id', input.learnerId)
       .eq('scope', 'final')
       .maybeSingle()
 
-    if (existing) {
-      const { data: updated, error } = await supabase
+    if (findError) throw new Error(findError.message)
+
+    const row = {
+      scores: input.scores,
+      notes: input.notes,
+      evaluator_id: user.id,
+      updated_at: new Date().toISOString(),
+    }
+
+    if (existing?.id) {
+      const { data, error } = await supabase
         .from('evaluations')
-        .update({
-          scores: payload.scores,
-          notes: payload.notes,
-          evaluator_id: user.id,
-          updated_at: payload.updated_at,
-        })
+        .update(row)
         .eq('id', existing.id)
-        .select('id, learner_id, evaluator_id, scope, week, scores, notes, updated_at')
+        .select(evaluationSelect)
         .single()
 
       if (error) throw new Error(error.message)
-      return mapEvaluation(updated)
+      return mapEvaluation(data)
     }
 
     const { data, error } = await supabase
       .from('evaluations')
-      .insert(payload)
-      .select('id, learner_id, evaluator_id, scope, week, scores, notes, updated_at')
+      .insert({
+        learner_id: input.learnerId,
+        evaluator_id: user.id,
+        scope: 'final',
+        week: null,
+        scores: row.scores,
+        notes: row.notes,
+        updated_at: row.updated_at,
+      })
+      .select(evaluationSelect)
       .single()
 
     if (error) throw new Error(error.message)
