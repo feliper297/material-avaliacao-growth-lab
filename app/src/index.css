@@ -76,6 +76,11 @@ body {
   color: rgba(0, 0, 0, 0.88);
 }
 
+.evaluation-score-slider .ant-slider-rail,
+.evaluation-score-slider .ant-slider-track {
+  height: 4px;
+}
+
 /* Leitura: só os pontos das marcas — handle oculto evita “dois pontinhos”. */
 .evaluation-score-slider--readonly .ant-slider-handle {
   display: none !important;
@@ -84,7 +89,7 @@ body {
 .evaluation-score-slider--readonly .ant-slider-dot {
   width: 10px;
   height: 10px;
-  inset-block-start: -3px;
+  inset-block-start: calc(50% - 5px);
   border-width: 2px;
 }
 
@@ -104,7 +109,9 @@ body {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  inset-block-start: -3px !important;
+  inset-block-start: calc(50% - 5px) !important;
+  transform: translateX(-50%) !important;
+  margin-top: 0 !important;
 }
 
 .evaluation-score-slider--editable .ant-slider-handle::before {

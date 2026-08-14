@@ -1,6 +1,4 @@
 import {
-  ApiOutlined,
-  CloudServerOutlined,
   DatabaseOutlined,
   ReloadOutlined,
   TeamOutlined,
@@ -197,35 +195,6 @@ export function BackOfficePanel({ stats, loading, error, onReload, onSelectLearn
                 </Card>
               </Col>
             ))}
-          </Row>
-
-          <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-            <Col xs={24} md={8}>
-              <Card size="small" title="Sistema">
-                <Space orientation="vertical" size={8} style={{ width: '100%' }}>
-                  <Text>
-                    <CloudServerOutlined /> Stack: React + Vite + Supabase
-                  </Text>
-                  <Text>
-                    <ApiOutlined /> Deploy: Vercel
-                  </Text>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Testes concluídos no ciclo: {stats.totalQuizzesCompleted}
-                  </Text>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Administradores: {stats.adminCount}
-                  </Text>
-                </Space>
-              </Card>
-            </Col>
-            <Col xs={24} md={16}>
-              <Card size="small" title="Resumo operacional">
-                <Paragraph style={{ marginBottom: 0 }} type="secondary">
-                  O back office consolida dados reais de perfis, progresso da trilha, evidências e avaliações.
-                  Use a tabela abaixo para acompanhar cada participante e abrir a trilha individualmente.
-                </Paragraph>
-              </Card>
-            </Col>
           </Row>
 
           <Card title="Usuários do sistema" size="small">
