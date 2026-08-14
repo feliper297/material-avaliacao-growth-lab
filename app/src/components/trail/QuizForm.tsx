@@ -6,27 +6,39 @@ interface QuizFormProps {
   title: string
   questions: QuizItem[]
   onSubmit: (score: number) => Promise<void>
+  onClose: () => void
 }
 
-export function QuizForm({ title, questions, onSubmit }: QuizFormProps) {
+export function QuizForm({ title, questions, onSubmit, onClose }: QuizFormProps) {
   const [result, setResult] = useState<{ type: 'success' | 'warning'; message: string } | null>(null)
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   async function handleFinish(values: Record<string, number>) {
+    setSubmitError(null)
     let score = 0
     questions.forEach((item, qi) => {
       if (values[`q${qi}`] === item.answer) score++
     })
-    await onSubmit(score)
-    const errors = questions.length - score
-    setSubmitted(true)
-    setResult({
-      type: score >= 2 ? 'success' : 'warning',
-      message:
-        score === questions.length
-          ? `${score} acertos · 0 erros em "${title}". Resultado salvo — este teste não pode ser refeito.`
-          : `${score} acerto${score === 1 ? '' : 's'} · ${errors} erro${errors === 1 ? '' : 's'} em "${title}". Resultado salvo — este teste não pode ser refeito.`,
-    })
+
+    setSubmitting(true)
+    try {
+      await onSubmit(score)
+      const errors = questions.length - score
+      setSubmitted(true)
+      setResult({
+        type: score >= 2 ? 'success' : 'warning',
+        message:
+          score === questions.length
+            ? `${score} acertos · 0 erros em "${title}". Resultado salvo — este teste não pode ser refeito.`
+            : `${score} acerto${score === 1 ? '' : 's'} · ${errors} erro${errors === 1 ? '' : 's'} em "${title}". Resultado salvo — este teste não pode ser refeito.`,
+      })
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Não foi possível salvar o teste. Tente novamente.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -50,15 +62,20 @@ export function QuizForm({ title, questions, onSubmit }: QuizFormProps) {
         </Form.Item>
       ))}
 
+      {submitError && <Alert type="error" showIcon title={submitError} style={{ marginBottom: 16 }} />}
       {result && <Alert type={result.type} showIcon title={result.message} style={{ marginBottom: 16 }} />}
 
-      {!submitted && (
-        <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-          <Button type="primary" htmlType="submit">
+      <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+        {!submitted ? (
+          <Button type="primary" htmlType="submit" loading={submitting}>
             Corrigir teste
           </Button>
-        </Form.Item>
-      )}
+        ) : (
+          <Button type="primary" onClick={onClose}>
+            Fechar
+          </Button>
+        )}
+      </Form.Item>
     </Form>
   )
 }

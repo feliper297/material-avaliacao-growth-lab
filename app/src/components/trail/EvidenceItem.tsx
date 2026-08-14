@@ -1,4 +1,4 @@
-import { FileSearchOutlined, LinkOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, FileSearchOutlined, LinkOutlined } from '@ant-design/icons'
 import { Button, Space, Tag, Typography, theme as antdTheme } from 'antd'
 import type { Evidence } from '../../../shared/types/store'
 
@@ -7,9 +7,12 @@ const { Text, Paragraph } = Typography
 interface EvidenceItemProps {
   evidence: Evidence
   accent: string
+  readOnly?: boolean
+  onEdit?: (evidence: Evidence) => void
+  onDelete?: (evidence: Evidence) => void
 }
 
-export function EvidenceItem({ evidence, accent }: EvidenceItemProps) {
+export function EvidenceItem({ evidence, accent, readOnly = false, onEdit, onDelete }: EvidenceItemProps) {
   const { token } = antdTheme.useToken()
 
   return (
@@ -76,6 +79,16 @@ export function EvidenceItem({ evidence, accent }: EvidenceItemProps) {
                 rel="noreferrer"
               >
                 Abrir link
+              </Button>
+            )}
+            {!readOnly && onEdit && (
+              <Button size="small" icon={<EditOutlined />} onClick={() => onEdit(evidence)}>
+                Editar
+              </Button>
+            )}
+            {!readOnly && onDelete && (
+              <Button size="small" danger icon={<DeleteOutlined />} onClick={() => onDelete(evidence)}>
+                Excluir
               </Button>
             )}
           </Space>

@@ -117,6 +117,29 @@ export function useStore(userId: string | null, options: UseStoreOptions = {}) {
     [readOnly, store],
   )
 
+  const updateEvidence = useCallback(
+    async (id: string, input: EvidenceInput) => {
+      if (readOnly) return
+      setSaveStatus('saving')
+      setError(null)
+      try {
+        const updated = await api.updateEvidence(id, input)
+        const next = {
+          ...store,
+          evidences: store.evidences.map((e) => (e.id === id ? updated : e)),
+        }
+        setStore(next)
+        setSaveStatus('success')
+        setTimeout(() => setSaveStatus('idle'), 2000)
+      } catch (err) {
+        setSaveStatus('error')
+        setError(err instanceof Error ? err.message : 'Falha ao atualizar evidência.')
+        throw err
+      }
+    },
+    [readOnly, store],
+  )
+
   const saveQuiz = useCallback(
     async (resourceId: string, score: number) => {
       if (readOnly) return
@@ -136,15 +159,9 @@ export function useStore(userId: string | null, options: UseStoreOptions = {}) {
     [persist, readOnly, store],
   )
 
-  const exportProgress = useCallback(() => {
-    const payload = { exportedAt: new Date().toISOString(), ...store }
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `growth-lab-progresso-${new Date().toISOString().slice(0, 10)}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+  const exportProgress = useCallback(async (userEmail?: string) => {
+    const { exportProgressPdf } = await import('../utils/progressReport')
+    exportProgressPdf(store, userEmail)
   }, [store])
 
   return {
@@ -155,6 +172,7 @@ export function useStore(userId: string | null, options: UseStoreOptions = {}) {
     toggleComplete,
     addEvidence,
     deleteEvidence,
+    updateEvidence,
     saveQuiz,
     setTheme,
     exportProgress,

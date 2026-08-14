@@ -25,7 +25,7 @@ import { Alert, Avatar, Button, Card, Col, List, Progress, Row, Space, Tag, Typo
 import { useState, type ComponentType } from 'react'
 import { weekAccentHex, type TrailResource, type TrailWeek } from '../../../shared/data/weeks'
 import { getResourceQuiz } from '../../../shared/data/resource-quizzes'
-import type { AppStore } from '../../../shared/types/store'
+import type { AppStore, Evidence } from '../../../shared/types/store'
 import { getWeekProgress } from '../../../shared/domain/progress'
 import { EvidenceItem, InlineQuizResult, QuizResultSummary } from './EvidenceItem'
 
@@ -61,6 +61,8 @@ interface WeekSectionProps {
   onOpenPrompt: (topic: string, link: string, weekLabel: string) => void
   onOpenQuiz: (resource: TrailResource, week: TrailWeek) => void
   onAddEvidence: (weekId: number) => void
+  onEditEvidence: (evidence: Evidence) => void
+  onDeleteEvidence: (evidence: Evidence) => void
 }
 
 export function WeekSection({
@@ -71,6 +73,8 @@ export function WeekSection({
   onOpenPrompt,
   onOpenQuiz,
   onAddEvidence,
+  onEditEvidence,
+  onDeleteEvidence,
 }: WeekSectionProps) {
   const { token } = antdTheme.useToken()
   const progress = getWeekProgress(week, store)
@@ -307,7 +311,14 @@ export function WeekSection({
               {weekEvidences.length > 0 && (
                 <div style={{ marginTop: 12 }}>
                   {weekEvidences.map((evidence) => (
-                    <EvidenceItem key={evidence.id} evidence={evidence} accent={accent} />
+                    <EvidenceItem
+                      key={evidence.id}
+                      evidence={evidence}
+                      accent={accent}
+                      readOnly={readOnly}
+                      onEdit={onEditEvidence}
+                      onDelete={onDeleteEvidence}
+                    />
                   ))}
                 </div>
               )}

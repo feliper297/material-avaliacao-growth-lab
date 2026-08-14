@@ -1,24 +1,52 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Alert, Button, Form, Input, Select, Space } from 'antd'
 import { EVIDENCE_TYPES } from '../../../shared/data/weeks'
 import type { EvidenceInput } from '../../../shared/domain/evidence'
+import type { Evidence } from '../../../shared/types/store'
 
 interface EvidenceFormProps {
   defaultWeek?: number
+  initialEvidence?: Evidence | null
   loading?: boolean
   onSubmit: (input: EvidenceInput) => Promise<void>
   onCancel: () => void
 }
 
-export function EvidenceForm({ defaultWeek = 1, loading, onSubmit, onCancel }: EvidenceFormProps) {
+export function EvidenceForm({
+  defaultWeek = 1,
+  initialEvidence = null,
+  loading,
+  onSubmit,
+  onCancel,
+}: EvidenceFormProps) {
   const [form] = Form.useForm<EvidenceInput>()
   const [error, setError] = useState<string | null>(null)
+  const isEditing = initialEvidence != null
+
+  useEffect(() => {
+    if (initialEvidence) {
+      form.setFieldsValue({
+        week: initialEvidence.week,
+        type: initialEvidence.type,
+        title: initialEvidence.title,
+        url: initialEvidence.url ?? '',
+        description: initialEvidence.description,
+      })
+      return
+    }
+
+    form.resetFields()
+    form.setFieldsValue({ week: defaultWeek, type: EVIDENCE_TYPES[0] })
+  }, [initialEvidence, defaultWeek, form])
 
   async function handleFinish(values: EvidenceInput) {
     setError(null)
     try {
       await onSubmit(values)
-      form.resetFields()
+      if (!isEditing) {
+        form.resetFields()
+        form.setFieldsValue({ week: defaultWeek, type: EVIDENCE_TYPES[0] })
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar.')
     }
@@ -45,7 +73,26 @@ export function EvidenceForm({ defaultWeek = 1, loading, onSubmit, onCancel }: E
         <Input placeholder="Ex.: Refatoração do fluxo de estorno" />
       </Form.Item>
 
-      <Form.Item name="url" label="Link" rules={[{ type: 'url', message: 'URL inválida.' }]}>
+      <Form.Item
+        name="url"
+        label="Link"
+        rules={[
+          {
+            validator: (_, value) => {
+              if (!value || !String(value).trim()) return Promise.resolve()
+              try {
+                const parsed = new URL(String(value).trim())
+                if (!['http:', 'https:'].includes(parsed.protocol)) {
+                  return Promise.reject(new Error('URL deve usar http ou https.'))
+                }
+                return Promise.resolve()
+              } catch {
+                return Promise.reject(new Error('URL inválida.'))
+              }
+            },
+          },
+        ]}
+      >
         <Input placeholder="https://..." />
       </Form.Item>
 
@@ -64,7 +111,7 @@ export function EvidenceForm({ defaultWeek = 1, loading, onSubmit, onCancel }: E
         <Space>
           <Button onClick={onCancel}>Cancelar</Button>
           <Button type="primary" htmlType="submit" loading={loading}>
-            Salvar evidência
+            {isEditing ? 'Salvar alterações' : 'Salvar evidência'}
           </Button>
         </Space>
       </Form.Item>

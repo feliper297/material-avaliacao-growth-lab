@@ -121,8 +121,40 @@ body {
   box-shadow: none !important;
 }
 
+.app-sider-menu.ant-menu {
+  padding-inline: 0 !important;
+}
+
+.app-sider-menu .ant-menu-item {
+  padding-inline: 0 !important;
+  margin-inline: 0 !important;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.app-sider-menu .ant-menu-item .ant-menu-item-icon {
+  margin-inline-end: 10px !important;
+}
+
 @media print {
   .no-print {
     display: none !important;
+  }
+
+  .app-main-layout {
+    margin-left: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .app-content-scroll {
+    overflow: visible !important;
+    height: auto !important;
+    padding: 16px !important;
+  }
+
+  body {
+    overflow: visible !important;
   }
 }

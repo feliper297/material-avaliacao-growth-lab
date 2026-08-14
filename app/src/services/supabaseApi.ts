@@ -112,4 +112,35 @@ export const supabaseApi = {
 
     if (error) throw new Error(error.message)
   },
+
+  async updateEvidence(id: string, input: EvidenceInput): Promise<Evidence> {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Usuário não autenticado.')
+
+    const { data, error } = await supabase
+      .from('evidences')
+      .update({
+        week: input.week,
+        type: input.type ?? 'aplicacao',
+        title: input.title,
+        url: input.url ?? null,
+        description: input.description,
+      })
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .select('id, week, type, title, url, description, created_at')
+      .single()
+
+    if (error) throw new Error(error.message)
+
+    return {
+      id: data.id,
+      week: data.week,
+      type: data.type,
+      title: data.title,
+      url: data.url ?? undefined,
+      description: data.description,
+      createdAt: data.created_at,
+    }
+  },
 }

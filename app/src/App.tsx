@@ -35,8 +35,10 @@ import {
   CheckCircleOutlined,
   CheckOutlined,
   CompassOutlined,
+  DashboardOutlined,
   DeleteOutlined,
   DownloadOutlined,
+  EditOutlined,
   FileSearchOutlined,
   HomeOutlined,
   LinkOutlined,
@@ -61,6 +63,11 @@ import { useProfile } from './hooks/useProfile'
 import { useEvaluations } from './hooks/useEvaluations'
 import { WeekEvaluationPanel } from './components/admin/WeekEvaluationPanel'
 import { FinalEvaluationPanel } from './components/admin/FinalEvaluationPanel'
+import { BackOfficePanel } from './components/admin/BackOfficePanel'
+import { openPrintReport } from './utils/progressReport'
+import { useBackOffice } from './hooks/useBackOffice'
+import type { Evidence } from '../shared/types/store'
+import type { BackOfficeStats } from '../shared/types/backoffice'
 
 const { Sider, Header, Content } = Layout
 const { Title, Text, Paragraph } = Typography
@@ -68,7 +75,7 @@ const { Title, Text, Paragraph } = Typography
 const SIDEBAR_WIDTH = 280
 const CONTENT_PADDING = 32
 
-const NAV_ITEMS: { href: string; label: string }[] = [
+const BASE_NAV_ITEMS: { href: string; label: string }[] = [
   { href: '#overview', label: 'Visão geral' },
   ...WEEKS.map((w) => ({ href: `#week-${w.id}`, label: `S${w.id} · ${w.title}` })),
   { href: '#evidences', label: 'Evidências' },
@@ -116,6 +123,7 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
   }, [isAdmin, evaluations.learners, selectedLearnerId])
 
   const store = useStore(evaluationUserId, { readOnly: isAdmin })
+  const backOffice = useBackOffice(isAdmin && !profileLoading && !!profile)
   const isDark = store.store.theme === 'dark'
 
   if (profileLoading || store.loadStatus === 'loading' || evaluations.loading) {
@@ -158,6 +166,7 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
       <AntApp>
         <AppShell
           {...store}
+          userEmail={userEmail}
           onSignOut={onSignOut}
           isAdmin={isAdmin}
           selectedLearnerId={selectedLearnerId}
@@ -168,6 +177,10 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
           evaluationSaving={evaluations.saving}
           onSaveWeekEvaluation={evaluations.saveWeekEvaluation}
           onSaveFinalEvaluation={evaluations.saveFinalEvaluation}
+          backOfficeStats={backOffice.stats}
+          backOfficeLoading={backOffice.loading}
+          backOfficeError={backOffice.error}
+          onReloadBackOffice={backOffice.reload}
         />
       </AntApp>
     </ConfigProvider>
@@ -182,10 +195,12 @@ function AppShell({
   toggleComplete,
   addEvidence,
   deleteEvidence,
+  updateEvidence,
   saveQuiz,
   setTheme,
   exportProgress,
   readOnly,
+  userEmail,
   onSignOut,
   isAdmin,
   selectedLearnerId,
@@ -196,7 +211,12 @@ function AppShell({
   evaluationSaving,
   onSaveWeekEvaluation,
   onSaveFinalEvaluation,
+  backOfficeStats,
+  backOfficeLoading,
+  backOfficeError,
+  onReloadBackOffice,
 }: ReturnType<typeof useStore> & {
+  userEmail?: string
   onSignOut: () => void
   isAdmin: boolean
   selectedLearnerId: string | null
@@ -207,12 +227,17 @@ function AppShell({
   evaluationSaving: boolean
   onSaveWeekEvaluation: (week: number, overall: number, notes: string) => Promise<void>
   onSaveFinalEvaluation: (scores: Record<string, number>, notes: string) => Promise<void>
+  backOfficeStats: BackOfficeStats | null
+  backOfficeLoading: boolean
+  backOfficeError: string | null
+  onReloadBackOffice: () => void
 }) {
   const { message, modal } = AntApp.useApp()
   const { token } = antdTheme.useToken()
 
   const [evidenceOpen, setEvidenceOpen] = useState(false)
   const [evidenceWeek, setEvidenceWeek] = useState(1)
+  const [editingEvidence, setEditingEvidence] = useState<Evidence | null>(null)
   const [quizTarget, setQuizTarget] = useState<{ resource: TrailResource; week: TrailWeek } | null>(null)
   const [prompt, setPrompt] = useState<{ topic: string; link: string; week: string } | null>(null)
 
@@ -255,6 +280,14 @@ function AppShell({
     })
   }, [store])
 
+  const navItems = useMemo(() => {
+    const items = [...BASE_NAV_ITEMS]
+    if (isAdmin) {
+      items.push({ href: '#backoffice', label: 'Back Office' })
+    }
+    return items
+  }, [isAdmin])
+
   const navIcon: Record<string, { icon: ReactNode; color: string }> = {
     '#overview': { icon: <HomeOutlined />, color: token.colorPrimary },
     '#week-1': { icon: <AppstoreOutlined />, color: weekAccentHex(1) },
@@ -263,9 +296,10 @@ function AppShell({
     '#week-4': { icon: <RobotOutlined />, color: weekAccentHex(4) },
     '#evidences': { icon: <FileSearchOutlined />, color: token.colorInfo },
     '#assessment': { icon: <TrophyOutlined />, color: token.colorWarning },
+    '#backoffice': { icon: <DashboardOutlined />, color: '#531dab' },
   }
 
-  const menuItems: MenuProps['items'] = NAV_ITEMS.map((item) => {
+  const menuItems: MenuProps['items'] = navItems.map((item) => {
     const meta = navIcon[item.href]
     return {
       key: item.href,
@@ -283,6 +317,31 @@ function AppShell({
     const wasDone = store.completed.includes(id)
     await toggleComplete(id)
     message.success(wasDone ? 'Conteúdo marcado como pendente.' : 'Conteúdo concluído.')
+  }
+
+  function openEvidenceModal(weekId = 1, evidence: Evidence | null = null) {
+    setEvidenceWeek(weekId)
+    setEditingEvidence(evidence)
+    setEvidenceOpen(true)
+  }
+
+  function closeEvidenceModal() {
+    setEvidenceOpen(false)
+    setEditingEvidence(null)
+  }
+
+  function confirmDeleteEvidence(evidence: Evidence) {
+    modal.confirm({
+      title: 'Remover esta evidência?',
+      content: `"${evidence.title}" será excluída permanentemente.`,
+      okText: 'Remover',
+      okButtonProps: { danger: true },
+      cancelText: 'Cancelar',
+      onOk: async () => {
+        await deleteEvidence(evidence.id)
+        message.success('Evidência removida.')
+      },
+    })
   }
 
   if (loadStatus === 'loading') {
@@ -360,19 +419,16 @@ function AppShell({
           </Card>
 
           <Menu
+            className="app-sider-menu"
             mode="inline"
             theme={store.theme}
             selectable={false}
             items={menuItems}
-            style={{ border: 'none' }}
+            style={{ border: 'none', background: 'transparent' }}
             onClick={({ key }) => {
               document.getElementById(key.replace('#', ''))?.scrollIntoView({ behavior: 'smooth' })
             }}
           />
-
-          <Paragraph type="secondary" style={{ fontSize: 11, marginTop: 16 }}>
-            Estudar → explicar → testar → aplicar → registrar evidência. Conteúdo sem aplicação não conclui a etapa.
-          </Paragraph>
         </div>
       </Sider>
 
@@ -429,13 +485,17 @@ function AppShell({
             <Button
               icon={<DownloadOutlined />}
               onClick={() => {
-                exportProgress()
-                message.success('Progresso exportado.')
+                exportProgress(userEmail)
+                message.success('Relatório PDF exportado.')
               }}
             >
               Exportar
             </Button>
-            <Button type="primary" icon={<PrinterOutlined />} onClick={() => window.print()}>
+            <Button
+              type="primary"
+              icon={<PrinterOutlined />}
+              onClick={() => openPrintReport(store, userEmail)}
+            >
               Imprimir
             </Button>
             <Button
@@ -549,10 +609,9 @@ function AppShell({
                 onToggleComplete={handleToggle}
                 onOpenPrompt={(topic, link, weekLabel) => setPrompt({ topic, link, week: weekLabel })}
                 onOpenQuiz={(resource, week) => setQuizTarget({ resource, week })}
-                onAddEvidence={(id) => {
-                  setEvidenceWeek(id)
-                  setEvidenceOpen(true)
-                }}
+                onAddEvidence={(id) => openEvidenceModal(id)}
+                onEditEvidence={(evidence) => openEvidenceModal(evidence.week, evidence)}
+                onDeleteEvidence={confirmDeleteEvidence}
               />
               <WeekEvaluationPanel
                 weekId={week.id}
@@ -587,10 +646,7 @@ function AppShell({
                   <Button
                     type="primary"
                     icon={<PlusOutlined />}
-                    onClick={() => {
-                      setEvidenceWeek(1)
-                      setEvidenceOpen(true)
-                    }}
+                    onClick={() => openEvidenceModal(1)}
                   >
                     Nova evidência
                   </Button>
@@ -620,32 +676,30 @@ function AppShell({
                         <Paragraph type="secondary" style={{ fontSize: 12, marginTop: 4 }}>
                           {e.description}
                         </Paragraph>
-                        <Space>
+                        <Space wrap>
                           {e.url && (
                             <Button size="small" icon={<LinkOutlined />} href={e.url} target="_blank" rel="noreferrer">
                               Abrir
                             </Button>
                           )}
                           {!readOnly && (
-                            <Button
-                              size="small"
-                              danger
-                              icon={<DeleteOutlined />}
-                              onClick={() => {
-                                modal.confirm({
-                                  title: 'Remover esta evidência?',
-                                  okText: 'Remover',
-                                  okButtonProps: { danger: true },
-                                  cancelText: 'Cancelar',
-                                  onOk: async () => {
-                                    await deleteEvidence(e.id)
-                                    message.success('Evidência removida.')
-                                  },
-                                })
-                              }}
-                            >
-                              Excluir
-                            </Button>
+                            <>
+                              <Button
+                                size="small"
+                                icon={<EditOutlined />}
+                                onClick={() => openEvidenceModal(e.week, e)}
+                              >
+                                Editar
+                              </Button>
+                              <Button
+                                size="small"
+                                danger
+                                icon={<DeleteOutlined />}
+                                onClick={() => confirmDeleteEvidence(e)}
+                              >
+                                Excluir
+                              </Button>
+                            </>
                           )}
                         </Space>
                       </Card>
@@ -669,24 +723,44 @@ function AppShell({
               }
             }}
           />
+
+          {isAdmin && (
+            <BackOfficePanel
+              stats={backOfficeStats}
+              loading={backOfficeLoading}
+              error={backOfficeError}
+              onReload={onReloadBackOffice}
+              onSelectLearner={(userId) => {
+                onSelectLearner(userId)
+                document.getElementById('overview')?.scrollIntoView({ behavior: 'smooth' })
+                message.info('Participante selecionado no header.')
+              }}
+            />
+          )}
         </Content>
       </Layout>
 
       <Modal
         open={evidenceOpen}
-        title="Nova evidência"
-        onCancel={() => setEvidenceOpen(false)}
+        title={editingEvidence ? 'Editar evidência' : 'Nova evidência'}
+        onCancel={closeEvidenceModal}
         footer={null}
         destroyOnHidden
       >
         <EvidenceForm
           defaultWeek={evidenceWeek}
+          initialEvidence={editingEvidence}
           loading={saveStatus === 'saving'}
-          onCancel={() => setEvidenceOpen(false)}
+          onCancel={closeEvidenceModal}
           onSubmit={async (input) => {
-            await addEvidence(input)
-            setEvidenceOpen(false)
-            message.success('Evidência registrada.')
+            if (editingEvidence) {
+              await updateEvidence(editingEvidence.id, input)
+              message.success('Evidência atualizada.')
+            } else {
+              await addEvidence(input)
+              message.success('Evidência registrada.')
+            }
+            closeEvidenceModal()
           }}
         />
       </Modal>
@@ -696,17 +770,18 @@ function AppShell({
         title={quizTarget ? `Teste — ${quizTarget.resource.title}` : 'Mini teste'}
         onCancel={() => setQuizTarget(null)}
         footer={null}
-        destroyOnHidden
+        destroyOnClose
       >
         {quizTarget && (
           <QuizForm
+            key={quizTarget.resource.id}
             title={quizTarget.resource.title}
             questions={getResourceQuiz(quizTarget.resource.id)}
             onSubmit={async (score) => {
               await saveQuiz(quizTarget.resource.id, score)
               message.success('Teste corrigido e salvo.')
-              setQuizTarget(null)
             }}
+            onClose={() => setQuizTarget(null)}
           />
         )}
       </Modal>
