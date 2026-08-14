@@ -4,6 +4,7 @@ export interface Profile {
   userId: string
   email: string
   role: UserRole
+  active: boolean
 }
 
 export type EvaluationScope = 'week' | 'final'

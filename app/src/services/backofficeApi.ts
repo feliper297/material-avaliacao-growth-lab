@@ -1,6 +1,6 @@
 import { ALL_RESOURCE_IDS } from '../../shared/data/weeks'
 import { getOverallProgress } from '../../shared/domain/progress'
-import type { BackOfficeStats, BackOfficeUserRow } from '../../shared/types/backoffice'
+import type { BackOfficeStats, BackOfficeUserRow, UpdateBackOfficeUserInput } from '../../shared/types/backoffice'
 import type { Profile } from '../../shared/types/evaluation'
 import { supabase } from '../lib/supabase'
 
@@ -10,7 +10,7 @@ export const backofficeApi = {
     if (!user) throw new Error('Usuário não autenticado.')
 
     const [profilesRes, statesRes, evidencesRes, evaluationsRes] = await Promise.all([
-      supabase.from('profiles').select('user_id, email, role').order('email'),
+      supabase.from('profiles').select('user_id, email, role, active').order('email'),
       supabase.from('user_state').select('user_id, completed, quizzes, updated_at'),
       supabase.from('evidences').select('user_id'),
       supabase.from('evaluations').select('learner_id, scope, week'),
@@ -25,6 +25,7 @@ export const backofficeApi = {
       userId: row.user_id,
       email: row.email,
       role: row.role as Profile['role'],
+      active: row.active ?? true,
     }))
 
     const stateByUser = new Map<
@@ -65,6 +66,7 @@ export const backofficeApi = {
         userId: profile.userId,
         email: profile.email,
         role: profile.role,
+        active: profile.active,
         completedCount,
         evidenceCount,
         quizCount,
@@ -89,5 +91,21 @@ export const backofficeApi = {
       totalQuizzesCompleted: learners.reduce((sum, u) => sum + u.quizCount, 0),
       users,
     }
+  },
+
+  async updateUser(input: UpdateBackOfficeUserInput): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Usuário não autenticado.')
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        email: input.email.trim(),
+        role: input.role,
+        active: input.active,
+      })
+      .eq('user_id', input.userId)
+
+    if (error) throw new Error(error.message)
   },
 }

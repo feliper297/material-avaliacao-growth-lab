@@ -41,12 +41,17 @@ export const evaluationApi = {
     const { data, error } = await supabase
       .from('profiles')
       .upsert({ user_id: user.id, email, role }, { onConflict: 'user_id' })
-      .select('user_id, email, role')
+      .select('user_id, email, role, active')
       .single()
 
     if (error) throw new Error(error.message)
 
-    return { userId: data.user_id, email: data.email, role: data.role as Profile['role'] }
+    return {
+      userId: data.user_id,
+      email: data.email,
+      role: data.role as Profile['role'],
+      active: data.active ?? true,
+    }
   },
 
   async getProfile(): Promise<Profile | null> {
@@ -55,20 +60,25 @@ export const evaluationApi = {
 
     const { data, error } = await supabase
       .from('profiles')
-      .select('user_id, email, role')
+      .select('user_id, email, role, active')
       .eq('user_id', user.id)
       .maybeSingle()
 
     if (error) throw new Error(error.message)
     if (!data) return null
 
-    return { userId: data.user_id, email: data.email, role: data.role as Profile['role'] }
+    return {
+      userId: data.user_id,
+      email: data.email,
+      role: data.role as Profile['role'],
+      active: data.active ?? true,
+    }
   },
 
   async listLearners(): Promise<Profile[]> {
     const { data, error } = await supabase
       .from('profiles')
-      .select('user_id, email, role')
+      .select('user_id, email, role, active')
       .eq('role', 'learner')
       .order('email')
 
@@ -78,6 +88,7 @@ export const evaluationApi = {
       userId: row.user_id,
       email: row.email,
       role: row.role as Profile['role'],
+      active: row.active ?? true,
     }))
   },
 

@@ -4,6 +4,7 @@ export interface BackOfficeUserRow {
   userId: string
   email: string
   role: UserRole
+  active: boolean
   completedCount: number
   evidenceCount: number
   quizCount: number
@@ -21,4 +22,11 @@ export interface BackOfficeStats {
   totalEvaluations: number
   totalQuizzesCompleted: number
   users: BackOfficeUserRow[]
+}
+
+export interface UpdateBackOfficeUserInput {
+  userId: string
+  email: string
+  role: UserRole
+  active: boolean
 }
