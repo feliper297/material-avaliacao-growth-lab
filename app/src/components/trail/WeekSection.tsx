@@ -204,7 +204,7 @@ export function WeekSection({
                           <Space size={8} wrap style={{ flex: 1 }}>
                             {!quizDone && resourceQuiz.length > 0 && (
                               <Button
-                                type="primary"
+                                type="text"
                                 icon={<QuestionCircleOutlined />}
                                 aria-label={`Fazer teste de ${resource.title}`}
                                 disabled={readOnly}
@@ -224,7 +224,7 @@ export function WeekSection({
                               Abrir
                             </Button>
                             <Button
-                              type="text"
+                              type="primary"
                               icon={<RobotOutlined />}
                               aria-label={`Estudar ${resource.title} com IA`}
                               onClick={() => onOpenPrompt(resource.topic, resource.url, `Semana ${week.id} — ${week.title}`)}
