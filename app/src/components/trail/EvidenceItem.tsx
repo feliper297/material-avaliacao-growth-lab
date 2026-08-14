@@ -124,11 +124,10 @@ interface QuizResultSummaryProps {
   title: string
   score: number
   total: number
-  canReview?: boolean
   onReview?: () => void
 }
 
-export function QuizResultSummary({ title, score, total, canReview = false, onReview }: QuizResultSummaryProps) {
+export function QuizResultSummary({ title, score, total, onReview }: QuizResultSummaryProps) {
   const { token } = antdTheme.useToken()
 
   return (
@@ -151,10 +150,11 @@ export function QuizResultSummary({ title, score, total, canReview = false, onRe
         </Text>
         <QuizScoreTag score={score} total={total} />
       </div>
-      {canReview && onReview && (
+      {onReview && (
         <Tooltip title="Revisar teste">
           <Button
-            type="text"
+            type="default"
+            size="small"
             aria-label={`Revisar teste ${title}`}
             icon={<EyeOutlined />}
             onClick={onReview}

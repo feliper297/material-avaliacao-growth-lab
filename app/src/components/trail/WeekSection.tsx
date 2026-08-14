@@ -82,7 +82,7 @@ export function WeekSection({
   const progress = getWeekProgress(week, store)
   const accent = weekAccentHex(week.id)
   const [expanded, setExpanded] = useState(progress < 100)
-  const [quizReview, setQuizReview] = useState<{ resource: TrailResource; answers: number[] } | null>(null)
+  const [quizReview, setQuizReview] = useState<{ resource: TrailResource; score: number; answers?: number[] } | null>(null)
   const weekEvidences = store.evidences.filter((evidence) => evidence.week === week.id)
   const weekQuizResults = week.resources
     .map((resource) => {
@@ -296,10 +296,7 @@ export function WeekSection({
                       title={resource.title}
                       score={score}
                       total={total}
-                      canReview={answers != null && answers.length === total}
-                      onReview={() => {
-                        if (answers) setQuizReview({ resource, answers })
-                      }}
+                      onReview={() => setQuizReview({ resource, score, answers })}
                     />
                   ))}
                 </div>
@@ -357,6 +354,7 @@ export function WeekSection({
           <QuizReview
             title={quizReview.resource.title}
             questions={getResourceQuiz(quizReview.resource.id)}
+            score={quizReview.score}
             answers={quizReview.answers}
           />
         )}
