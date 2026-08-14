@@ -129,9 +129,10 @@ export const supabaseApi = {
       .eq('id', id)
       .eq('user_id', user.id)
       .select('id, week, type, title, url, description, created_at')
-      .single()
+      .maybeSingle()
 
     if (error) throw new Error(error.message)
+    if (!data) throw new Error('Evidência não encontrada ou sem permissão para editar.')
 
     return {
       id: data.id,
