@@ -1,5 +1,5 @@
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons'
-import { Alert, Space, Tag, Typography, theme as antdTheme } from 'antd'
+import { Alert, Button, Space, Tag, Typography, theme as antdTheme } from 'antd'
 import type { QuizItem } from '../../../shared/data/weeks'
 
 const { Text, Paragraph } = Typography
@@ -9,11 +9,13 @@ interface QuizReviewProps {
   questions: QuizItem[]
   score: number
   answers?: number[]
+  isLegacy?: boolean
+  onRetake?: () => void
 }
 
-export function QuizReview({ title, questions, score, answers }: QuizReviewProps) {
+export function QuizReview({ title, questions, score, answers, isLegacy = false, onRetake }: QuizReviewProps) {
   const { token } = antdTheme.useToken()
-  const hasDetailedAnswers = answers != null && answers.length === questions.length
+  const hasDetailedAnswers = !isLegacy && answers != null && answers.length === questions.length
   const computedScore = hasDetailedAnswers
     ? questions.reduce((sum, item, index) => sum + (answers[index] === item.answer ? 1 : 0), 0)
     : score
@@ -28,13 +30,20 @@ export function QuizReview({ title, questions, score, answers }: QuizReviewProps
         style={{ marginBottom: 16 }}
       />
 
-      {!hasDetailedAnswers && (
+      {isLegacy && (
         <Alert
-          type="info"
+          type="warning"
           showIcon
-          title="Revisão parcial"
-          description="Este teste foi salvo antes do registro detalhado das respostas. Abaixo estão as questões com a alternativa correta de cada uma."
+          title="Revisão detalhada indisponível para este teste"
+          description="Este teste foi salvo apenas com a nota final. Refaça o teste para registrar suas respostas e ver exatamente quais questões você acertou ou errou."
           style={{ marginBottom: 16 }}
+          action={
+            onRetake ? (
+              <Button size="small" type="primary" onClick={onRetake}>
+                Refazer teste
+              </Button>
+            ) : undefined
+          }
         />
       )}
 
@@ -51,17 +60,17 @@ export function QuizReview({ title, questions, score, answers }: QuizReviewProps
                 padding: '12px 14px',
                 borderRadius: token.borderRadiusLG,
                 border: `1px solid ${
-                  !hasDetailedAnswers
-                    ? token.colorBorderSecondary
-                    : isCorrect
+                  hasDetailedAnswers
+                    ? isCorrect
                       ? token.colorSuccessBorder
                       : token.colorErrorBorder
+                    : token.colorBorderSecondary
                 }`,
-                background: !hasDetailedAnswers
-                  ? token.colorFillAlter
-                  : isCorrect
+                background: hasDetailedAnswers
+                  ? isCorrect
                     ? token.colorSuccessBg
-                    : token.colorErrorBg,
+                    : token.colorErrorBg
+                  : token.colorFillAlter,
               }}
             >
               <Space align="start" size={8} style={{ marginBottom: 10 }}>
@@ -92,12 +101,17 @@ export function QuizReview({ title, questions, score, answers }: QuizReviewProps
                   let borderColor = token.colorBorderSecondary
                   let background = token.colorBgContainer
 
-                  if (isCorrectOption) {
-                    borderColor = token.colorSuccess
-                    background = token.colorSuccessBg
-                  } else if (isSelected && isWrong) {
-                    borderColor = token.colorError
-                    background = token.colorErrorBg
+                  if (hasDetailedAnswers) {
+                    if (isCorrectOption) {
+                      borderColor = token.colorSuccess
+                      background = token.colorSuccessBg
+                    } else if (isSelected && isWrong) {
+                      borderColor = token.colorError
+                      background = token.colorErrorBg
+                    }
+                  } else if (isCorrectOption) {
+                    borderColor = token.colorBorder
+                    background = token.colorFillAlter
                   }
 
                   return (
@@ -111,11 +125,22 @@ export function QuizReview({ title, questions, score, answers }: QuizReviewProps
                       }}
                     >
                       <Space wrap size={[8, 4]}>
-                        <Text style={{ color: isSelected || isCorrectOption ? token.colorText : token.colorTextSecondary }}>
+                        <Text
+                          style={{
+                            color:
+                              hasDetailedAnswers && (isSelected || isCorrectOption)
+                                ? token.colorText
+                                : isCorrectOption && isLegacy
+                                  ? token.colorText
+                                  : token.colorTextSecondary,
+                          }}
+                        >
                           {option}
                         </Text>
                         {isSelected && <Tag color={isCorrect ? 'success' : 'error'}>Sua resposta</Tag>}
-                        {isCorrectOption && <Tag color="success">Resposta correta</Tag>}
+                        {isCorrectOption && (
+                          <Tag color={hasDetailedAnswers ? 'success' : 'default'}>Resposta correta</Tag>
+                        )}
                       </Space>
                     </div>
                   )

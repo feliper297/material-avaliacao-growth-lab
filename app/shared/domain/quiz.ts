@@ -14,6 +14,18 @@ export function hasQuizResult(value: QuizResults[string] | undefined): boolean {
   return value != null
 }
 
+export function isLegacyQuizResult(value: QuizResults[string] | undefined): boolean {
+  return typeof value === 'number'
+}
+
+export function hasDetailedQuizResult(
+  value: QuizResults[string] | undefined,
+  questionCount: number,
+): boolean {
+  const answers = getQuizAnswers(value)
+  return answers != null && answers.length === questionCount
+}
+
 export function createQuizResult(score: number, answers: number[]): QuizResult {
   return {
     score,

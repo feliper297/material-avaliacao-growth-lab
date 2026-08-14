@@ -25,7 +25,7 @@ import { Alert, Avatar, Button, Card, Col, List, Modal, Progress, Row, Space, Ta
 import { useState, type ComponentType } from 'react'
 import { weekAccentHex, type TrailResource, type TrailWeek } from '../../../shared/data/weeks'
 import { getResourceQuiz } from '../../../shared/data/resource-quizzes'
-import { getQuizAnswers, getQuizScore } from '../../../shared/domain/quiz'
+import { getQuizAnswers, getQuizScore, hasDetailedQuizResult, isLegacyQuizResult } from '../../../shared/domain/quiz'
 import type { AppStore, Evidence } from '../../../shared/types/store'
 import { getWeekProgress } from '../../../shared/domain/progress'
 import { EvidenceItem, InlineQuizResult, QuizResultSummary } from './EvidenceItem'
@@ -82,21 +82,38 @@ export function WeekSection({
   const progress = getWeekProgress(week, store)
   const accent = weekAccentHex(week.id)
   const [expanded, setExpanded] = useState(progress < 100)
-  const [quizReview, setQuizReview] = useState<{ resource: TrailResource; score: number; answers?: number[] } | null>(null)
+  const [quizReview, setQuizReview] = useState<{
+    resource: TrailResource
+    score: number
+    answers?: number[]
+    isLegacy: boolean
+  } | null>(null)
   const weekEvidences = store.evidences.filter((evidence) => evidence.week === week.id)
   const weekQuizResults = week.resources
     .map((resource) => {
       const raw = store.quizzes[resource.id]
       const score = getQuizScore(raw)
       if (score == null) return null
+      const total = getResourceQuiz(resource.id).length
       return {
         resource,
         score,
-        total: getResourceQuiz(resource.id).length,
+        total,
         answers: getQuizAnswers(raw),
+        isLegacy: isLegacyQuizResult(raw) || !hasDetailedQuizResult(raw, total),
       }
     })
-    .filter((entry): entry is { resource: TrailResource; score: number; total: number; answers: number[] | undefined } => entry != null)
+    .filter(
+      (
+        entry,
+      ): entry is {
+        resource: TrailResource
+        score: number
+        total: number
+        answers: number[] | undefined
+        isLegacy: boolean
+      } => entry != null,
+    )
 
   return (
     <div id={`week-${week.id}`} style={{ scrollMarginTop: 96, marginTop: 24 }}>
@@ -169,9 +186,12 @@ export function WeekSection({
             <Space orientation="vertical" size={12} style={{ width: '100%' }}>
               {week.resources.map((resource) => {
                 const completed = store.completed.includes(resource.id)
+                const rawQuiz = store.quizzes[resource.id]
                 const resourceQuiz = getResourceQuiz(resource.id)
-                const quizScore = getQuizScore(store.quizzes[resource.id])
-                const quizDone = quizScore != null
+                const quizScore = getQuizScore(rawQuiz)
+                const hasDetailedQuiz = hasDetailedQuizResult(rawQuiz, resourceQuiz.length)
+                const hasQuizAttempt = quizScore != null
+                const canRetakeQuiz = hasQuizAttempt && !hasDetailedQuiz
 
                 return (
                   <Card key={resource.id} size="small">
@@ -202,7 +222,7 @@ export function WeekSection({
                           }}
                         >
                           <Space size={8} wrap style={{ flex: 1 }}>
-                            {!quizDone && resourceQuiz.length > 0 && (
+                            {(!hasQuizAttempt || canRetakeQuiz) && resourceQuiz.length > 0 && (
                               <Button
                                 type="text"
                                 icon={<QuestionCircleOutlined />}
@@ -210,7 +230,7 @@ export function WeekSection({
                                 disabled={readOnly}
                                 onClick={() => onOpenQuiz(resource, week)}
                               >
-                                Fazer teste
+                                {canRetakeQuiz ? 'Refazer teste' : 'Fazer teste'}
                               </Button>
                             )}
                             <Button
@@ -244,7 +264,7 @@ export function WeekSection({
                             onClick={() => onToggleComplete(resource.id)}
                           />
                         </div>
-                        {quizDone && <InlineQuizResult score={quizScore} total={resourceQuiz.length} />}
+                        {hasQuizAttempt && <InlineQuizResult score={quizScore} total={resourceQuiz.length} />}
                       </div>
                     </div>
                   </Card>
@@ -290,13 +310,13 @@ export function WeekSection({
 
               {weekQuizResults.length > 0 && (
                 <div style={{ marginTop: 12 }}>
-                  {weekQuizResults.map(({ resource, score, total, answers }) => (
+                  {weekQuizResults.map(({ resource, score, total, answers, isLegacy }) => (
                     <QuizResultSummary
                       key={resource.id}
                       title={resource.title}
                       score={score}
                       total={total}
-                      onReview={() => setQuizReview({ resource, score, answers })}
+                      onReview={() => setQuizReview({ resource, score, answers, isLegacy })}
                     />
                   ))}
                 </div>
@@ -356,6 +376,15 @@ export function WeekSection({
             questions={getResourceQuiz(quizReview.resource.id)}
             score={quizReview.score}
             answers={quizReview.answers}
+            isLegacy={quizReview.isLegacy}
+            onRetake={
+              readOnly
+                ? undefined
+                : () => {
+                    setQuizReview(null)
+                    onOpenQuiz(quizReview.resource, week)
+                  }
+            }
           />
         )}
       </Modal>
