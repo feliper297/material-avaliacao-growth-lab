@@ -259,7 +259,7 @@ function AppShell({
   const contentRef = useRef<HTMLDivElement>(null)
 
   const progress = useMemo(
-    () => getOverallProgress(store.completed.length, ALL_RESOURCE_IDS.length, store.evidences.length),
+    () => getOverallProgress(store.completed.length, ALL_RESOURCE_IDS.length),
     [store],
   )
 

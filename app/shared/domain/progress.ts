@@ -4,18 +4,9 @@ export function getAllResourceIds(weekResources: { id: string }[][]): string[] {
   return weekResources.flat().map((r) => r.id)
 }
 
-export function getOverallProgress(
-  completedCount: number,
-  totalResources: number,
-  evidenceCount: number,
-  targetEvidence = 8,
-): number {
+export function getOverallProgress(completedCount: number, totalResources: number): number {
   if (totalResources === 0) return 0
-  const resourceWeight = 70
-  const evidenceWeight = 30
-  const resourcePart = (completedCount / totalResources) * resourceWeight
-  const evidencePart = Math.min(evidenceCount / targetEvidence, 1) * evidenceWeight
-  return Math.round(resourcePart + evidencePart)
+  return Math.round((completedCount / totalResources) * 100)
 }
 
 export function getWeekProgress(

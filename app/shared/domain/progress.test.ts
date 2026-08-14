@@ -3,12 +3,13 @@ import { calculateAverage, getOverallProgress, getWeekProgress } from './progres
 
 describe('getOverallProgress', () => {
   it('returns 0 when no resources', () => {
-    expect(getOverallProgress(0, 0, 0)).toBe(0)
+    expect(getOverallProgress(0, 0)).toBe(0)
   })
 
-  it('weights resources 70% and evidence 30%', () => {
-    expect(getOverallProgress(13, 13, 8)).toBe(100)
-    expect(getOverallProgress(0, 13, 0)).toBe(0)
+  it('reflects only completed contents', () => {
+    expect(getOverallProgress(14, 14)).toBe(100)
+    expect(getOverallProgress(0, 14)).toBe(0)
+    expect(getOverallProgress(4, 14)).toBe(29)
   })
 })
 

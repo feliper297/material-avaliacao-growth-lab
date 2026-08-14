@@ -72,7 +72,7 @@ export const backofficeApi = {
         quizCount,
         progressPercent:
           profile.role === 'learner'
-            ? getOverallProgress(completedCount, ALL_RESOURCE_IDS.length, evidenceCount)
+            ? getOverallProgress(completedCount, ALL_RESOURCE_IDS.length)
             : 0,
         weekEvaluations: weekEvaluationsByUser.get(profile.userId) ?? 0,
         hasFinalEvaluation: finalEvaluationByUser.has(profile.userId),

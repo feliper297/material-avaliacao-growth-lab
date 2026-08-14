@@ -20,7 +20,7 @@ function sanitize(text: string): string {
 }
 
 export function exportProgressPdf(store: AppStore, userEmail?: string): void {
-  const progress = getOverallProgress(store.completed.length, ALL_RESOURCE_IDS.length, store.evidences.length)
+  const progress = getOverallProgress(store.completed.length, ALL_RESOURCE_IDS.length)
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
   const margin = 14
   let y = margin
@@ -142,7 +142,7 @@ export function exportProgressPdf(store: AppStore, userEmail?: string): void {
 }
 
 export function openPrintReport(store: AppStore, userEmail?: string): void {
-  const progress = getOverallProgress(store.completed.length, ALL_RESOURCE_IDS.length, store.evidences.length)
+  const progress = getOverallProgress(store.completed.length, ALL_RESOURCE_IDS.length)
   const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700')
   if (!printWindow) {
     window.print()
