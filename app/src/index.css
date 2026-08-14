@@ -63,19 +63,6 @@ body {
   margin-top: 16px;
 }
 
-.cycle-map-steps .ant-steps-item-finish .ant-steps-item-icon {
-  background-color: #237804 !important;
-  border-color: #237804 !important;
-}
-
-.cycle-map-steps .ant-steps-item-finish .ant-steps-item-icon .ant-steps-icon {
-  color: #fff !important;
-}
-
-.cycle-map-steps .ant-steps-item-finish > .ant-steps-item-container > .ant-steps-item-content > .ant-steps-item-title {
-  color: rgba(0, 0, 0, 0.88);
-}
-
 .evaluation-score-slider .ant-slider-rail,
 .evaluation-score-slider .ant-slider-track {
   height: 4px;

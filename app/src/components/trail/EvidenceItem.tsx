@@ -1,5 +1,5 @@
-import { DeleteOutlined, EditOutlined, FileSearchOutlined, LinkOutlined } from '@ant-design/icons'
-import { Button, Space, Tag, Typography, theme as antdTheme } from 'antd'
+import { DeleteOutlined, EditOutlined, EyeOutlined, FileSearchOutlined, LinkOutlined } from '@ant-design/icons'
+import { Button, Space, Tag, Tooltip, Typography, theme as antdTheme } from 'antd'
 import type { Evidence } from '../../../shared/types/store'
 
 const { Text, Paragraph } = Typography
@@ -124,14 +124,20 @@ interface QuizResultSummaryProps {
   title: string
   score: number
   total: number
+  canReview?: boolean
+  onReview?: () => void
 }
 
-export function QuizResultSummary({ title, score, total }: QuizResultSummaryProps) {
+export function QuizResultSummary({ title, score, total, canReview = false, onReview }: QuizResultSummaryProps) {
   const { token } = antdTheme.useToken()
 
   return (
     <div
       style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
         padding: '10px 12px',
         marginBottom: 8,
         borderRadius: token.borderRadius,
@@ -139,10 +145,22 @@ export function QuizResultSummary({ title, score, total }: QuizResultSummaryProp
         border: `1px solid ${token.colorBorderSecondary}`,
       }}
     >
-      <Text strong style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
-        {title}
-      </Text>
-      <QuizScoreTag score={score} total={total} />
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <Text strong style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
+          {title}
+        </Text>
+        <QuizScoreTag score={score} total={total} />
+      </div>
+      {canReview && onReview && (
+        <Tooltip title="Revisar teste">
+          <Button
+            type="text"
+            aria-label={`Revisar teste ${title}`}
+            icon={<EyeOutlined />}
+            onClick={onReview}
+          />
+        </Tooltip>
+      )}
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { ALL_RESOURCE_IDS, WEEKS } from '../../shared/data/weeks'
 import { getCycleStatus, getOverallProgress, getWeekProgress } from '../../shared/domain/progress'
+import { getQuizScore } from '../../shared/domain/quiz'
 import type { AppStore } from '../../shared/types/store'
 
 function sanitize(text: string): string {
@@ -107,7 +108,7 @@ export function exportProgressPdf(store: AppStore, userEmail?: string): void {
       .map((r) => ({
         week: week.id,
         title: r.title,
-        score: store.quizzes[r.id]!,
+        score: getQuizScore(store.quizzes[r.id]) ?? 0,
         total: 3,
       })),
   )
@@ -154,7 +155,7 @@ export function openPrintReport(store: AppStore, userEmail?: string): void {
       .filter((r) => store.quizzes[r.id] != null)
       .map(
         (r) =>
-          `<li>${escapeHtml(r.title)}: ${store.quizzes[r.id]}/3 acertos</li>`,
+          `<li>${escapeHtml(r.title)}: ${getQuizScore(store.quizzes[r.id]) ?? 0}/3 acertos</li>`,
       )
       .join('')
     const evidences = store.evidences

@@ -8,11 +8,20 @@ export interface Evidence {
   createdAt: string
 }
 
+export interface QuizResult {
+  score: number
+  answers: number[]
+  completedAt: string
+}
+
+/** Score legado (number) ou tentativa completa com respostas para revisão. */
+export type QuizResults = Record<string, number | QuizResult>
+
 export interface AppStore {
   completed: string[]
   evidences: Evidence[]
   scores: Record<string, number>
-  quizzes: Record<string, number>
+  quizzes: QuizResults
   theme: 'light' | 'dark'
 }
 

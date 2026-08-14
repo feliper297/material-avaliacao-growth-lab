@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { AppStore } from '../../shared/types/store'
 import type { EvidenceInput } from '../../shared/domain/evidence'
+import { createQuizResult } from '../../shared/domain/quiz'
 import { DEFAULT_STORE } from '../../shared/types/store'
 import { supabaseApi as api } from '../services/supabaseApi'
 
@@ -141,9 +142,12 @@ export function useStore(userId: string | null, options: UseStoreOptions = {}) {
   )
 
   const saveQuiz = useCallback(
-    async (resourceId: string, score: number) => {
+    async (resourceId: string, score: number, answers: number[]) => {
       if (readOnly) return
-      await persist({ ...store, quizzes: { ...store.quizzes, [resourceId]: score } })
+      await persist({
+        ...store,
+        quizzes: { ...store.quizzes, [resourceId]: createQuizResult(score, answers) },
+      })
     },
     [persist, readOnly, store],
   )

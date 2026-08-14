@@ -5,7 +5,7 @@ import type { QuizItem } from '../../../shared/data/weeks'
 interface QuizFormProps {
   title: string
   questions: QuizItem[]
-  onSubmit: (score: number) => Promise<void>
+  onSubmit: (score: number, answers: number[]) => Promise<void>
   onClose: () => void
 }
 
@@ -17,14 +17,15 @@ export function QuizForm({ title, questions, onSubmit, onClose }: QuizFormProps)
 
   async function handleFinish(values: Record<string, number>) {
     setSubmitError(null)
+    const answers = questions.map((_, qi) => values[`q${qi}`])
     let score = 0
     questions.forEach((item, qi) => {
-      if (values[`q${qi}`] === item.answer) score++
+      if (answers[qi] === item.answer) score++
     })
 
     setSubmitting(true)
     try {
-      await onSubmit(score)
+      await onSubmit(score, answers)
       const errors = questions.length - score
       setSubmitted(true)
       setResult({

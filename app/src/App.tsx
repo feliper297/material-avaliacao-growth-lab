@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef, type ReactNode } from 'react'
+import { useMemo, useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
 import {
   App as AntApp,
   Avatar,
@@ -36,12 +36,9 @@ import {
   CheckOutlined,
   CompassOutlined,
   DashboardOutlined,
-  DeleteOutlined,
   DownloadOutlined,
-  EditOutlined,
   FileSearchOutlined,
   HomeOutlined,
-  LinkOutlined,
   LogoutOutlined,
   PlusOutlined,
   PrinterOutlined,
@@ -278,10 +275,36 @@ function AppShell({
         title: `Semana ${w.id}`,
         description: w.title,
         status: isComplete ? ('finish' as const) : isCurrent ? ('process' as const) : ('wait' as const),
-        icon: isComplete ? <CheckOutlined /> : undefined,
       }
     })
   }, [store])
+
+  const renderCycleStepIcon = useCallback(
+    (node: ReactNode, info: { item: { status?: string } }) => {
+      if (info.item.status !== 'finish') return node
+
+      return (
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: token.controlHeightSM,
+            height: token.controlHeightSM,
+            borderRadius: '50%',
+            backgroundColor: token.colorSuccess,
+            border: `${token.lineWidth}px solid ${token.colorSuccess}`,
+            color: token.colorWhite,
+            fontSize: token.fontSizeSM,
+            lineHeight: 1,
+          }}
+        >
+          <CheckOutlined />
+        </span>
+      )
+    },
+    [token],
+  )
 
   const navItems = useMemo(() => {
     const items = [...BASE_NAV_ITEMS]
@@ -604,11 +627,12 @@ function AppShell({
                     4 semanas · quatro checkpoints
                   </Text>
                   <Steps
-                    className="cycle-map-steps"
+                    variant="filled"
                     orientation="vertical"
                     size="small"
                     style={{ marginTop: 16 }}
                     items={cycleStepItems}
+                    iconRender={renderCycleStepIcon}
                   />
                 </Card>
               </Col>
@@ -708,35 +732,9 @@ function AppShell({
                         }
                       >
                         <Text strong>{e.title}</Text>
-                        <Paragraph type="secondary" style={{ fontSize: 12, marginTop: 4 }}>
+                        <Paragraph type="secondary" style={{ fontSize: 12, marginTop: 4, marginBottom: 0 }}>
                           {e.description}
                         </Paragraph>
-                        <Space wrap>
-                          {e.url && (
-                            <Button size="small" icon={<LinkOutlined />} href={e.url} target="_blank" rel="noreferrer">
-                              Abrir
-                            </Button>
-                          )}
-                          {!readOnly && (
-                            <>
-                              <Button
-                                size="small"
-                                icon={<EditOutlined />}
-                                onClick={() => openEvidenceModal(e.week, e)}
-                              >
-                                Editar
-                              </Button>
-                              <Button
-                                size="small"
-                                danger
-                                icon={<DeleteOutlined />}
-                                onClick={() => confirmDeleteEvidence(e)}
-                              >
-                                Excluir
-                              </Button>
-                            </>
-                          )}
-                        </Space>
                       </Card>
                     </Col>
                   ))}
@@ -801,8 +799,8 @@ function AppShell({
             key={quizTarget.resource.id}
             title={quizTarget.resource.title}
             questions={getResourceQuiz(quizTarget.resource.id)}
-            onSubmit={async (score) => {
-              await saveQuiz(quizTarget.resource.id, score)
+            onSubmit={async (score, answers) => {
+              await saveQuiz(quizTarget.resource.id, score, answers)
               message.success('Teste corrigido e salvo.')
             }}
             onClose={() => setQuizTarget(null)}

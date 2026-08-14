@@ -21,13 +21,15 @@ import {
   TableOutlined,
   UpOutlined,
 } from '@ant-design/icons'
-import { Alert, Avatar, Button, Card, Col, List, Progress, Row, Space, Tag, Typography, theme as antdTheme } from 'antd'
+import { Alert, Avatar, Button, Card, Col, List, Modal, Progress, Row, Space, Tag, Typography, theme as antdTheme } from 'antd'
 import { useState, type ComponentType } from 'react'
 import { weekAccentHex, type TrailResource, type TrailWeek } from '../../../shared/data/weeks'
 import { getResourceQuiz } from '../../../shared/data/resource-quizzes'
+import { getQuizAnswers, getQuizScore } from '../../../shared/domain/quiz'
 import type { AppStore, Evidence } from '../../../shared/types/store'
 import { getWeekProgress } from '../../../shared/domain/progress'
 import { EvidenceItem, InlineQuizResult, QuizResultSummary } from './EvidenceItem'
+import { QuizReview } from './QuizReview'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -80,14 +82,21 @@ export function WeekSection({
   const progress = getWeekProgress(week, store)
   const accent = weekAccentHex(week.id)
   const [expanded, setExpanded] = useState(progress < 100)
+  const [quizReview, setQuizReview] = useState<{ resource: TrailResource; answers: number[] } | null>(null)
   const weekEvidences = store.evidences.filter((evidence) => evidence.week === week.id)
   const weekQuizResults = week.resources
-    .map((resource) => ({
-      resource,
-      score: store.quizzes[resource.id],
-      total: getResourceQuiz(resource.id).length,
-    }))
-    .filter((entry): entry is { resource: TrailResource; score: number; total: number } => entry.score != null)
+    .map((resource) => {
+      const raw = store.quizzes[resource.id]
+      const score = getQuizScore(raw)
+      if (score == null) return null
+      return {
+        resource,
+        score,
+        total: getResourceQuiz(resource.id).length,
+        answers: getQuizAnswers(raw),
+      }
+    })
+    .filter((entry): entry is { resource: TrailResource; score: number; total: number; answers: number[] | undefined } => entry != null)
 
   return (
     <div id={`week-${week.id}`} style={{ scrollMarginTop: 96, marginTop: 24 }}>
@@ -157,25 +166,24 @@ export function WeekSection({
                 {week.resources.length} itens · estudo curto
               </Text>
             </Space>
-            <List
-              itemLayout="horizontal"
-              dataSource={week.resources}
-              renderItem={(resource) => {
+            <Space orientation="vertical" size={12} style={{ width: '100%' }}>
+              {week.resources.map((resource) => {
                 const completed = store.completed.includes(resource.id)
                 const resourceQuiz = getResourceQuiz(resource.id)
-                const quizScore = store.quizzes[resource.id]
+                const quizScore = getQuizScore(store.quizzes[resource.id])
                 const quizDone = quizScore != null
+
                 return (
-                  <List.Item style={{ display: 'block' }}>
-                    <List.Item.Meta
-                      avatar={
-                        <Avatar shape="square" style={{ background: `${accent}1a`, color: accent }}>
-                          {resourceIcon(resource.icon)}
-                        </Avatar>
-                      }
-                      title={resource.title}
-                      description={
-                        <Space size={6} wrap>
+                  <Card key={resource.id} size="small">
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                      <Avatar shape="square" style={{ background: `${accent}1a`, color: accent, flex: 'none' }}>
+                        {resourceIcon(resource.icon)}
+                      </Avatar>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Text strong style={{ display: 'block', marginBottom: 6 }}>
+                          {resource.title}
+                        </Text>
+                        <Space size={6} wrap style={{ marginBottom: 12 }}>
                           <Text type="secondary" style={{ fontSize: 12 }}>
                             {resource.source}
                           </Text>
@@ -185,65 +193,64 @@ export function WeekSection({
                           </Text>
                           <Tag>{resource.type}</Tag>
                         </Space>
-                      }
-                    />
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        alignItems: 'center',
-                        gap: 8,
-                        marginTop: 12,
-                      }}
-                    >
-                      <Space size={8} wrap style={{ flex: 1 }}>
-                        {!quizDone && resourceQuiz.length > 0 && (
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            alignItems: 'center',
+                            gap: 8,
+                          }}
+                        >
+                          <Space size={8} wrap style={{ flex: 1 }}>
+                            {!quizDone && resourceQuiz.length > 0 && (
+                              <Button
+                                type="primary"
+                                icon={<QuestionCircleOutlined />}
+                                aria-label={`Fazer teste de ${resource.title}`}
+                                disabled={readOnly}
+                                onClick={() => onOpenQuiz(resource, week)}
+                              >
+                                Fazer teste
+                              </Button>
+                            )}
+                            <Button
+                              variant="outlined"
+                              icon={<LinkOutlined />}
+                              href={resource.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              aria-label={`Abrir ${resource.title} (${resource.source})`}
+                            >
+                              Abrir
+                            </Button>
+                            <Button
+                              type="text"
+                              icon={<RobotOutlined />}
+                              aria-label={`Estudar ${resource.title} com IA`}
+                              onClick={() => onOpenPrompt(resource.topic, resource.url, `Semana ${week.id} — ${week.title}`)}
+                            >
+                              Estudar com IA
+                            </Button>
+                          </Space>
                           <Button
-                            type="primary"
-                            icon={<QuestionCircleOutlined />}
-                            aria-label={`Fazer teste de ${resource.title}`}
+                            size="small"
+                            shape="circle"
+                            type={completed ? 'primary' : 'default'}
+                            icon={completed ? <CheckOutlined /> : undefined}
+                            style={{ flex: 'none' }}
                             disabled={readOnly}
-                            onClick={() => onOpenQuiz(resource, week)}
-                          >
-                            Fazer teste
-                          </Button>
-                        )}
-                        <Button
-                          variant="outlined"
-                          icon={<LinkOutlined />}
-                          href={resource.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Abrir ${resource.title} (${resource.source})`}
-                        >
-                          Abrir
-                        </Button>
-                        <Button
-                          type="text"
-                          icon={<RobotOutlined />}
-                          aria-label={`Estudar ${resource.title} com IA`}
-                          onClick={() => onOpenPrompt(resource.topic, resource.url, `Semana ${week.id} — ${week.title}`)}
-                        >
-                          Estudar com IA
-                        </Button>
-                      </Space>
-                      <Button
-                        size="small"
-                        shape="circle"
-                        type={completed ? 'primary' : 'default'}
-                        icon={completed ? <CheckOutlined /> : undefined}
-                        style={{ flex: 'none' }}
-                        disabled={readOnly}
-                        aria-label={completed ? `Marcar "${resource.title}" como pendente` : `Marcar "${resource.title}" como concluído`}
-                        aria-pressed={completed}
-                        onClick={() => onToggleComplete(resource.id)}
-                      />
+                            aria-label={completed ? `Marcar "${resource.title}" como pendente` : `Marcar "${resource.title}" como concluído`}
+                            aria-pressed={completed}
+                            onClick={() => onToggleComplete(resource.id)}
+                          />
+                        </div>
+                        {quizDone && <InlineQuizResult score={quizScore} total={resourceQuiz.length} />}
+                      </div>
                     </div>
-                    {quizDone && <InlineQuizResult score={quizScore} total={resourceQuiz.length} />}
-                  </List.Item>
+                  </Card>
                 )
-              }}
-            />
+              })}
+            </Space>
           </Col>
 
           <Col xs={24} lg={8}>
@@ -283,8 +290,17 @@ export function WeekSection({
 
               {weekQuizResults.length > 0 && (
                 <div style={{ marginTop: 12 }}>
-                  {weekQuizResults.map(({ resource, score, total }) => (
-                    <QuizResultSummary key={resource.id} title={resource.title} score={score} total={total} />
+                  {weekQuizResults.map(({ resource, score, total, answers }) => (
+                    <QuizResultSummary
+                      key={resource.id}
+                      title={resource.title}
+                      score={score}
+                      total={total}
+                      canReview={answers != null && answers.length === total}
+                      onReview={() => {
+                        if (answers) setQuizReview({ resource, answers })
+                      }}
+                    />
                   ))}
                 </div>
               )}
@@ -328,6 +344,23 @@ export function WeekSection({
         )}
         </div>
       </Card>
+
+      <Modal
+        open={quizReview != null}
+        title={quizReview ? `Revisão — ${quizReview.resource.title}` : 'Revisão do teste'}
+        onCancel={() => setQuizReview(null)}
+        footer={null}
+        destroyOnClose
+        width={640}
+      >
+        {quizReview && (
+          <QuizReview
+            title={quizReview.resource.title}
+            questions={getResourceQuiz(quizReview.resource.id)}
+            answers={quizReview.answers}
+          />
+        )}
+      </Modal>
     </div>
   )
 }
