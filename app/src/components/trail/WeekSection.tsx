@@ -196,10 +196,10 @@ export function WeekSection({
                         marginTop: 12,
                       }}
                     >
-                      <Space size={8} wrap>
+                      <Space size={8} wrap style={{ flex: 1 }}>
                         {!quizDone && resourceQuiz.length > 0 && (
                           <Button
-                            type="text"
+                            type="primary"
                             icon={<QuestionCircleOutlined />}
                             aria-label={`Fazer teste de ${resource.title}`}
                             disabled={readOnly}
@@ -218,16 +218,15 @@ export function WeekSection({
                         >
                           Abrir
                         </Button>
+                        <Button
+                          type="text"
+                          icon={<RobotOutlined />}
+                          aria-label={`Estudar ${resource.title} com IA`}
+                          onClick={() => onOpenPrompt(resource.topic, resource.url, `Semana ${week.id} — ${week.title}`)}
+                        >
+                          Estudar com IA
+                        </Button>
                       </Space>
-                      <Button
-                        type="primary"
-                        icon={<RobotOutlined />}
-                        aria-label={`Estudar ${resource.title} com IA`}
-                        onClick={() => onOpenPrompt(resource.topic, resource.url, `Semana ${week.id} — ${week.title}`)}
-                        style={{ flex: '0 1 auto' }}
-                      >
-                        Estudar com IA
-                      </Button>
                       <Button
                         size="small"
                         shape="circle"
