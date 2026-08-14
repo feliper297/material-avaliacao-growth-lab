@@ -1,6 +1,7 @@
 import { DeleteOutlined, EditOutlined, EyeOutlined, FileSearchOutlined, LinkOutlined } from '@ant-design/icons'
 import { Button, Space, Tag, Tooltip, Typography, theme as antdTheme } from 'antd'
 import type { Evidence } from '../../../shared/types/store'
+import { linkifyText } from '../../utils/linkifyText'
 
 const { Text, Paragraph } = Typography
 
@@ -62,7 +63,7 @@ export function EvidenceItem({ evidence, accent, readOnly = false, onEdit, onDel
             }}
             ellipsis={{ rows: 3, expandable: true, symbol: 'ver mais' }}
           >
-            {evidence.description}
+            {linkifyText(evidence.description, accent)}
           </Paragraph>
           <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 8 }}>
             {new Date(evidence.createdAt).toLocaleString('pt-BR')}
