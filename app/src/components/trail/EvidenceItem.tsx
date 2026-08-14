@@ -64,15 +64,14 @@ export function EvidenceItem({ evidence, accent, readOnly = false, onEdit, onDel
           >
             {evidence.description}
           </Paragraph>
-          <Space size={12} wrap>
-            <Text type="secondary" style={{ fontSize: 11 }}>
-              {new Date(evidence.createdAt).toLocaleString('pt-BR')}
-            </Text>
+          <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 8 }}>
+            {new Date(evidence.createdAt).toLocaleString('pt-BR')}
+          </Text>
+          <Space size={8} wrap>
             {evidence.url && (
               <Button
                 size="small"
                 type="primary"
-                ghost
                 icon={<LinkOutlined />}
                 href={evidence.url}
                 target="_blank"
@@ -82,12 +81,23 @@ export function EvidenceItem({ evidence, accent, readOnly = false, onEdit, onDel
               </Button>
             )}
             {!readOnly && onEdit && (
-              <Button size="small" icon={<EditOutlined />} onClick={() => onEdit(evidence)}>
+              <Button
+                size="small"
+                variant="outlined"
+                icon={<EditOutlined />}
+                onClick={() => onEdit(evidence)}
+              >
                 Editar
               </Button>
             )}
             {!readOnly && onDelete && (
-              <Button size="small" danger icon={<DeleteOutlined />} onClick={() => onDelete(evidence)}>
+              <Button
+                size="small"
+                type="text"
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => onDelete(evidence)}
+              >
                 Excluir
               </Button>
             )}
