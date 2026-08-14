@@ -37,9 +37,24 @@ export function useBackOffice(enabled: boolean) {
     }
   }, [load])
 
+  const setUserActive = useCallback(async (userId: string, active: boolean) => {
+    setSaving(true)
+    setError(null)
+    try {
+      await backofficeApi.setUserActive(userId, active)
+      await load()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Falha ao atualizar status do usuário.'
+      setError(message)
+      throw new Error(message)
+    } finally {
+      setSaving(false)
+    }
+  }, [load])
+
   useEffect(() => {
     load()
   }, [load])
 
-  return { stats, loading, error, saving, reload: load, updateUser }
+  return { stats, loading, error, saving, reload: load, updateUser, setUserActive }
 }

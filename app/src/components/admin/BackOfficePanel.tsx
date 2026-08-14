@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   DatabaseOutlined,
   ReloadOutlined,
@@ -5,7 +6,23 @@ import {
   TrophyOutlined,
   UserOutlined,
 } from '@ant-design/icons'
-import { Alert, Button, Card, Col, Progress, Row, Space, Spin, Statistic, Table, Tag, Typography } from 'antd'
+import {
+  Alert,
+  App,
+  Button,
+  Card,
+  Col,
+  Popconfirm,
+  Progress,
+  Row,
+  Space,
+  Spin,
+  Statistic,
+  Switch,
+  Table,
+  Tag,
+  Typography,
+} from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import type { BackOfficeStats, BackOfficeUserRow } from '../../../shared/types/backoffice'
 
@@ -15,7 +32,9 @@ interface BackOfficePanelProps {
   stats: BackOfficeStats | null
   loading: boolean
   error: string | null
+  currentUserId?: string
   onReload: () => void
+  onToggleUserActive: (userId: string, active: boolean) => Promise<void>
 }
 
 const roleLabels = {
@@ -23,7 +42,34 @@ const roleLabels = {
   learner: 'Participante',
 } as const
 
-export function BackOfficePanel({ stats, loading, error, onReload }: BackOfficePanelProps) {
+export function BackOfficePanel({
+  stats,
+  loading,
+  error,
+  currentUserId,
+  onReload,
+  onToggleUserActive,
+}: BackOfficePanelProps) {
+  const { message } = App.useApp()
+  const [togglingUserId, setTogglingUserId] = useState<string | null>(null)
+
+  async function handleToggleActive(user: BackOfficeUserRow, active: boolean) {
+    if (currentUserId === user.userId && !active) {
+      message.warning('Você não pode inativar sua própria conta.')
+      return
+    }
+
+    setTogglingUserId(user.userId)
+    try {
+      await onToggleUserActive(user.userId, active)
+      message.success(active ? 'Usuário ativado.' : 'Usuário inativado.')
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Não foi possível alterar o status.')
+    } finally {
+      setTogglingUserId(null)
+    }
+  }
+
   const columns: ColumnsType<BackOfficeUserRow> = [
     {
       title: 'Usuário',
@@ -110,6 +156,60 @@ export function BackOfficePanel({ stats, loading, error, onReload }: BackOfficeP
       width: 170,
       render: (value: string | null) =>
         value ? new Date(value).toLocaleString('pt-BR') : <Text type="secondary">Sem registro</Text>,
+    },
+    {
+      title: 'Ações',
+      key: 'actions',
+      width: 120,
+      fixed: 'right',
+      align: 'center',
+      render: (_, row) => {
+        const isSelf = currentUserId === row.userId
+        const isToggling = togglingUserId === row.userId
+
+        if (isSelf) {
+          return (
+            <Switch
+              checked={row.active}
+              checkedChildren="Ativo"
+              unCheckedChildren="Inativo"
+              disabled
+            />
+          )
+        }
+
+        if (row.active) {
+          return (
+            <Popconfirm
+              title="Inativar este usuário?"
+              description="O usuário não poderá acessar a plataforma enquanto estiver inativo."
+              okText="Inativar"
+              cancelText="Cancelar"
+              okButtonProps={{ danger: true }}
+              onConfirm={() => handleToggleActive(row, false)}
+            >
+              <Switch
+                checked={row.active}
+                checkedChildren="Ativo"
+                unCheckedChildren="Inativo"
+                loading={isToggling}
+              />
+            </Popconfirm>
+          )
+        }
+
+        return (
+          <Switch
+            checked={row.active}
+            checkedChildren="Ativo"
+            unCheckedChildren="Inativo"
+            loading={isToggling}
+            onChange={(checked) => {
+              if (checked) void handleToggleActive(row, true)
+            }}
+          />
+        )
+      },
     },
   ]
 
@@ -200,7 +300,7 @@ export function BackOfficePanel({ stats, loading, error, onReload }: BackOfficeP
               columns={columns}
               dataSource={stats.users}
               pagination={{ pageSize: 8, showSizeChanger: false }}
-              scroll={{ x: 1200 }}
+              scroll={{ x: 1280 }}
               size="middle"
               className="backoffice-users-table"
             />

@@ -93,6 +93,15 @@ export const backofficeApi = {
     }
   },
 
+  async setUserActive(userId: string, active: boolean): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Usuário não autenticado.')
+
+    const { error } = await supabase.from('profiles').update({ active }).eq('user_id', userId)
+
+    if (error) throw new Error(error.message)
+  },
+
   async updateUser(input: UpdateBackOfficeUserInput): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Usuário não autenticado.')

@@ -196,6 +196,8 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
           backOfficeLoading={backOffice.loading}
           backOfficeError={backOffice.error}
           onReloadBackOffice={backOffice.reload}
+          onToggleBackOfficeUserActive={backOffice.setUserActive}
+          currentUserId={profile?.userId}
         />
       </AntApp>
     </ConfigProvider>
@@ -230,6 +232,8 @@ function AppShell({
   backOfficeLoading,
   backOfficeError,
   onReloadBackOffice,
+  onToggleBackOfficeUserActive,
+  currentUserId,
 }: ReturnType<typeof useStore> & {
   userEmail?: string
   onSignOut: () => void
@@ -246,6 +250,8 @@ function AppShell({
   backOfficeLoading: boolean
   backOfficeError: string | null
   onReloadBackOffice: () => void
+  onToggleBackOfficeUserActive: (userId: string, active: boolean) => Promise<void>
+  currentUserId?: string
 }) {
   const { message, modal } = AntApp.useApp()
   const { token } = antdTheme.useToken()
@@ -579,7 +585,9 @@ function AppShell({
               stats={backOfficeStats}
               loading={backOfficeLoading}
               error={backOfficeError}
+              currentUserId={currentUserId}
               onReload={onReloadBackOffice}
+              onToggleUserActive={onToggleBackOfficeUserActive}
             />
           ) : (
             <>
