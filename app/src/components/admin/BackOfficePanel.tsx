@@ -32,8 +32,10 @@ export function BackOfficePanel({ stats, loading, error, onReload, onSelectLearn
       title: 'Usuário',
       dataIndex: 'email',
       key: 'email',
+      minWidth: 280,
+      ellipsis: false,
       render: (email: string) => (
-        <Space>
+        <Space className="backoffice-user-email" size={8}>
           <UserOutlined />
           <Text strong>{email}</Text>
         </Space>
@@ -117,7 +119,7 @@ export function BackOfficePanel({ stats, loading, error, onReload, onSelectLearn
   ]
 
   return (
-    <div id="backoffice" style={{ scrollMarginTop: 72, marginTop: 40 }}>
+    <div className="backoffice-panel">
       <Row justify="space-between" align="middle" wrap gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col>
           <Title level={3} style={{ marginBottom: 4 }}>
@@ -232,8 +234,9 @@ export function BackOfficePanel({ stats, loading, error, onReload, onSelectLearn
               columns={columns}
               dataSource={stats.users}
               pagination={{ pageSize: 8, showSizeChanger: false }}
-              scroll={{ x: 980 }}
+              scroll={{ x: 1200 }}
               size="middle"
+              className="backoffice-users-table"
             />
           </Card>
         </>

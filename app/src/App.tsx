@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, type ReactNode } from 'react'
+import { useMemo, useState, useEffect, useRef, type ReactNode } from 'react'
 import {
   App as AntApp,
   Avatar,
@@ -240,6 +240,9 @@ function AppShell({
   const [editingEvidence, setEditingEvidence] = useState<Evidence | null>(null)
   const [quizTarget, setQuizTarget] = useState<{ resource: TrailResource; week: TrailWeek } | null>(null)
   const [prompt, setPrompt] = useState<{ topic: string; link: string; week: string } | null>(null)
+  const [activeView, setActiveView] = useState<'trail' | 'backoffice'>('trail')
+  const [activeSection, setActiveSection] = useState('#overview')
+  const contentRef = useRef<HTMLDivElement>(null)
 
   const progress = useMemo(
     () => getOverallProgress(store.completed.length, ALL_RESOURCE_IDS.length, store.evidences.length),
@@ -422,11 +425,23 @@ function AppShell({
             className="app-sider-menu"
             mode="inline"
             theme={store.theme}
-            selectable={false}
+            selectable
+            selectedKeys={[activeView === 'backoffice' ? '#backoffice' : activeSection]}
             items={menuItems}
             style={{ border: 'none', background: 'transparent' }}
             onClick={({ key }) => {
-              document.getElementById(key.replace('#', ''))?.scrollIntoView({ behavior: 'smooth' })
+              if (key === '#backoffice') {
+                setActiveView('backoffice')
+                contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+                return
+              }
+
+              setActiveView('trail')
+              setActiveSection(key)
+              contentRef.current?.scrollTo({ top: 0, behavior: 'auto' })
+              requestAnimationFrame(() => {
+                document.getElementById(key.replace('#', ''))?.scrollIntoView({ behavior: 'smooth' })
+              })
             }}
           />
         </div>
@@ -508,6 +523,7 @@ function AppShell({
         </Header>
 
         <Content
+          ref={contentRef}
           className="app-content-scroll"
           style={{
             flex: 1,
@@ -517,6 +533,25 @@ function AppShell({
             boxSizing: 'border-box',
           }}
         >
+          {isAdmin && activeView === 'backoffice' ? (
+            <BackOfficePanel
+              stats={backOfficeStats}
+              loading={backOfficeLoading}
+              error={backOfficeError}
+              onReload={onReloadBackOffice}
+              onSelectLearner={(userId) => {
+                onSelectLearner(userId)
+                setActiveView('trail')
+                setActiveSection('#overview')
+                contentRef.current?.scrollTo({ top: 0, behavior: 'auto' })
+                requestAnimationFrame(() => {
+                  document.getElementById('overview')?.scrollIntoView({ behavior: 'smooth' })
+                })
+                message.info('Participante selecionado — trilha aberta.')
+              }}
+            />
+          ) : (
+            <>
           {isAdmin && (
             <Alert
               type="info"
@@ -724,18 +759,7 @@ function AppShell({
             }}
           />
 
-          {isAdmin && (
-            <BackOfficePanel
-              stats={backOfficeStats}
-              loading={backOfficeLoading}
-              error={backOfficeError}
-              onReload={onReloadBackOffice}
-              onSelectLearner={(userId) => {
-                onSelectLearner(userId)
-                document.getElementById('overview')?.scrollIntoView({ behavior: 'smooth' })
-                message.info('Participante selecionado no header.')
-              }}
-            />
+            </>
           )}
         </Content>
       </Layout>

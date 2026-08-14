@@ -136,6 +136,22 @@ body {
   margin-inline-end: 10px !important;
 }
 
+.backoffice-panel {
+  width: 100%;
+}
+
+.backoffice-users-table .backoffice-user-email {
+  white-space: nowrap;
+}
+
+.backoffice-users-table .backoffice-user-email .ant-typography {
+  white-space: nowrap;
+}
+
+.backoffice-users-table .ant-table-cell {
+  vertical-align: middle;
+}
+
 @media print {
   .no-print {
     display: none !important;
