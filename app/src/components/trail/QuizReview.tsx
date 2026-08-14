@@ -2,7 +2,7 @@ import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons'
 import { Alert, Button, Space, Tag, Typography, theme as antdTheme } from 'antd'
 import type { QuizItem } from '../../../shared/data/weeks'
 
-const { Text, Paragraph } = Typography
+const { Text } = Typography
 
 interface QuizReviewProps {
   title: string
@@ -59,18 +59,8 @@ export function QuizReview({ title, questions, score, answers, isLegacy = false,
               style={{
                 padding: '12px 14px',
                 borderRadius: token.borderRadiusLG,
-                border: `1px solid ${
-                  hasDetailedAnswers
-                    ? isCorrect
-                      ? token.colorSuccessBorder
-                      : token.colorErrorBorder
-                    : token.colorBorderSecondary
-                }`,
-                background: hasDetailedAnswers
-                  ? isCorrect
-                    ? token.colorSuccessBg
-                    : token.colorErrorBg
-                  : token.colorFillAlter,
+                border: `1px solid ${token.colorBorderSecondary}`,
+                background: token.colorBgContainer,
               }}
             >
               <Space align="start" size={8} style={{ marginBottom: 10 }}>
@@ -102,16 +92,16 @@ export function QuizReview({ title, questions, score, answers, isLegacy = false,
                   let background = token.colorBgContainer
 
                   if (hasDetailedAnswers) {
-                    if (isCorrectOption) {
+                    if (isSelected && isCorrect) {
                       borderColor = token.colorSuccess
                       background = token.colorSuccessBg
                     } else if (isSelected && isWrong) {
                       borderColor = token.colorError
                       background = token.colorErrorBg
+                    } else if (isWrong && isCorrectOption) {
+                      borderColor = token.colorSuccess
+                      background = token.colorSuccessBg
                     }
-                  } else if (isCorrectOption) {
-                    borderColor = token.colorBorder
-                    background = token.colorFillAlter
                   }
 
                   return (
@@ -124,34 +114,20 @@ export function QuizReview({ title, questions, score, answers, isLegacy = false,
                         background,
                       }}
                     >
-                      <Space wrap size={[8, 4]}>
-                        <Text
-                          style={{
-                            color:
-                              hasDetailedAnswers && (isSelected || isCorrectOption)
-                                ? token.colorText
-                                : isCorrectOption && isLegacy
-                                  ? token.colorText
-                                  : token.colorTextSecondary,
-                          }}
-                        >
-                          {option}
-                        </Text>
-                        {isSelected && <Tag color={isCorrect ? 'success' : 'error'}>Sua resposta</Tag>}
-                        {isCorrectOption && (
-                          <Tag color={hasDetailedAnswers ? 'success' : 'default'}>Resposta correta</Tag>
-                        )}
-                      </Space>
+                      <Text
+                        style={{
+                          color:
+                            hasDetailedAnswers && (isSelected || (isWrong && isCorrectOption))
+                              ? token.colorText
+                              : token.colorTextSecondary,
+                        }}
+                      >
+                        {option}
+                      </Text>
                     </div>
                   )
                 })}
               </Space>
-
-              {isWrong && (
-                <Paragraph type="secondary" style={{ marginTop: 10, marginBottom: 0, fontSize: 12 }}>
-                  A alternativa correta era: <Text strong>{item.options[item.answer]}</Text>
-                </Paragraph>
-              )}
             </div>
           )
         })}
