@@ -1,35 +1,36 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { AppStore } from '../../shared/types/store'
 import type { EvidenceInput } from '../../shared/domain/evidence'
 import { DEFAULT_STORE } from '../../shared/types/store'
 import { supabaseApi as api } from '../services/supabaseApi'
 
-export type LoadStatus = 'loading' | 'ready' | 'error'
+export type LoadStatus = 'loading' | 'ready' | 'error' | 'idle'
 export type SaveStatus = 'idle' | 'saving' | 'success' | 'error'
 
-export function useStore() {
+interface UseStoreOptions {
+  readOnly?: boolean
+}
+
+export function useStore(userId: string | null, options: UseStoreOptions = {}) {
+  const { readOnly = false } = options
   const [store, setStore] = useState<AppStore>(DEFAULT_STORE)
-  const [loadStatus, setLoadStatus] = useState<LoadStatus>('loading')
+  const [loadStatus, setLoadStatus] = useState<LoadStatus>(userId ? 'loading' : 'idle')
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [error, setError] = useState<string | null>(null)
-  const [scoresDirty, setScoresDirty] = useState(false)
-  const scoresDirtyRef = useRef(scoresDirty)
-  scoresDirtyRef.current = scoresDirty
 
   useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => {
-      if (!scoresDirtyRef.current) return
-      e.preventDefault()
-      e.returnValue = ''
+    if (!userId) {
+      setStore(DEFAULT_STORE)
+      setLoadStatus('idle')
+      return
     }
-    window.addEventListener('beforeunload', handler)
-    return () => window.removeEventListener('beforeunload', handler)
-  }, [])
 
-  useEffect(() => {
     let active = true
+    setLoadStatus('loading')
+    setError(null)
+
     api
-      .getState()
+      .getState(userId)
       .then((data) => {
         if (!active) return
         setStore(data)
@@ -40,38 +41,45 @@ export function useStore() {
         setError(err.message)
         setLoadStatus('error')
       })
+
     return () => {
       active = false
     }
-  }, [])
+  }, [userId])
 
-  const persist = useCallback(async (next: AppStore) => {
-    setSaveStatus('saving')
-    setError(null)
-    try {
-      await api.saveState(next)
-      setStore(next)
-      setSaveStatus('success')
-      setTimeout(() => setSaveStatus('idle'), 2000)
-    } catch (err) {
-      setSaveStatus('error')
-      setError(err instanceof Error ? err.message : 'Falha ao salvar.')
-      throw err
-    }
-  }, [])
+  const persist = useCallback(
+    async (next: AppStore) => {
+      if (readOnly) return
+      setSaveStatus('saving')
+      setError(null)
+      try {
+        await api.saveState(next)
+        setStore(next)
+        setSaveStatus('success')
+        setTimeout(() => setSaveStatus('idle'), 2000)
+      } catch (err) {
+        setSaveStatus('error')
+        setError(err instanceof Error ? err.message : 'Falha ao salvar.')
+        throw err
+      }
+    },
+    [readOnly],
+  )
 
   const toggleComplete = useCallback(
     async (resourceId: string) => {
+      if (readOnly) return
       const completed = store.completed.includes(resourceId)
         ? store.completed.filter((id) => id !== resourceId)
         : [...store.completed, resourceId]
       await persist({ ...store, completed })
     },
-    [persist, store],
+    [persist, readOnly, store],
   )
 
   const addEvidence = useCallback(
     async (input: EvidenceInput) => {
+      if (readOnly) return
       setSaveStatus('saving')
       setError(null)
       try {
@@ -86,11 +94,12 @@ export function useStore() {
         throw err
       }
     },
-    [store],
+    [readOnly, store],
   )
 
   const deleteEvidence = useCallback(
     async (id: string) => {
+      if (readOnly) return
       setSaveStatus('saving')
       setError(null)
       try {
@@ -105,31 +114,26 @@ export function useStore() {
         throw err
       }
     },
-    [store],
+    [readOnly, store],
   )
 
   const saveQuiz = useCallback(
     async (weekId: number, score: number) => {
+      if (readOnly) return
       await persist({ ...store, quizzes: { ...store.quizzes, [String(weekId)]: score } })
     },
-    [persist, store],
+    [persist, readOnly, store],
   )
-
-  const saveScores = useCallback(async () => {
-    await persist(store)
-    setScoresDirty(false)
-  }, [persist, store])
-
-  const updateScore = useCallback((index: number, value: number) => {
-    setStore((prev) => ({ ...prev, scores: { ...prev.scores, [String(index)]: value } }))
-    setScoresDirty(true)
-  }, [])
 
   const setTheme = useCallback(
     async (theme: 'light' | 'dark') => {
+      if (readOnly) {
+        setStore((prev) => ({ ...prev, theme }))
+        return
+      }
       await persist({ ...store, theme })
     },
-    [persist, store],
+    [persist, readOnly, store],
   )
 
   const exportProgress = useCallback(() => {
@@ -148,14 +152,12 @@ export function useStore() {
     loadStatus,
     saveStatus,
     error,
-    scoresDirty,
     toggleComplete,
     addEvidence,
     deleteEvidence,
     saveQuiz,
-    saveScores,
-    updateScore,
     setTheme,
     exportProgress,
+    readOnly,
   }
 }

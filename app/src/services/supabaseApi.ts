@@ -4,14 +4,16 @@ import type { EvidenceInput } from '../../shared/domain/evidence'
 import { DEFAULT_STORE } from '../../shared/types/store'
 
 export const supabaseApi = {
-  async getState(): Promise<AppStore> {
+  async getState(userId?: string): Promise<AppStore> {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Usuário não autenticado.')
+
+    const targetUserId = userId ?? user.id
 
     const { data, error } = await supabase
       .from('user_state')
       .select('completed, scores, quizzes, theme')
-      .eq('user_id', user.id)
+      .eq('user_id', targetUserId)
       .maybeSingle()
 
     if (error) throw new Error(error.message)
@@ -19,7 +21,7 @@ export const supabaseApi = {
     const { data: evData, error: evError } = await supabase
       .from('evidences')
       .select('id, week, type, title, url, description, created_at')
-      .eq('user_id', user.id)
+      .eq('user_id', targetUserId)
       .order('created_at', { ascending: false })
 
     if (evError) throw new Error(evError.message)

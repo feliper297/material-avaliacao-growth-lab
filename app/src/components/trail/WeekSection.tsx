@@ -51,6 +51,7 @@ function resourceIcon(key: string) {
 interface WeekSectionProps {
   week: TrailWeek
   store: AppStore
+  readOnly?: boolean
   onToggleComplete: (id: string) => void
   onOpenPrompt: (topic: string, link: string, weekLabel: string) => void
   onOpenQuiz: (week: TrailWeek) => void
@@ -60,6 +61,7 @@ interface WeekSectionProps {
 export function WeekSection({
   week,
   store,
+  readOnly = false,
   onToggleComplete,
   onOpenPrompt,
   onOpenQuiz,
@@ -199,6 +201,7 @@ export function WeekSection({
                         type={completed ? 'primary' : 'default'}
                         icon={completed ? <CheckOutlined /> : undefined}
                         style={{ flex: 'none' }}
+                        disabled={readOnly}
                         aria-label={completed ? `Marcar "${resource.title}" como pendente` : `Marcar "${resource.title}" como concluído`}
                         aria-pressed={completed}
                         onClick={() => onToggleComplete(resource.id)}
@@ -247,7 +250,7 @@ export function WeekSection({
                       : 'Três perguntas para verificar entendimento.'}
                   </Text>
                 </div>
-                <Button type="primary" style={{ flex: 'none' }} onClick={() => onOpenQuiz(week)}>
+                <Button type="primary" style={{ flex: 'none' }} disabled={readOnly} onClick={() => onOpenQuiz(week)}>
                   Fazer teste
                 </Button>
               </div>
@@ -263,7 +266,7 @@ export function WeekSection({
                     Registre Figma, fluxo, diagrama, protótipo ou documentação.
                   </Text>
                 </div>
-                <Button type="primary" style={{ flex: 'none' }} onClick={() => onAddEvidence(week.id)}>
+                <Button type="primary" style={{ flex: 'none' }} disabled={readOnly} onClick={() => onAddEvidence(week.id)}>
                   Adicionar evidência
                 </Button>
               </div>

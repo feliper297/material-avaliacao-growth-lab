@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState, useEffect, type ReactNode } from 'react'
 import {
   App as AntApp,
   Avatar,
@@ -13,7 +13,7 @@ import {
   Modal,
   Progress,
   Row,
-  Slider,
+  Select,
   Space,
   Spin,
   Statistic,
@@ -21,6 +21,7 @@ import {
   Tag,
   theme as antdTheme,
   Typography,
+  Alert,
 } from 'antd'
 import ptBR from 'antd/locale/pt_BR'
 import { useAuth } from './hooks/useAuth'
@@ -35,7 +36,6 @@ import {
   CompassOutlined,
   DeleteOutlined,
   DownloadOutlined,
-  ExclamationCircleOutlined,
   FileSearchOutlined,
   HomeOutlined,
   LinkOutlined,
@@ -49,11 +49,16 @@ import {
 import { ALL_RESOURCE_IDS, WEEKS, weekAccentHex, type TrailWeek } from '../shared/data/weeks'
 import { calculateAverage, getCycleStatus, getOverallProgress, getWeekProgress } from '../shared/domain/progress'
 import { SCORE_DIMENSIONS } from '../shared/types/store'
+import type { Evaluation, Profile } from '../shared/types/evaluation'
 import { EvidenceForm } from './components/trail/EvidenceForm'
 import { PromptPanel } from './components/trail/PromptPanel'
 import { QuizForm } from './components/trail/QuizForm'
 import { WeekSection } from './components/trail/WeekSection'
 import { useStore } from './hooks/useStore'
+import { useProfile } from './hooks/useProfile'
+import { useEvaluations } from './hooks/useEvaluations'
+import { WeekEvaluationPanel } from './components/admin/WeekEvaluationPanel'
+import { FinalEvaluationPanel } from './components/admin/FinalEvaluationPanel'
 
 const { Sider, Header, Content } = Layout
 const { Title, Text, Paragraph } = Typography
@@ -92,12 +97,50 @@ export default function App() {
     )
   }
 
-  return <AuthenticatedApp onSignOut={auth.signOut} />
+  return <AuthenticatedApp onSignOut={auth.signOut} userEmail={auth.session?.user.email} />
 }
 
-function AuthenticatedApp({ onSignOut }: { onSignOut: () => void }) {
-  const store = useStore()
+function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; userEmail?: string }) {
+  const { profile, isAdmin, loading: profileLoading } = useProfile(userEmail)
+  const [selectedLearnerId, setSelectedLearnerId] = useState<string | null>(null)
+
+  const evaluationUserId = isAdmin ? selectedLearnerId : profile?.userId ?? null
+  const evaluations = useEvaluations(evaluationUserId, !profileLoading && !!profile)
+
+  useEffect(() => {
+    if (isAdmin && evaluations.learners.length > 0 && !selectedLearnerId) {
+      setSelectedLearnerId(evaluations.learners[0].userId)
+    }
+  }, [isAdmin, evaluations.learners, selectedLearnerId])
+
+  const store = useStore(evaluationUserId, { readOnly: isAdmin })
   const isDark = store.store.theme === 'dark'
+
+  if (profileLoading || store.loadStatus === 'loading' || evaluations.loading) {
+    return (
+      <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
+        <Spin size="large" />
+      </div>
+    )
+  }
+
+  if (isAdmin && !selectedLearnerId) {
+    return (
+      <ConfigProvider locale={ptBR} theme={{ algorithm: antdTheme.defaultAlgorithm, token: { colorPrimary: '#0958d9' } }}>
+        <AntApp>
+          <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', padding: 24 }}>
+            <Card style={{ maxWidth: 420 }}>
+              <Title level={4}>Painel do avaliador</Title>
+              <Paragraph type="secondary">
+                Nenhum participante cadastrado ainda. Peça para o participante fazer login ao menos uma vez.
+              </Paragraph>
+              <Button onClick={onSignOut}>Sair</Button>
+            </Card>
+          </div>
+        </AntApp>
+      </ConfigProvider>
+    )
+  }
 
   return (
     <ConfigProvider
@@ -111,7 +154,19 @@ function AuthenticatedApp({ onSignOut }: { onSignOut: () => void }) {
       }}
     >
       <AntApp>
-        <AppShell {...store} onSignOut={onSignOut} />
+        <AppShell
+          {...store}
+          onSignOut={onSignOut}
+          isAdmin={isAdmin}
+          selectedLearnerId={selectedLearnerId}
+          learners={evaluations.learners}
+          onSelectLearner={setSelectedLearnerId}
+          getWeekEvaluation={evaluations.getWeekEvaluation}
+          finalEvaluation={evaluations.finalEvaluation}
+          evaluationSaving={evaluations.saving}
+          onSaveWeekEvaluation={evaluations.saveWeekEvaluation}
+          onSaveFinalEvaluation={evaluations.saveFinalEvaluation}
+        />
       </AntApp>
     </ConfigProvider>
   )
@@ -122,17 +177,35 @@ function AppShell({
   loadStatus,
   saveStatus,
   error,
-  scoresDirty,
   toggleComplete,
   addEvidence,
   deleteEvidence,
   saveQuiz,
-  saveScores,
-  updateScore,
   setTheme,
   exportProgress,
+  readOnly,
   onSignOut,
-}: ReturnType<typeof useStore> & { onSignOut: () => void }) {
+  isAdmin,
+  selectedLearnerId,
+  learners,
+  onSelectLearner,
+  getWeekEvaluation,
+  finalEvaluation,
+  evaluationSaving,
+  onSaveWeekEvaluation,
+  onSaveFinalEvaluation,
+}: ReturnType<typeof useStore> & {
+  onSignOut: () => void
+  isAdmin: boolean
+  selectedLearnerId: string | null
+  learners: Profile[]
+  onSelectLearner: (id: string) => void
+  getWeekEvaluation: (week: number) => Evaluation | undefined
+  finalEvaluation: Evaluation | null
+  evaluationSaving: boolean
+  onSaveWeekEvaluation: (week: number, overall: number, notes: string) => Promise<void>
+  onSaveFinalEvaluation: (scores: Record<string, number>, notes: string) => Promise<void>
+}) {
   const { message, modal } = AntApp.useApp()
   const { token } = antdTheme.useToken()
 
@@ -145,7 +218,24 @@ function AppShell({
     () => getOverallProgress(store.completed.length, ALL_RESOURCE_IDS.length, store.evidences.length),
     [store],
   )
-  const average = useMemo(() => calculateAverage(store.scores, SCORE_DIMENSIONS.length), [store.scores])
+
+  const weekEvaluationsAverage = useMemo(() => {
+    const weekScores = WEEKS.map((w) => getWeekEvaluation(w.id)?.scores.overall).filter(
+      (v): v is number => v != null,
+    )
+    if (weekScores.length === 0) return null
+    return weekScores.reduce((sum, n) => sum + n, 0) / weekScores.length
+  }, [getWeekEvaluation])
+
+  const finalAverage = useMemo(
+    () =>
+      finalEvaluation
+        ? calculateAverage(finalEvaluation.scores, SCORE_DIMENSIONS.length)
+        : null,
+    [finalEvaluation],
+  )
+
+  const displayAverage = finalAverage ?? weekEvaluationsAverage ?? 0
 
   const navIcon: Record<string, { icon: ReactNode; color: string }> = {
     '#overview': { icon: <HomeOutlined />, color: token.colorPrimary },
@@ -295,6 +385,15 @@ function AppShell({
           }}
         >
           <Space size={token.marginSM} style={{ minWidth: 0 }}>
+            {isAdmin && (
+              <Select
+                style={{ minWidth: 220 }}
+                placeholder="Selecionar participante"
+                value={selectedLearnerId ?? undefined}
+                onChange={onSelectLearner}
+                options={learners.map((l) => ({ value: l.userId, label: l.email }))}
+              />
+            )}
             {saveStatus === 'saving' && <Text type="secondary">Salvando…</Text>}
             {saveStatus === 'error' && <Text type="danger">Erro ao salvar</Text>}
           </Space>
@@ -335,6 +434,14 @@ function AppShell({
             boxSizing: 'border-box',
           }}
         >
+          {isAdmin && (
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+              title={`Modo avaliador — acompanhando ${learners.find((l) => l.userId === selectedLearnerId)?.email ?? 'participante'}. Somente você pode registrar avaliações.`}
+            />
+          )}
           <Card
             id="overview"
             style={{ marginBottom: 16, background: token.colorPrimaryBg, borderColor: token.colorPrimaryBorder }}
@@ -401,7 +508,7 @@ function AppShell({
               { label: 'Progresso de aprendizagem', value: `${progress}%`, icon: <ArrowUpOutlined />, color: token.colorPrimary },
               { label: 'Conteúdos concluídos', value: store.completed.length, icon: <CheckCircleOutlined />, color: token.colorSuccess },
               { label: 'Evidências registradas', value: store.evidences.length, icon: <FileSearchOutlined />, color: token.colorInfo },
-              { label: 'Média de avaliação', value: average.toFixed(1), icon: <StarOutlined />, color: token.colorWarning },
+              { label: 'Média de avaliação', value: displayAverage > 0 ? displayAverage.toFixed(1) : '—', icon: <StarOutlined />, color: token.colorWarning },
             ].map((stat) => (
               <Col xs={12} md={6} key={stat.label}>
                 <Card size="small">
@@ -417,18 +524,31 @@ function AppShell({
           </Row>
 
           {WEEKS.map((week) => (
-            <WeekSection
-              key={week.id}
-              week={week}
-              store={store}
-              onToggleComplete={handleToggle}
-              onOpenPrompt={(topic, link, weekLabel) => setPrompt({ topic, link, week: weekLabel })}
-              onOpenQuiz={setQuizWeek}
-              onAddEvidence={(id) => {
-                setEvidenceWeek(id)
-                setEvidenceOpen(true)
-              }}
-            />
+            <div key={week.id}>
+              <WeekSection
+                week={week}
+                store={store}
+                readOnly={readOnly}
+                onToggleComplete={handleToggle}
+                onOpenPrompt={(topic, link, weekLabel) => setPrompt({ topic, link, week: weekLabel })}
+                onOpenQuiz={setQuizWeek}
+                onAddEvidence={(id) => {
+                  setEvidenceWeek(id)
+                  setEvidenceOpen(true)
+                }}
+              />
+              <WeekEvaluationPanel
+                weekId={week.id}
+                accent={weekAccentHex(week.id)}
+                evaluation={getWeekEvaluation(week.id)}
+                readOnly={!isAdmin}
+                saving={evaluationSaving}
+                onSave={async (overall, notes) => {
+                  await onSaveWeekEvaluation(week.id, overall, notes)
+                  message.success('Avaliação da semana salva.')
+                }}
+              />
+            </div>
           ))}
 
           <div id="evidences" style={{ scrollMarginTop: 72, marginTop: 40 }}>
@@ -442,16 +562,18 @@ function AppShell({
                 </Paragraph>
               </Col>
               <Col>
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => {
-                    setEvidenceWeek(1)
-                    setEvidenceOpen(true)
-                  }}
-                >
-                  Nova evidência
-                </Button>
+                {!readOnly && (
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => {
+                      setEvidenceWeek(1)
+                      setEvidenceOpen(true)
+                    }}
+                  >
+                    Nova evidência
+                  </Button>
+                )}
               </Col>
             </Row>
 
@@ -483,25 +605,27 @@ function AppShell({
                               Abrir
                             </Button>
                           )}
-                          <Button
-                            size="small"
-                            danger
-                            icon={<DeleteOutlined />}
-                            onClick={() => {
-                              modal.confirm({
-                                title: 'Remover esta evidência?',
-                                okText: 'Remover',
-                                okButtonProps: { danger: true },
-                                cancelText: 'Cancelar',
-                                onOk: async () => {
-                                  await deleteEvidence(e.id)
-                                  message.success('Evidência removida.')
-                                },
-                              })
-                            }}
-                          >
-                            Excluir
-                          </Button>
+                          {!readOnly && (
+                            <Button
+                              size="small"
+                              danger
+                              icon={<DeleteOutlined />}
+                              onClick={() => {
+                                modal.confirm({
+                                  title: 'Remover esta evidência?',
+                                  okText: 'Remover',
+                                  okButtonProps: { danger: true },
+                                  cancelText: 'Cancelar',
+                                  onOk: async () => {
+                                    await deleteEvidence(e.id)
+                                    message.success('Evidência removida.')
+                                  },
+                                })
+                              }}
+                            >
+                              Excluir
+                            </Button>
+                          )}
                         </Space>
                       </Card>
                     </Col>
@@ -511,78 +635,15 @@ function AppShell({
             </div>
           </div>
 
-          <div id="assessment" style={{ scrollMarginTop: 72, marginTop: 40 }}>
-            <Title level={3} style={{ marginBottom: 4 }}>
-              Régua de evolução
-            </Title>
-            <Paragraph type="secondary">
-              Ajuste as seis dimensões com base em evidências observáveis. A nota não substitui o feedback
-              qualitativo.
-            </Paragraph>
-            <Row gutter={[16, 16]}>
-              {SCORE_DIMENSIONS.map((dimension, index) => {
-                const evaluated = store.scores[String(index)] != null
-                return (
-                  <Col xs={24} md={12} key={dimension}>
-                    <Card size="small">
-                      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <Space size={6}>
-                          <Text strong style={{ fontSize: 12 }}>
-                            {dimension}
-                          </Text>
-                          {!evaluated && (
-                            <Tag color="default" style={{ fontSize: 11 }}>
-                              Ainda não avaliado
-                            </Tag>
-                          )}
-                        </Space>
-                        <Tag>{store.scores[String(index)] ?? 3}/5</Tag>
-                      </Space>
-                      <Slider
-                        min={1}
-                        max={5}
-                        step={1}
-                        marks={{ 1: '1', 2: '2', 3: '3', 4: '4', 5: '5' }}
-                        value={store.scores[String(index)] ?? 3}
-                        onChange={(value) => updateScore(index, value)}
-                      />
-                    </Card>
-                  </Col>
-                )
-              })}
-              <Col span={24}>
-                <Card size="small">
-                  <Row justify="space-between" align="middle" gutter={[16, 16]}>
-                    <Col>
-                      <Statistic title="Média atual" value={Number(average.toFixed(1))} />
-                      <Text type="secondary" style={{ fontSize: 12 }}>
-                        Meta sugerida: média ≥ 3,5 e nenhuma dimensão crítica abaixo de 3.
-                      </Text>
-                    </Col>
-                    <Col>
-                      <Space direction="vertical" align="end" size={4}>
-                        {scoresDirty && (
-                          <Text type="warning" style={{ fontSize: 12 }}>
-                            <ExclamationCircleOutlined /> Alterações não salvas
-                          </Text>
-                        )}
-                        <Button
-                          type="primary"
-                          loading={saveStatus === 'saving'}
-                          onClick={async () => {
-                            await saveScores()
-                            message.success('Avaliação salva.')
-                          }}
-                        >
-                          Salvar avaliação
-                        </Button>
-                      </Space>
-                    </Col>
-                  </Row>
-                </Card>
-              </Col>
-            </Row>
-          </div>
+          <FinalEvaluationPanel
+            evaluation={finalEvaluation}
+            readOnly={!isAdmin}
+            saving={evaluationSaving}
+            onSave={async (scores, notes) => {
+              await onSaveFinalEvaluation(scores, notes)
+              message.success('Avaliação final salva.')
+            }}
+          />
         </Content>
       </Layout>
 
