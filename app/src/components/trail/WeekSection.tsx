@@ -193,16 +193,6 @@ export function WeekSection({
                       }}
                     >
                       <Space size={8} wrap>
-                        <Button
-                          variant="outlined"
-                          icon={<LinkOutlined />}
-                          href={resource.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Abrir ${resource.title} (${resource.source})`}
-                        >
-                          Abrir
-                        </Button>
                         {!quizDone && resourceQuiz.length > 0 && (
                           <Button
                             type="text"
@@ -214,6 +204,16 @@ export function WeekSection({
                             Fazer teste
                           </Button>
                         )}
+                        <Button
+                          variant="outlined"
+                          icon={<LinkOutlined />}
+                          href={resource.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Abrir ${resource.title} (${resource.source})`}
+                        >
+                          Abrir
+                        </Button>
                       </Space>
                       <Button
                         type="primary"

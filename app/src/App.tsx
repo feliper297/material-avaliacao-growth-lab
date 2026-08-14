@@ -33,6 +33,7 @@ import {
   BulbFilled,
   BulbOutlined,
   CheckCircleOutlined,
+  CheckOutlined,
   CompassOutlined,
   DeleteOutlined,
   DownloadOutlined,
@@ -237,6 +238,22 @@ function AppShell({
   )
 
   const displayAverage = finalAverage ?? weekEvaluationsAverage ?? 0
+
+  const cycleStepItems = useMemo(() => {
+    const firstIncompleteIndex = WEEKS.findIndex((w) => getWeekProgress(w, store) < 100)
+    return WEEKS.map((w, index) => {
+      const weekProgress = getWeekProgress(w, store)
+      const isComplete = weekProgress >= 100
+      const isCurrent = !isComplete && index === firstIncompleteIndex
+
+      return {
+        title: `Semana ${w.id}`,
+        description: w.title,
+        status: isComplete ? ('finish' as const) : isCurrent ? ('process' as const) : ('wait' as const),
+        icon: isComplete ? <CheckOutlined /> : undefined,
+      }
+    })
+  }, [store])
 
   const navIcon: Record<string, { icon: ReactNode; color: string }> = {
     '#overview': { icon: <HomeOutlined />, color: token.colorPrimary },
@@ -492,17 +509,11 @@ function AppShell({
                     4 semanas · quatro checkpoints
                   </Text>
                   <Steps
+                    className="cycle-map-steps"
                     orientation="vertical"
                     size="small"
                     style={{ marginTop: 16 }}
-                    items={WEEKS.map((w) => {
-                      const p = getWeekProgress(w, store)
-                      return {
-                        title: `Semana ${w.id}`,
-                        content: w.title,
-                        status: p >= 100 ? 'finish' : p > 0 ? 'process' : 'wait',
-                      }
-                    })}
+                    items={cycleStepItems}
                   />
                 </Card>
               </Col>
