@@ -81,7 +81,7 @@ export function WeekSection({
   const { token } = antdTheme.useToken()
   const progress = getWeekProgress(week, store)
   const accent = weekAccentHex(week.id)
-  const [expanded, setExpanded] = useState(progress < 100)
+  const [expanded, setExpanded] = useState(true)
   const [quizReview, setQuizReview] = useState<{
     resource: TrailResource
     score: number

@@ -64,7 +64,7 @@ import { BackOfficePanel } from './components/admin/BackOfficePanel'
 import { openPrintReport } from './utils/progressReport'
 import { useBackOffice } from './hooks/useBackOffice'
 import type { Evidence } from '../shared/types/store'
-import type { BackOfficeStats, UpdateBackOfficeUserInput } from '../shared/types/backoffice'
+import type { BackOfficeStats } from '../shared/types/backoffice'
 
 const { Sider, Header, Content } = Layout
 const { Title, Text, Paragraph } = Typography
@@ -194,11 +194,8 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
           onSaveFinalEvaluation={evaluations.saveFinalEvaluation}
           backOfficeStats={backOffice.stats}
           backOfficeLoading={backOffice.loading}
-          backOfficeSaving={backOffice.saving}
           backOfficeError={backOffice.error}
           onReloadBackOffice={backOffice.reload}
-          onUpdateBackOfficeUser={backOffice.updateUser}
-          currentUserId={profile?.userId}
         />
       </AntApp>
     </ConfigProvider>
@@ -231,11 +228,8 @@ function AppShell({
   onSaveFinalEvaluation,
   backOfficeStats,
   backOfficeLoading,
-  backOfficeSaving,
   backOfficeError,
   onReloadBackOffice,
-  onUpdateBackOfficeUser,
-  currentUserId,
 }: ReturnType<typeof useStore> & {
   userEmail?: string
   onSignOut: () => void
@@ -250,11 +244,8 @@ function AppShell({
   onSaveFinalEvaluation: (scores: Record<string, number>, notes: string) => Promise<void>
   backOfficeStats: BackOfficeStats | null
   backOfficeLoading: boolean
-  backOfficeSaving: boolean
   backOfficeError: string | null
   onReloadBackOffice: () => void
-  onUpdateBackOfficeUser: (input: UpdateBackOfficeUserInput) => Promise<void>
-  currentUserId?: string
 }) {
   const { message, modal } = AntApp.useApp()
   const { token } = antdTheme.useToken()
@@ -587,21 +578,8 @@ function AppShell({
             <BackOfficePanel
               stats={backOfficeStats}
               loading={backOfficeLoading}
-              saving={backOfficeSaving}
               error={backOfficeError}
-              currentUserId={currentUserId}
               onReload={onReloadBackOffice}
-              onUpdateUser={onUpdateBackOfficeUser}
-              onSelectLearner={(userId) => {
-                onSelectLearner(userId)
-                setActiveView('trail')
-                setActiveSection('#overview')
-                contentRef.current?.scrollTo({ top: 0, behavior: 'auto' })
-                requestAnimationFrame(() => {
-                  document.getElementById('overview')?.scrollIntoView({ behavior: 'smooth' })
-                })
-                message.info('Participante selecionado — trilha aberta.')
-              }}
             />
           ) : (
             <>

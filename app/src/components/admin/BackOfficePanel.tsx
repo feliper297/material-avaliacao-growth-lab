@@ -1,49 +1,21 @@
-import { useState } from 'react'
 import {
   DatabaseOutlined,
-  EditOutlined,
   ReloadOutlined,
-  StopOutlined,
   TeamOutlined,
   TrophyOutlined,
   UserOutlined,
 } from '@ant-design/icons'
-import {
-  Alert,
-  App,
-  Button,
-  Card,
-  Col,
-  Form,
-  Input,
-  Modal,
-  Popconfirm,
-  Progress,
-  Row,
-  Select,
-  Space,
-  Spin,
-  Statistic,
-  Switch,
-  Table,
-  Tag,
-  Typography,
-} from 'antd'
+import { Alert, Button, Card, Col, Progress, Row, Space, Spin, Statistic, Table, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import type { BackOfficeStats, BackOfficeUserRow, UpdateBackOfficeUserInput } from '../../../shared/types/backoffice'
-import type { UserRole } from '../../../shared/types/evaluation'
+import type { BackOfficeStats, BackOfficeUserRow } from '../../../shared/types/backoffice'
 
 const { Title, Text, Paragraph } = Typography
 
 interface BackOfficePanelProps {
   stats: BackOfficeStats | null
   loading: boolean
-  saving?: boolean
   error: string | null
-  currentUserId?: string
   onReload: () => void
-  onUpdateUser: (input: UpdateBackOfficeUserInput) => Promise<void>
-  onSelectLearner?: (userId: string) => void
 }
 
 const roleLabels = {
@@ -51,84 +23,7 @@ const roleLabels = {
   learner: 'Participante',
 } as const
 
-interface EditUserFormValues {
-  email: string
-  role: UserRole
-  active: boolean
-}
-
-export function BackOfficePanel({
-  stats,
-  loading,
-  saving = false,
-  error,
-  currentUserId,
-  onReload,
-  onUpdateUser,
-  onSelectLearner,
-}: BackOfficePanelProps) {
-  const { message } = App.useApp()
-  const [form] = Form.useForm<EditUserFormValues>()
-  const [editingUser, setEditingUser] = useState<BackOfficeUserRow | null>(null)
-
-  function openEditModal(user: BackOfficeUserRow) {
-    setEditingUser(user)
-    form.setFieldsValue({
-      email: user.email,
-      role: user.role,
-      active: user.active,
-    })
-  }
-
-  function closeEditModal() {
-    setEditingUser(null)
-    form.resetFields()
-  }
-
-  async function handleToggleActive(user: BackOfficeUserRow) {
-    if (currentUserId === user.userId) {
-      message.warning('Você não pode inativar sua própria conta.')
-      return
-    }
-
-    try {
-      await onUpdateUser({
-        userId: user.userId,
-        email: user.email,
-        role: user.role,
-        active: !user.active,
-      })
-      message.success(user.active ? 'Usuário inativado.' : 'Usuário ativado.')
-    } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Não foi possível alterar o status.')
-    }
-  }
-
-  async function handleSaveEdit() {
-    if (!editingUser) return
-
-    try {
-      const values = await form.validateFields()
-      if (currentUserId === editingUser.userId && !values.active) {
-        message.warning('Você não pode inativar sua própria conta.')
-        return
-      }
-
-      await onUpdateUser({
-        userId: editingUser.userId,
-        email: values.email,
-        role: values.role,
-        active: values.active,
-      })
-      message.success('Usuário atualizado.')
-      closeEditModal()
-    } catch (err) {
-      if (err instanceof Error && err.message) {
-        message.error(err.message)
-      }
-    }
-  }
-
+export function BackOfficePanel({ stats, loading, error, onReload }: BackOfficePanelProps) {
   const columns: ColumnsType<BackOfficeUserRow> = [
     {
       title: 'Usuário',
@@ -215,51 +110,6 @@ export function BackOfficePanel({
       width: 170,
       render: (value: string | null) =>
         value ? new Date(value).toLocaleString('pt-BR') : <Text type="secondary">Sem registro</Text>,
-    },
-    {
-      title: 'Ações',
-      key: 'actions',
-      width: 130,
-      fixed: 'right',
-      render: (_, row) => {
-        const isSelf = currentUserId === row.userId
-
-        return (
-          <Space orientation="vertical" size={0} className="backoffice-user-actions">
-            <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEditModal(row)}>
-              Editar
-            </Button>
-            <Popconfirm
-              title={row.active ? 'Inativar este usuário?' : 'Ativar este usuário?'}
-              description={
-                row.active
-                  ? 'O usuário não poderá acessar a plataforma enquanto estiver inativo.'
-                  : 'O usuário voltará a acessar a plataforma normalmente.'
-              }
-              okText={row.active ? 'Inativar' : 'Ativar'}
-              cancelText="Cancelar"
-              disabled={isSelf}
-              onConfirm={() => handleToggleActive(row)}
-            >
-              <Button
-                type="link"
-                size="small"
-                danger={row.active}
-                icon={<StopOutlined />}
-                disabled={isSelf}
-                loading={saving}
-              >
-                {row.active ? 'Inativar' : 'Ativar'}
-              </Button>
-            </Popconfirm>
-            {row.role === 'learner' && onSelectLearner ? (
-              <Button type="link" size="small" onClick={() => onSelectLearner(row.userId)}>
-                Ver trilha
-              </Button>
-            ) : null}
-          </Space>
-        )
-      },
     },
   ]
 
@@ -350,54 +200,13 @@ export function BackOfficePanel({
               columns={columns}
               dataSource={stats.users}
               pagination={{ pageSize: 8, showSizeChanger: false }}
-              scroll={{ x: 1300 }}
+              scroll={{ x: 1200 }}
               size="middle"
               className="backoffice-users-table"
             />
           </Card>
         </>
       ) : null}
-
-      <Modal
-        title="Editar usuário"
-        open={!!editingUser}
-        onCancel={closeEditModal}
-        onOk={handleSaveEdit}
-        okText="Salvar"
-        cancelText="Cancelar"
-        confirmLoading={saving}
-        destroyOnHidden
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item
-            name="email"
-            label="E-mail"
-            rules={[
-              { required: true, message: 'Informe o e-mail.' },
-              { type: 'email', message: 'E-mail inválido.' },
-            ]}
-          >
-            <Input prefix={<UserOutlined />} placeholder="usuario@email.com" />
-          </Form.Item>
-
-          <Form.Item
-            name="role"
-            label="Perfil"
-            rules={[{ required: true, message: 'Selecione o perfil.' }]}
-          >
-            <Select
-              options={[
-                { value: 'learner', label: roleLabels.learner },
-                { value: 'admin', label: roleLabels.admin },
-              ]}
-            />
-          </Form.Item>
-
-          <Form.Item name="active" label="Status da conta" valuePropName="checked">
-            <Switch checkedChildren="Ativo" unCheckedChildren="Inativo" />
-          </Form.Item>
-        </Form>
-      </Modal>
     </div>
   )
 }

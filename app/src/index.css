@@ -146,11 +146,6 @@ body {
   vertical-align: top;
 }
 
-.backoffice-users-table .backoffice-user-actions .ant-btn {
-  padding-inline: 0;
-  height: auto;
-}
-
 @media print {
   .no-print {
     display: none !important;
