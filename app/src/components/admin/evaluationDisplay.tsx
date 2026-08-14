@@ -11,6 +11,7 @@ interface EvaluationScoreSliderProps {
   accent: string
   readOnly?: boolean
   onChange?: (value: number) => void
+  onChangeComplete?: (value: number) => void
   marks?: Record<number, string>
 }
 
@@ -20,6 +21,7 @@ export function EvaluationScoreSlider({
   accent,
   readOnly = false,
   onChange,
+  onChangeComplete,
   marks = DEFAULT_MARKS,
 }: EvaluationScoreSliderProps) {
   const { token } = antdTheme.useToken()
@@ -37,6 +39,7 @@ export function EvaluationScoreSlider({
         marks={marks}
         value={value}
         onChange={onChange}
+        onChangeComplete={onChangeComplete}
         tooltip={{ open: false }}
         styles={{
           track: { background: accent },

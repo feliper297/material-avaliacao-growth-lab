@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Button, Card, Input, Space, Tag, Typography, theme as antdTheme } from 'antd'
+import { useCallback, useEffect, useState } from 'react'
+import { Card, Input, Space, Tag, Typography, theme as antdTheme } from 'antd'
 import type { Evaluation } from '../../../shared/types/evaluation'
 import {
   ColoredScoreDisplay,
@@ -37,7 +37,24 @@ export function WeekEvaluationPanel({
   }, [evaluation])
 
   const evaluated = evaluation != null
-  const displayScore = evaluation?.scores.overall ?? overall
+  const displayScore = readOnly ? (evaluation?.scores.overall ?? overall) : overall
+
+  const persistEvaluation = useCallback(
+    async (nextOverall: number, nextNotes: string) => {
+      if (readOnly || !onSave) return
+      await onSave(nextOverall, nextNotes)
+    },
+    [onSave, readOnly],
+  )
+
+  async function handleScoreComplete(value: number) {
+    setOverall(value)
+    await persistEvaluation(value, notes)
+  }
+
+  async function handleNotesBlur() {
+    await persistEvaluation(overall, notes)
+  }
 
   return (
     <Card
@@ -46,13 +63,14 @@ export function WeekEvaluationPanel({
       title={
         <Space>
           <Text strong>Avaliação do avaliador</Text>
-          {evaluated ? (
+          {evaluated || !readOnly ? (
             <Tag color={accent} style={{ fontWeight: 600 }}>
-              Semana {weekId} · {evaluation.scores.overall}/5
+              Semana {weekId} · {displayScore}/5
             </Tag>
           ) : (
             <Tag>Ainda não avaliado</Tag>
           )}
+          {saving ? <Tag color="processing">Salvando…</Tag> : null}
         </Space>
       }
       style={{ marginTop: 16 }}
@@ -76,7 +94,12 @@ export function WeekEvaluationPanel({
             {readOnly ? (
               <ColoredScoreDisplay value={displayScore} accent={accent} />
             ) : (
-              <EvaluationScoreSlider value={overall} accent={accent} onChange={setOverall} />
+              <EvaluationScoreSlider
+                value={overall}
+                accent={accent}
+                onChange={setOverall}
+                onChangeComplete={handleScoreComplete}
+              />
             )}
 
             {readOnly ? (
@@ -87,19 +110,12 @@ export function WeekEvaluationPanel({
                   rows={3}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
+                  onBlur={handleNotesBlur}
                   placeholder="Feedback qualitativo: o que evoluiu, o que falta e próxima ação."
                 />
               </div>
             )}
           </div>
-
-          {!readOnly && onSave && (
-            <div style={{ marginTop: 12, textAlign: 'right' }}>
-              <Button type="primary" loading={saving} onClick={() => onSave(overall, notes)}>
-                Salvar avaliação da semana
-              </Button>
-            </div>
-          )}
 
           {readOnly && evaluation?.updatedAt && (
             <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 8 }}>

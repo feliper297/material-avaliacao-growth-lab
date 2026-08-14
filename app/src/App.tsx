@@ -689,7 +689,6 @@ function AppShell({
                 onSave={async (overall, notes) => {
                   try {
                     await onSaveWeekEvaluation(week.id, overall, notes)
-                    message.success(`Avaliação da semana ${week.id} salva.`)
                   } catch (err) {
                     message.error(err instanceof Error ? err.message : 'Falha ao salvar avaliação.')
                   }
