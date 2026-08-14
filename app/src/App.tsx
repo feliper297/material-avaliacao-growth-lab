@@ -46,7 +46,8 @@ import {
   StarOutlined,
   TrophyOutlined,
 } from '@ant-design/icons'
-import { ALL_RESOURCE_IDS, WEEKS, weekAccentHex, type TrailWeek } from '../shared/data/weeks'
+import { ALL_RESOURCE_IDS, WEEKS, weekAccentHex, type TrailResource, type TrailWeek } from '../shared/data/weeks'
+import { getResourceQuiz } from '../shared/data/resource-quizzes'
 import { calculateAverage, getCycleStatus, getOverallProgress, getWeekProgress } from '../shared/domain/progress'
 import { SCORE_DIMENSIONS } from '../shared/types/store'
 import type { Evaluation, Profile } from '../shared/types/evaluation'
@@ -211,7 +212,7 @@ function AppShell({
 
   const [evidenceOpen, setEvidenceOpen] = useState(false)
   const [evidenceWeek, setEvidenceWeek] = useState(1)
-  const [quizWeek, setQuizWeek] = useState<TrailWeek | null>(null)
+  const [quizTarget, setQuizTarget] = useState<{ resource: TrailResource; week: TrailWeek } | null>(null)
   const [prompt, setPrompt] = useState<{ topic: string; link: string; week: string } | null>(null)
 
   const progress = useMemo(
@@ -536,7 +537,7 @@ function AppShell({
                 readOnly={readOnly}
                 onToggleComplete={handleToggle}
                 onOpenPrompt={(topic, link, weekLabel) => setPrompt({ topic, link, week: weekLabel })}
-                onOpenQuiz={setQuizWeek}
+                onOpenQuiz={(resource, week) => setQuizTarget({ resource, week })}
                 onAddEvidence={(id) => {
                   setEvidenceWeek(id)
                   setEvidenceOpen(true)
@@ -680,18 +681,20 @@ function AppShell({
       </Modal>
 
       <Modal
-        open={!!quizWeek}
-        title={quizWeek ? `Semana ${quizWeek.id} — ${quizWeek.title}` : 'Mini teste'}
-        onCancel={() => setQuizWeek(null)}
+        open={!!quizTarget}
+        title={quizTarget ? `Teste — ${quizTarget.resource.title}` : 'Mini teste'}
+        onCancel={() => setQuizTarget(null)}
         footer={null}
         destroyOnHidden
       >
-        {quizWeek && (
+        {quizTarget && (
           <QuizForm
-            week={quizWeek}
+            title={quizTarget.resource.title}
+            questions={getResourceQuiz(quizTarget.resource.id)}
             onSubmit={async (score) => {
-              await saveQuiz(quizWeek.id, score)
-              message.success('Teste corrigido.')
+              await saveQuiz(quizTarget.resource.id, score)
+              message.success('Teste corrigido e salvo.')
+              setQuizTarget(null)
             }}
           />
         )}

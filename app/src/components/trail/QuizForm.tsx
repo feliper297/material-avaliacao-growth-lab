@@ -1,40 +1,44 @@
 import { useState } from 'react'
 import { Alert, Button, Form, Radio, Space } from 'antd'
-import type { TrailWeek } from '../../../shared/data/weeks'
+import type { QuizItem } from '../../../shared/data/weeks'
 
 interface QuizFormProps {
-  week: TrailWeek
+  title: string
+  questions: QuizItem[]
   onSubmit: (score: number) => Promise<void>
 }
 
-export function QuizForm({ week, onSubmit }: QuizFormProps) {
+export function QuizForm({ title, questions, onSubmit }: QuizFormProps) {
   const [result, setResult] = useState<{ type: 'success' | 'warning'; message: string } | null>(null)
+  const [submitted, setSubmitted] = useState(false)
 
   async function handleFinish(values: Record<string, number>) {
     let score = 0
-    week.quiz.forEach((item, qi) => {
+    questions.forEach((item, qi) => {
       if (values[`q${qi}`] === item.answer) score++
     })
     await onSubmit(score)
+    const errors = questions.length - score
+    setSubmitted(true)
     setResult({
       type: score >= 2 ? 'success' : 'warning',
       message:
-        score === 3
-          ? '3/3 — Bom domínio dos fundamentos. Agora comprove aplicando na sprint.'
-          : `${score}/3 — Revise o conteúdo e converse com o tutor de IA sobre as respostas incorretas.`,
+        score === questions.length
+          ? `${score} acertos · 0 erros em "${title}". Resultado salvo — este teste não pode ser refeito.`
+          : `${score} acerto${score === 1 ? '' : 's'} · ${errors} erro${errors === 1 ? '' : 's'} em "${title}". Resultado salvo — este teste não pode ser refeito.`,
     })
   }
 
   return (
     <Form layout="vertical" onFinish={handleFinish}>
-      {week.quiz.map((item, qi) => (
+      {questions.map((item, qi) => (
         <Form.Item
           key={qi}
           name={`q${qi}`}
           label={`${qi + 1}. ${item.q}`}
           rules={[{ required: true, message: 'Responda todas as perguntas antes de corrigir.' }]}
         >
-          <Radio.Group>
+          <Radio.Group disabled={submitted}>
             <Space orientation="vertical">
               {item.options.map((option, oi) => (
                 <Radio key={oi} value={oi}>
@@ -48,11 +52,13 @@ export function QuizForm({ week, onSubmit }: QuizFormProps) {
 
       {result && <Alert type={result.type} showIcon title={result.message} style={{ marginBottom: 16 }} />}
 
-      <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-        <Button type="primary" htmlType="submit">
-          Corrigir teste
-        </Button>
-      </Form.Item>
+      {!submitted && (
+        <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+          <Button type="primary" htmlType="submit">
+            Corrigir teste
+          </Button>
+        </Form.Item>
+      )}
     </Form>
   )
 }

@@ -1,6 +1,7 @@
 import {
   AimOutlined,
   ApiOutlined,
+  AppstoreOutlined,
   BlockOutlined,
   CheckOutlined,
   CheckCircleFilled,
@@ -12,6 +13,7 @@ import {
   LinkOutlined,
   NodeIndexOutlined,
   NumberOutlined,
+  QuestionCircleOutlined,
   QuestionOutlined,
   ReadOutlined,
   RobotOutlined,
@@ -21,9 +23,11 @@ import {
 } from '@ant-design/icons'
 import { Alert, Avatar, Button, Card, Col, List, Progress, Row, Space, Tag, Typography, theme as antdTheme } from 'antd'
 import { useState, type ComponentType } from 'react'
-import { weekAccentHex, type TrailWeek } from '../../../shared/data/weeks'
+import { weekAccentHex, type TrailResource, type TrailWeek } from '../../../shared/data/weeks'
+import { getResourceQuiz } from '../../../shared/data/resource-quizzes'
 import type { AppStore } from '../../../shared/types/store'
 import { getWeekProgress } from '../../../shared/domain/progress'
+import { EvidenceItem, InlineQuizResult, QuizResultSummary } from './EvidenceItem'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -31,6 +35,7 @@ const RESOURCE_ICONS: Record<string, ComponentType> = {
   TableOutlined,
   BlockOutlined,
   GroupOutlined,
+  AppstoreOutlined,
   AimOutlined,
   NodeIndexOutlined,
   InboxOutlined,
@@ -54,7 +59,7 @@ interface WeekSectionProps {
   readOnly?: boolean
   onToggleComplete: (id: string) => void
   onOpenPrompt: (topic: string, link: string, weekLabel: string) => void
-  onOpenQuiz: (week: TrailWeek) => void
+  onOpenQuiz: (resource: TrailResource, week: TrailWeek) => void
   onAddEvidence: (weekId: number) => void
 }
 
@@ -71,6 +76,14 @@ export function WeekSection({
   const progress = getWeekProgress(week, store)
   const accent = weekAccentHex(week.id)
   const [expanded, setExpanded] = useState(progress < 100)
+  const weekEvidences = store.evidences.filter((evidence) => evidence.week === week.id)
+  const weekQuizResults = week.resources
+    .map((resource) => ({
+      resource,
+      score: store.quizzes[resource.id],
+      total: getResourceQuiz(resource.id).length,
+    }))
+    .filter((entry): entry is { resource: TrailResource; score: number; total: number } => entry.score != null)
 
   return (
     <div id={`week-${week.id}`} style={{ scrollMarginTop: 96, marginTop: 24 }}>
@@ -145,6 +158,9 @@ export function WeekSection({
               dataSource={week.resources}
               renderItem={(resource) => {
                 const completed = store.completed.includes(resource.id)
+                const resourceQuiz = getResourceQuiz(resource.id)
+                const quizScore = store.quizzes[resource.id]
+                const quizDone = quizScore != null
                 return (
                   <List.Item style={{ display: 'block' }}>
                     <List.Item.Meta
@@ -176,16 +192,29 @@ export function WeekSection({
                         marginTop: 12,
                       }}
                     >
-                      <Button
-                        icon={<LinkOutlined />}
-                        href={resource.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`Abrir ${resource.title} (${resource.source})`}
-                        style={{ flex: '0 1 auto' }}
-                      >
-                        Abrir
-                      </Button>
+                      <Space size={8} wrap>
+                        <Button
+                          variant="outlined"
+                          icon={<LinkOutlined />}
+                          href={resource.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Abrir ${resource.title} (${resource.source})`}
+                        >
+                          Abrir
+                        </Button>
+                        {!quizDone && resourceQuiz.length > 0 && (
+                          <Button
+                            type="text"
+                            icon={<QuestionCircleOutlined />}
+                            aria-label={`Fazer teste de ${resource.title}`}
+                            disabled={readOnly}
+                            onClick={() => onOpenQuiz(resource, week)}
+                          >
+                            Fazer teste
+                          </Button>
+                        )}
+                      </Space>
                       <Button
                         type="primary"
                         icon={<RobotOutlined />}
@@ -207,6 +236,7 @@ export function WeekSection({
                         onClick={() => onToggleComplete(resource.id)}
                       />
                     </div>
+                    {quizDone && <InlineQuizResult score={quizScore} total={resourceQuiz.length} />}
                   </List.Item>
                 )
               }}
@@ -239,37 +269,48 @@ export function WeekSection({
 
         <Row gutter={[16, 16]} style={{ marginTop: 20, alignItems: 'stretch' }}>
           <Col xs={24} md={12} style={{ display: 'flex' }}>
-            <Card size="small" style={{ width: '100%' }} styles={{ body: { height: '100%', display: 'flex', alignItems: 'center' } }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, width: '100%' }}>
-                <div>
-                  <Text strong>Teste de conhecimento</Text>
-                  <br />
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    {store.quizzes[String(week.id)] != null
-                      ? `Última nota: ${store.quizzes[String(week.id)]}/3`
-                      : 'Três perguntas para verificar entendimento.'}
-                  </Text>
+            <Card size="small" style={{ width: '100%' }}>
+              <Text strong>Testes de conhecimento</Text>
+              <br />
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {weekQuizResults.length > 0
+                  ? `${weekQuizResults.length} de ${week.resources.length} conteúdos testados`
+                  : 'Faça o teste de cada conteúdo acima — uma tentativa por item.'}
+              </Text>
+
+              {weekQuizResults.length > 0 && (
+                <div style={{ marginTop: 12 }}>
+                  {weekQuizResults.map(({ resource, score, total }) => (
+                    <QuizResultSummary key={resource.id} title={resource.title} score={score} total={total} />
+                  ))}
                 </div>
-                <Button type="primary" style={{ flex: 'none' }} disabled={readOnly} onClick={() => onOpenQuiz(week)}>
-                  Fazer teste
-                </Button>
-              </div>
+              )}
             </Card>
           </Col>
           <Col xs={24} md={12} style={{ display: 'flex' }}>
-            <Card size="small" style={{ width: '100%' }} styles={{ body: { height: '100%', display: 'flex', alignItems: 'center' } }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, width: '100%' }}>
-                <div>
+            <Card size="small" style={{ width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                <div style={{ minWidth: 0 }}>
                   <Text strong>Aplicação prática</Text>
                   <br />
                   <Text type="secondary" style={{ fontSize: 12 }}>
-                    Registre Figma, fluxo, diagrama, protótipo ou documentação.
+                    {weekEvidences.length > 0
+                      ? `${weekEvidences.length} evidência${weekEvidences.length === 1 ? '' : 's'} registrada${weekEvidences.length === 1 ? '' : 's'}`
+                      : 'Registre Figma, fluxo, diagrama, protótipo ou documentação.'}
                   </Text>
                 </div>
                 <Button type="primary" style={{ flex: 'none' }} disabled={readOnly} onClick={() => onAddEvidence(week.id)}>
                   Adicionar evidência
                 </Button>
               </div>
+
+              {weekEvidences.length > 0 && (
+                <div style={{ marginTop: 12 }}>
+                  {weekEvidences.map((evidence) => (
+                    <EvidenceItem key={evidence.id} evidence={evidence} accent={accent} />
+                  ))}
+                </div>
+              )}
             </Card>
           </Col>
         </Row>

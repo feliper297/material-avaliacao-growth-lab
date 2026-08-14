@@ -23,7 +23,6 @@ export interface TrailWeek {
   cover: string
   deliverables: string[]
   resources: TrailResource[]
-  quiz: QuizItem[]
 }
 
 export const WEEKS: TrailWeek[] = [
@@ -69,37 +68,16 @@ export const WEEKS: TrailWeek[] = [
         url: 'https://help.figma.com/hc/en-us/articles/360056440594-Create-and-use-variants',
         topic: 'Propriedades, variantes, estados e organização de conjuntos de componentes.',
       },
-    ],
-    quiz: [
       {
-        q: 'Qual é o principal objetivo do Auto Layout?',
-        options: [
-          'Aplicar efeitos visuais automaticamente',
-          'Organizar elementos com regras de direção, espaçamento, padding e redimensionamento',
-          'Converter qualquer frame em componente',
-          'Publicar uma biblioteca',
-        ],
-        answer: 1,
-      },
-      {
-        q: 'Quando variantes são especialmente úteis?',
-        options: [
-          'Quando estados e tamanhos semelhantes pertencem ao mesmo componente',
-          'Sempre que uma tela possuir mais de uma seção',
-          'Somente para ícones',
-          'Quando o arquivo ainda não possui Design System',
-        ],
-        answer: 0,
-      },
-      {
-        q: 'Uma boa evidência desta semana seria:',
-        options: [
-          'Somente confirmar que leu os três materiais',
-          'Mostrar uma tela bonita sem explicar mudanças',
-          'Apresentar antes/depois, problemas encontrados e justificativa das correções',
-          'Criar o maior número possível de componentes',
-        ],
-        answer: 2,
+        id: 'w1-design-system',
+        title: 'Design System',
+        source: 'Figma',
+        type: 'Texto oficial',
+        duration: '12 min',
+        icon: 'AppstoreOutlined',
+        url: 'https://help.figma.com/hc/en-us/articles/360039238753-Guide-to-design-systems-in-Figma',
+        topic:
+          'Design System: tokens, bibliotecas compartilhadas, componentes reutilizáveis, governança, consistência visual e escalabilidade entre produtos.',
       },
     ],
   },
@@ -146,38 +124,6 @@ export const WEEKS: TrailWeek[] = [
         topic: 'Estados vazios, primeiro uso, ausência de resultado, loading, erro e falta de permissão.',
       },
     ],
-    quiz: [
-      {
-        q: 'Problem framing deve acontecer principalmente:',
-        options: [
-          'Depois do protótipo final',
-          'Antes de assumir uma solução',
-          'Somente quando não há prazo',
-          'Apenas em pesquisas qualitativas',
-        ],
-        answer: 1,
-      },
-      {
-        q: 'Qual diferença é mais importante entre jornada e fluxo?',
-        options: [
-          'A jornada é sempre desenhada; o fluxo é sempre escrito',
-          'A jornada examina uma experiência mais ampla; o fluxo detalha interações para cumprir uma tarefa',
-          'Não existe diferença prática',
-          'O fluxo contém emoções e a jornada contém apenas telas',
-        ],
-        answer: 1,
-      },
-      {
-        q: '"Nenhum resultado para o filtro aplicado" é o mesmo estado de "nenhum dado criado ainda"?',
-        options: [
-          'Sim, a mesma mensagem serve',
-          'Não; causas, orientação e próxima ação são diferentes',
-          'Somente em aplicativos mobile',
-          'Depende apenas da cor da interface',
-        ],
-        answer: 1,
-      },
-    ],
   },
   {
     id: 3,
@@ -220,38 +166,6 @@ export const WEEKS: TrailWeek[] = [
         icon: 'NumberOutlined',
         url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status',
         topic: 'Respostas do sistema e tradução de situações técnicas em comportamentos compreensíveis da interface.',
-      },
-    ],
-    quiz: [
-      {
-        q: 'No modelo cliente–servidor, a interface normalmente:',
-        options: [
-          'Armazena e processa obrigatoriamente todas as regras',
-          'Envia uma solicitação e representa o resultado recebido',
-          'Substitui completamente o backend',
-          'Não precisa considerar falhas',
-        ],
-        answer: 1,
-      },
-      {
-        q: 'Uma resposta 202 geralmente indica:',
-        options: [
-          'A solicitação foi aceita, mas o processamento pode continuar',
-          'O usuário não tem permissão',
-          'O recurso não existe',
-          'O servidor nunca recebeu a solicitação',
-        ],
-        answer: 0,
-      },
-      {
-        q: 'Ao desenhar uma integração externa, qual pergunta é essencial?',
-        options: [
-          'Qual sombra deixa a tela mais moderna?',
-          'O que acontece se o serviço estiver indisponível ou demorar?',
-          'Qual ferramenta o designer prefere?',
-          'Quantos frames serão produzidos?',
-        ],
-        answer: 1,
       },
     ],
   },
@@ -306,38 +220,6 @@ export const WEEKS: TrailWeek[] = [
         icon: 'CodeOutlined',
         url: 'https://help.figma.com/hc/en-us/articles/15023124644247-Guide-to-Dev-Mode',
         topic: 'Handoff, inspeção, anotações, componentes, estados e comunicação com desenvolvimento.',
-      },
-    ],
-    quiz: [
-      {
-        q: 'Qual é o melhor uso da IA nesta trilha?',
-        options: [
-          'Substituir a análise e produzir a solução final automaticamente',
-          'Apoiar pesquisa, questionamento, crítica, testes e aceleração com revisão humana',
-          'Evitar conversas com produto e desenvolvimento',
-          'Gerar mais telas, independentemente do problema',
-        ],
-        answer: 1,
-      },
-      {
-        q: 'Um prompt profissional deveria incluir:',
-        options: [
-          'Somente uma frase curta',
-          'Objetivo, contexto, informações, restrições, tarefa e critério de qualidade',
-          'A resposta esperada já pronta',
-          'O máximo de termos técnicos possível',
-        ],
-        answer: 1,
-      },
-      {
-        q: 'Uma evidência adequada de uso de IA deve mostrar:',
-        options: [
-          'Somente o resultado gerado',
-          'Prompt, resultado, problemas encontrados, decisões e alterações humanas',
-          'A quantidade de mensagens da conversa',
-          'A ferramenta utilizada, sem relação com a entrega',
-        ],
-        answer: 1,
       },
     ],
   },

@@ -20,7 +20,7 @@ describe('getWeekProgress', () => {
     }
     const store = {
       completed: ['a', 'b', 'c'],
-      quizzes: { '1': 3 },
+      quizzes: { a: 3, b: 2, c: 3 },
       evidences: [{ id: '1', week: 1, type: 'Figma', title: 't', description: 'd', createdAt: '' }],
     }
     expect(getWeekProgress(week, store)).toBe(100)

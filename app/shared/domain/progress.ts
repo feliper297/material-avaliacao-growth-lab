@@ -22,11 +22,13 @@ export function getWeekProgress(
   week: { id: number; resources: { id: string }[] },
   store: Pick<AppStore, 'completed' | 'evidences' | 'quizzes'>,
 ): number {
+  const resourceCount = week.resources.length
   const done = week.resources.filter((r) => store.completed.includes(r.id)).length
-  const quizDone = store.quizzes[String(week.id)] != null ? 1 : 0
+  const quizzesDone = week.resources.filter((r) => store.quizzes[r.id] != null).length
   const evidenceDone = store.evidences.some((e) => e.week === week.id) ? 1 : 0
-  const total = week.resources.length + 2
-  return Math.round(((done + quizDone + evidenceDone) / total) * 100)
+  const total = resourceCount * 2 + 1
+  if (total === 0) return 0
+  return Math.round(((done + quizzesDone + evidenceDone) / total) * 100)
 }
 
 export function calculateAverage(scores: Record<string, number>, dimensionCount: number): number {

@@ -118,9 +118,9 @@ export function useStore(userId: string | null, options: UseStoreOptions = {}) {
   )
 
   const saveQuiz = useCallback(
-    async (weekId: number, score: number) => {
+    async (resourceId: string, score: number) => {
       if (readOnly) return
-      await persist({ ...store, quizzes: { ...store.quizzes, [String(weekId)]: score } })
+      await persist({ ...store, quizzes: { ...store.quizzes, [resourceId]: score } })
     },
     [persist, readOnly, store],
   )
