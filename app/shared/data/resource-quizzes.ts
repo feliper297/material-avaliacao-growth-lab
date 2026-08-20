@@ -6,32 +6,32 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
     {
       q: 'Qual é o principal objetivo do Auto Layout?',
       options: [
-        'Aplicar efeitos visuais automaticamente',
         'Organizar elementos com direção, espaçamento, padding e redimensionamento',
+        'Aplicar efeitos visuais automaticamente',
         'Converter qualquer frame em componente',
         'Publicar uma biblioteca',
       ],
-      answer: 1,
+      answer: 0,
     },
     {
       q: 'Em um botão com ícone e texto, o gap do Auto Layout controla:',
       options: [
         'A cor do ícone',
-        'O espaço entre ícone e texto',
         'O raio da borda',
+        'O espaço entre ícone e texto',
         'A publicação do componente',
       ],
-      answer: 1,
+      answer: 2,
     },
     {
       q: 'Quando o conteúdo interno cresce, um frame com Auto Layout deve:',
       options: [
         'Cortar o conteúdo sem aviso',
-        'Respeitar as regras de hug/fill definidas no frame pai',
         'Desativar constraints automaticamente',
         'Converter tudo em grupo',
+        'Respeitar as regras de hug/fill definidas no frame pai',
       ],
-      answer: 1,
+      answer: 3,
     },
   ],
   'w1-components': [
@@ -48,12 +48,12 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
     {
       q: 'Alterar o master de um componente afeta:',
       options: [
-        'Somente a instância selecionada',
         'Todas as instâncias, exceto propriedades já sobrescritas localmente',
+        'Somente a instância selecionada',
         'Apenas instâncias da mesma página',
         'Nenhuma instância depois de publicada',
       ],
-      answer: 1,
+      answer: 0,
     },
     {
       q: 'Detaching (desvincular) uma instância é adequado quando:',
@@ -70,12 +70,12 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
     {
       q: 'Variantes são especialmente úteis quando:',
       options: [
-        'Estados e tamanhos semelhantes pertencem ao mesmo componente',
         'A tela possui mais de uma seção',
         'Somente para ícones',
         'O arquivo ainda não possui Design System',
+        'Estados e tamanhos semelhantes pertencem ao mesmo componente',
       ],
-      answer: 0,
+      answer: 3,
     },
     {
       q: 'Uma propriedade booleana em variantes costuma representar:',
@@ -90,12 +90,12 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
     {
       q: 'Organizar variantes em conjunto ajuda principalmente a:',
       options: [
-        'Reduzir o tamanho do arquivo exportado',
         'Alternar estados previsíveis sem duplicar componentes',
+        'Reduzir o tamanho do arquivo exportado',
         'Evitar Auto Layout',
         'Substituir documentação',
       ],
-      answer: 1,
+      answer: 0,
     },
   ],
   'w1-design-system': [
@@ -103,21 +103,21 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
       q: 'Um Design System bem estruturado prioriza:',
       options: [
         'Quantidade máxima de telas únicas',
-        'Tokens, componentes reutilizáveis e regras de consistência',
         'Estilos diferentes por designer',
+        'Tokens, componentes reutilizáveis e regras de consistência',
         'Frames sem nomenclatura',
       ],
-      answer: 1,
+      answer: 2,
     },
     {
       q: 'Design tokens servem para:',
       options: [
         'Substituir o handoff com desenvolvimento',
-        'Centralizar decisões de cor, tipografia e espaçamento',
         'Gerar código automaticamente sem revisão',
         'Eliminar variantes',
+        'Centralizar decisões de cor, tipografia e espaçamento',
       ],
-      answer: 1,
+      answer: 3,
     },
     {
       q: 'Publicar uma biblioteca compartilhada permite:',
@@ -134,32 +134,32 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
     {
       q: 'Problem framing deve acontecer principalmente:',
       options: [
-        'Depois do protótipo final',
         'Antes de assumir uma solução',
+        'Depois do protótipo final',
         'Somente quando não há prazo',
         'Apenas em pesquisas qualitativas',
       ],
-      answer: 1,
+      answer: 0,
     },
     {
       q: 'Uma boa declaração de problema diferencia claramente:',
       options: [
         'Cor primária e cor secundária',
-        'Problema observado, evidência e impacto para o usuário/negócio',
         'Wireframe e protótipo hi-fi',
+        'Problema observado, evidência e impacto para o usuário/negócio',
         'Sprint atual e sprint seguinte',
       ],
-      answer: 1,
+      answer: 2,
     },
     {
       q: '"Precisamos de um dashboard" sem contexto é problemático porque:',
       options: [
         'Dashboards são sempre desnecessários',
-        'Confunde solução desejada com problema a resolver',
         'Impede uso de IA',
         'Elimina estados vazios',
+        'Confunde solução desejada com problema a resolver',
       ],
-      answer: 1,
+      answer: 3,
     },
   ],
   'w2-journeys-flows': [
@@ -176,22 +176,22 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
     {
       q: 'Um fluxo de tarefa deve deixar explícito:',
       options: [
-        'Somente a paleta de cores',
         'Passos, decisões, entradas/saídas e pontos de erro',
+        'Somente a paleta de cores',
         'Apenas telas finais aprovadas',
         'Quantidade de componentes no DS',
       ],
-      answer: 1,
+      answer: 0,
     },
     {
       q: 'Mapear jornada antes das telas ajuda a:',
       options: [
         'Escolher sombras e gradientes',
-        'Identificar momentos críticos, dores e oportunidades',
         'Publicar biblioteca no Figma',
+        'Identificar momentos críticos, dores e oportunidades',
         'Evitar estados de loading',
       ],
-      answer: 1,
+      answer: 2,
     },
   ],
   'w2-empty-states': [
@@ -199,11 +199,11 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
       q: '"Nenhum resultado para o filtro" e "nenhum dado criado ainda" são:',
       options: [
         'O mesmo estado com a mesma mensagem',
-        'Estados distintos com causas e próximas ações diferentes',
         'Válidos somente em mobile',
         'Equivalentes se a cor for igual',
+        'Estados distintos com causas e próximas ações diferentes',
       ],
-      answer: 1,
+      answer: 3,
     },
     {
       q: 'Um empty state eficaz deve orientar o usuário a:',
@@ -218,12 +218,12 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
     {
       q: 'Estados de erro devem ser diferenciados de estados vazios porque:',
       options: [
-        'Erro nunca precisa de mensagem',
         'A causa, responsabilidade e recuperação são diferentes',
+        'Erro nunca precisa de mensagem',
         'Empty state sempre usa vermelho',
         'Erro só existe em APIs',
       ],
-      answer: 1,
+      answer: 0,
     },
   ],
   'w3-client-server': [
@@ -231,21 +231,21 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
       q: 'No modelo cliente–servidor, a interface normalmente:',
       options: [
         'Armazena e processa todas as regras de negócio',
-        'Envia solicitações e representa o resultado recebido',
         'Substitui completamente o backend',
+        'Envia solicitações e representa o resultado recebido',
         'Não precisa considerar falhas',
       ],
-      answer: 1,
+      answer: 2,
     },
     {
       q: 'Quando o servidor demora a responder, a UI deve:',
       options: [
         'Congelar sem feedback',
-        'Comunicar loading e evitar ações duplicadas',
         'Assumir sucesso imediato',
         'Ocultar o formulário',
+        'Comunicar loading e evitar ações duplicadas',
       ],
-      answer: 1,
+      answer: 3,
     },
     {
       q: 'Dados persistidos em banco ficam tipicamente:',
@@ -262,64 +262,64 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
     {
       q: 'Uma API web permite que o frontend:',
       options: [
-        'Ignore o backend',
         'Troque dados estruturados com serviços externos ou backend',
+        'Ignore o backend',
         'Armazene senhas em texto puro',
         'Elimine estados de erro',
       ],
-      answer: 1,
+      answer: 0,
     },
     {
       q: 'Ao desenhar uma tela que consome API, é essencial mapear:',
       options: [
         'Apenas a tipografia',
-        'Quais dados entram, saem e o que acontece se falhar',
         'Somente o logo do parceiro',
+        'Quais dados entram, saem e o que acontece se falhar',
         'Quantidade de frames',
       ],
-      answer: 1,
+      answer: 2,
     },
     {
       q: 'Dependência de serviço externo exige considerar:',
       options: [
         'Apenas cor do botão primário',
-        'Indisponibilidade, latência e mensagens compreensíveis',
         'Remoção de loading',
         'Uso exclusivo de mock estático',
+        'Indisponibilidade, latência e mensagens compreensíveis',
       ],
-      answer: 1,
+      answer: 3,
     },
   ],
   'w3-http': [
     {
       q: 'Uma resposta HTTP 202 geralmente indica:',
       options: [
-        'Solicitação aceita, processamento pode continuar',
         'Usuário sem permissão',
+        'Solicitação aceita, processamento pode continuar',
         'Recurso inexistente',
         'Servidor nunca recebeu a solicitação',
       ],
-      answer: 0,
+      answer: 1,
     },
     {
       q: 'Código 404 na interface deve ser traduzido para:',
       options: [
-        'Mensagem técnica bruta sem contexto',
         'Explicação clara e caminho de recuperação quando possível',
+        'Mensagem técnica bruta sem contexto',
         'Tela em branco',
         'Sucesso silencioso',
       ],
-      answer: 1,
+      answer: 0,
     },
     {
       q: 'Erro 403 (sem permissão) difere de 401 porque:',
       options: [
         '403 sempre significa sucesso',
-        '403 indica autenticado, mas sem autorização para a ação',
         'Não há diferença para o designer',
+        '403 indica autenticado, mas sem autorização para a ação',
         '401 só ocorre em mobile',
       ],
-      answer: 1,
+      answer: 2,
     },
   ],
   'w4-study-mode': [
@@ -327,11 +327,11 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
       q: 'O Study Mode do ChatGPT é mais adequado para:',
       options: [
         'Receber respostas prontas sem questionamento',
-        'Aprendizagem socrática com perguntas e verificação de entendimento',
         'Substituir evidências da sprint',
         'Gerar telas finais automaticamente',
+        'Aprendizagem socrática com perguntas e verificação de entendimento',
       ],
-      answer: 1,
+      answer: 3,
     },
     {
       q: 'Durante estudo com IA, respostas vagas devem ser:',
@@ -346,12 +346,12 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
     {
       q: 'Um bom encerramento de sessão com IA inclui:',
       options: [
-        'Somente agradecer',
         'Teste final, lacunas identificadas e aplicação na demanda real',
+        'Somente agradecer',
         'Apagar o histórico',
         'Publicar sem revisão humana',
       ],
-      answer: 1,
+      answer: 0,
     },
   ],
   'w4-prompt': [
@@ -359,21 +359,21 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
       q: 'Um prompt profissional deve incluir:',
       options: [
         'Somente uma frase curta',
-        'Objetivo, contexto, restrições, tarefa e critério de qualidade',
         'A resposta esperada pronta',
+        'Objetivo, contexto, restrições, tarefa e critério de qualidade',
         'O máximo de jargão possível',
       ],
-      answer: 1,
+      answer: 2,
     },
     {
       q: 'Incluir contexto da demanda real no prompt ajuda a IA a:',
       options: [
         'Inventar requisitos',
-        'Relacionar o conceito ao problema, riscos e estados da sprint',
         'Evitar perguntas',
         'Eliminar handoff',
+        'Relacionar o conceito ao problema, riscos e estados da sprint',
       ],
-      answer: 1,
+      answer: 3,
     },
     {
       q: 'Restrições em um prompt servem para:',
@@ -390,32 +390,32 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
     {
       q: 'IA no Figma é mais útil para:',
       options: [
-        'Substituir julgamento de produto',
         'Explorar variações, conteúdo e acelerar com revisão crítica',
+        'Substituir julgamento de produto',
         'Eliminar componentes',
         'Publicar sem testes',
       ],
-      answer: 1,
+      answer: 0,
     },
     {
       q: 'Resultado gerado por IA no Figma deve ser:',
       options: [
         'Aprovado automaticamente',
-        'Revisado quanto a consistência, acessibilidade e aderência ao DS',
         'Ignorado',
+        'Revisado quanto a consistência, acessibilidade e aderência ao DS',
         'Usado sem documentação',
       ],
-      answer: 1,
+      answer: 2,
     },
     {
       q: 'Usar IA para naming e organização de camadas exige:',
       options: [
         'Nenhum padrão de time',
-        'Validação humana contra convenções do projeto',
         'Desativar Auto Layout',
         'Remover variantes',
+        'Validação humana contra convenções do projeto',
       ],
-      answer: 1,
+      answer: 3,
     },
   ],
   'w4-dev-mode': [
@@ -432,22 +432,22 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
     {
       q: 'Anotações no handoff devem esclarecer:',
       options: [
-        'Preferência pessoal de cor',
         'Comportamentos, estados, exceções e dependências',
+        'Preferência pessoal de cor',
         'Somente o nome do designer',
         'Histórico de commits',
       ],
-      answer: 1,
+      answer: 0,
     },
     {
       q: 'Componentes com variantes no handoff precisam indicar:',
       options: [
         'Apenas o estado default',
-        'Quais variantes existem e quando usar cada uma',
         'Somente o ícone do Figma',
+        'Quais variantes existem e quando usar cada uma',
         'Nada além do frame',
       ],
-      answer: 1,
+      answer: 2,
     },
   ],
 }
