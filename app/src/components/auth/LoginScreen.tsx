@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  App as AntApp,
+  Alert,
   Button,
   Card,
   Form,
@@ -19,18 +19,19 @@ interface LoginFormValues {
 
 export function LoginScreen() {
   const [loading, setLoading] = useState(false)
-  const { message } = AntApp.useApp()
+  const [loginError, setLoginError] = useState<string | null>(null)
   const [form] = Form.useForm<LoginFormValues>()
 
   async function handleLogin(values: LoginFormValues) {
     setLoading(true)
+    setLoginError(null)
     const { error } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
     })
     setLoading(false)
     if (error) {
-      message.error(
+      setLoginError(
         error.message === 'Invalid login credentials'
           ? 'E-mail ou senha incorretos.'
           : error.message,
@@ -40,6 +41,7 @@ export function LoginScreen() {
 
   return (
     <div
+      className="login-screen"
       style={{
         minHeight: '100vh',
         display: 'flex',
@@ -63,9 +65,9 @@ export function LoginScreen() {
               marginBottom: 16,
             }}
           >
-            <TrophyOutlined style={{ fontSize: 28, color: '#fff' }} />
+            <TrophyOutlined style={{ fontSize: 28, color: '#fff' }} aria-hidden />
           </div>
-          <Title level={2} style={{ margin: 0 }}>
+          <Title level={1} style={{ margin: 0, fontSize: 28 }}>
             Growth Lab
           </Title>
           <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 0 }}>
@@ -74,11 +76,30 @@ export function LoginScreen() {
         </div>
 
         <Card bordered={false} style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
-          <Title level={4} style={{ textAlign: 'center', marginTop: 0, marginBottom: 24 }}>
+          <Title level={2} style={{ textAlign: 'center', marginTop: 0, marginBottom: 24, fontSize: 20 }}>
             Entrar
           </Title>
 
-          <Form form={form} layout="vertical" onFinish={handleLogin}>
+          {loginError && (
+            <Alert
+              type="error"
+              showIcon
+              role="alert"
+              aria-live="assertive"
+              title={loginError}
+              style={{ marginBottom: 16 }}
+              closable
+              onClose={() => setLoginError(null)}
+            />
+          )}
+
+          <Form
+            form={form}
+            className="login-form"
+            layout="vertical"
+            onFinish={handleLogin}
+            onValuesChange={() => loginError && setLoginError(null)}
+          >
             <Form.Item
               name="email"
               label="E-mail"
@@ -88,7 +109,7 @@ export function LoginScreen() {
               ]}
             >
               <Input
-                prefix={<MailOutlined />}
+                prefix={<MailOutlined aria-hidden />}
                 placeholder="admin@gmail.com"
                 size="large"
                 autoComplete="email"
@@ -101,7 +122,7 @@ export function LoginScreen() {
               rules={[{ required: true, message: 'Informe sua senha.' }]}
             >
               <Input.Password
-                prefix={<LockOutlined />}
+                prefix={<LockOutlined aria-hidden />}
                 placeholder="••••••"
                 size="large"
                 autoComplete="current-password"

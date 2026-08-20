@@ -7,6 +7,8 @@ import {
   Col,
   ConfigProvider,
   Empty,
+  Drawer,
+  Grid,
   Layout,
   Menu,
   type MenuProps,
@@ -40,6 +42,7 @@ import {
   FileSearchOutlined,
   HomeOutlined,
   LogoutOutlined,
+  MenuOutlined,
   PlusOutlined,
   PrinterOutlined,
   RobotOutlined,
@@ -70,6 +73,7 @@ const { Title, Text, Paragraph } = Typography
 
 const SIDEBAR_WIDTH = 280
 const CONTENT_PADDING = 32
+const MOBILE_BREAKPOINT = 'lg'
 
 const BASE_NAV_ITEMS: { href: string; label: string }[] = [
   { href: '#overview', label: 'Visão geral' },
@@ -206,6 +210,7 @@ function AppShell({
   loadStatus,
   saveStatus,
   error,
+  reload,
   toggleComplete,
   addEvidence,
   deleteEvidence,
@@ -248,6 +253,8 @@ function AppShell({
 }) {
   const { message, modal } = AntApp.useApp()
   const { token } = antdTheme.useToken()
+  const screens = Grid.useBreakpoint()
+  const isMobile = !screens[MOBILE_BREAKPOINT]
 
   const [evidenceOpen, setEvidenceOpen] = useState(false)
   const [evidenceWeek, setEvidenceWeek] = useState(1)
@@ -256,6 +263,8 @@ function AppShell({
   const [prompt, setPrompt] = useState<{ topic: string; link: string; week: string } | null>(null)
   const [activeView, setActiveView] = useState<'trail' | 'backoffice'>('trail')
   const [activeSection, setActiveSection] = useState('#overview')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
   const progress = useMemo(
@@ -356,6 +365,111 @@ function AppShell({
     }
   })
 
+  const handleNavClick = useCallback(
+    (key: string) => {
+      if (key === '#backoffice') {
+        setActiveView('backoffice')
+        setActiveSection('#backoffice')
+        contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+        setMobileMenuOpen(false)
+        return
+      }
+
+      setActiveView('trail')
+      setActiveSection(key)
+      contentRef.current?.scrollTo({ top: 0, behavior: 'auto' })
+      requestAnimationFrame(() => {
+        document.getElementById(key.replace('#', ''))?.scrollIntoView({ behavior: 'smooth' })
+      })
+      setMobileMenuOpen(false)
+    },
+    [],
+  )
+
+  useEffect(() => {
+    if (activeView !== 'trail') return
+
+    const container = contentRef.current
+    if (!container) return
+
+    const sectionIds = navItems
+      .filter((item) => item.href !== '#backoffice')
+      .map((item) => item.href.replace('#', ''))
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const intersecting = entries.filter((entry) => entry.isIntersecting)
+        if (intersecting.length === 0) return
+
+        const topmost = intersecting.reduce((best, entry) =>
+          entry.boundingClientRect.top < best.boundingClientRect.top ? entry : best,
+        )
+        setActiveSection(`#${topmost.target.id}`)
+      },
+      {
+        root: container,
+        rootMargin: '-10% 0px -55% 0px',
+        threshold: [0, 0.1, 0.25, 0.5],
+      },
+    )
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id)
+      if (el) observer.observe(el)
+    })
+
+    return () => observer.disconnect()
+  }, [activeView, navItems])
+
+  const sidebarPadding = isMobile ? 16 : 20
+
+  const sidebarBody = (
+    <>
+      <Space align="center" style={{ marginBottom: 20 }}>
+        <Avatar shape="square" style={{ background: token.colorPrimary }}>
+          G
+        </Avatar>
+        <div>
+          <Text strong>Growth Lab</Text>
+          <br />
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            Product Design · 30 dias
+          </Text>
+        </div>
+      </Space>
+
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <Text type="secondary" style={{ fontSize: 11, textTransform: 'uppercase' }}>
+          Progresso geral
+        </Text>
+        <br />
+        <Text strong>{getCycleStatus(progress)}</Text>
+        <Progress percent={progress} size="small" style={{ marginTop: 8 }} />
+        <Space style={{ width: '100%', justifyContent: 'space-between', marginTop: 4 }}>
+          <Text type="secondary" style={{ fontSize: 11 }}>
+            {store.completed.length} de {ALL_RESOURCE_IDS.length} conteúdos
+          </Text>
+          <Text type="secondary" style={{ fontSize: 11 }}>
+            {store.evidences.length} evidência{store.evidences.length === 1 ? '' : 's'}
+          </Text>
+        </Space>
+      </Card>
+
+      <nav aria-label="Navegação da trilha">
+        <Menu
+          className="app-sider-menu"
+          mode="inline"
+          theme={store.theme}
+          selectable
+          selectedKeys={[activeView === 'backoffice' ? '#backoffice' : activeSection]}
+          items={menuItems}
+          style={{ border: 'none', background: 'transparent' }}
+          onClick={({ key }) => handleNavClick(String(key))}
+        />
+      </nav>
+    </>
+  )
+
   async function handleToggle(id: string) {
     const wasDone = store.completed.includes(id)
     await toggleComplete(id)
@@ -381,8 +495,14 @@ function AppShell({
       okButtonProps: { danger: true },
       cancelText: 'Cancelar',
       onOk: async () => {
-        await deleteEvidence(evidence.id)
-        message.success('Evidência removida.')
+        try {
+          await deleteEvidence(evidence.id)
+          message.success('Evidência removida.')
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : 'Falha ao remover evidência.'
+          setActionError(msg)
+          message.error(msg)
+        }
       },
     })
   }
@@ -405,93 +525,74 @@ function AppShell({
           <Title level={4} type="danger">
             Erro ao carregar
           </Title>
-          <Paragraph type="secondary">{error}</Paragraph>
+          <Alert
+            type="error"
+            showIcon
+            role="alert"
+            aria-live="assertive"
+            title={error ?? 'Não foi possível carregar sua trilha.'}
+            style={{ marginBottom: 16 }}
+          />
           <Paragraph type="secondary" style={{ fontSize: 12 }}>
-            Tente sair e entrar novamente. Se o erro persistir, verifique sua conexão com a internet.
+            Verifique sua conexão com a internet e tente novamente.
           </Paragraph>
+          <Space wrap>
+            <Button type="primary" onClick={reload}>
+              Tentar novamente
+            </Button>
+            <Button onClick={onSignOut}>Sair</Button>
+          </Space>
         </Card>
       </div>
     )
   }
 
+  const contentPadding = isMobile ? 16 : CONTENT_PADDING
+  const mainOffset = isMobile ? 0 : SIDEBAR_WIDTH
+  const modalWidth = isMobile ? '100%' : 640
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider
-        width={SIDEBAR_WIDTH}
-        theme={store.theme}
-        className="no-print app-sider-fixed"
-        style={{
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          height: '100vh',
-          overflowY: 'auto',
-          zIndex: 10,
-          borderRight: `1px solid ${token.colorBorderSecondary}`,
-        }}
+      <a href="#main-content" className="skip-link">
+        Ir para o conteúdo principal
+      </a>
+
+      {!isMobile && (
+        <Sider
+          width={SIDEBAR_WIDTH}
+          theme={store.theme}
+          className="no-print app-sider-fixed"
+          style={{
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            height: '100vh',
+            overflowY: 'auto',
+            zIndex: 10,
+            borderRight: `1px solid ${token.colorBorderSecondary}`,
+          }}
+        >
+          <div style={{ padding: sidebarPadding }}>{sidebarBody}</div>
+        </Sider>
+      )}
+
+      <Drawer
+        title="Menu da trilha"
+        placement="left"
+        open={isMobile && mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        className="no-print app-mobile-drawer"
+        styles={{ body: { padding: sidebarPadding } }}
+        width={Math.min(SIDEBAR_WIDTH + 40, 320)}
       >
-        <div style={{ padding: 20 }}>
-          <Space align="center" style={{ marginBottom: 20 }}>
-            <Avatar shape="square" style={{ background: token.colorPrimary }}>
-              G
-            </Avatar>
-            <div>
-              <Text strong>Growth Lab</Text>
-              <br />
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                Product Design · 30 dias
-              </Text>
-            </div>
-          </Space>
-
-          <Card size="small" style={{ marginBottom: 16 }}>
-            <Text type="secondary" style={{ fontSize: 11, textTransform: 'uppercase' }}>
-              Progresso geral
-            </Text>
-            <br />
-            <Text strong>{getCycleStatus(progress)}</Text>
-            <Progress percent={progress} size="small" style={{ marginTop: 8 }} />
-            <Space style={{ width: '100%', justifyContent: 'space-between', marginTop: 4 }}>
-              <Text type="secondary" style={{ fontSize: 11 }}>
-                {store.completed.length} de {ALL_RESOURCE_IDS.length} conteúdos
-              </Text>
-              <Text type="secondary" style={{ fontSize: 11 }}>
-                {store.evidences.length} evidência{store.evidences.length === 1 ? '' : 's'}
-              </Text>
-            </Space>
-          </Card>
-
-          <Menu
-            className="app-sider-menu"
-            mode="inline"
-            theme={store.theme}
-            selectable
-            selectedKeys={[activeView === 'backoffice' ? '#backoffice' : activeSection]}
-            items={menuItems}
-            style={{ border: 'none', background: 'transparent' }}
-            onClick={({ key }) => {
-              if (key === '#backoffice') {
-                setActiveView('backoffice')
-                contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-                return
-              }
-
-              setActiveView('trail')
-              setActiveSection(key)
-              contentRef.current?.scrollTo({ top: 0, behavior: 'auto' })
-              requestAnimationFrame(() => {
-                document.getElementById(key.replace('#', ''))?.scrollIntoView({ behavior: 'smooth' })
-              })
-            }}
-          />
-        </div>
-      </Sider>
+        {sidebarBody}
+      </Drawer>
 
       <Layout
         className="app-main-layout"
         style={{
-          marginLeft: SIDEBAR_WIDTH,
-          width: `calc(100% - ${SIDEBAR_WIDTH}px)`,
+          marginLeft: mainOffset,
+          width: mainOffset ? `calc(100% - ${mainOffset}px)` : '100%',
           height: '100vh',
           display: 'flex',
           flexDirection: 'column',
@@ -502,36 +603,48 @@ function AppShell({
           className="no-print app-header"
           style={{
             flexShrink: 0,
-            height: 56,
-            lineHeight: '56px',
-            padding: `0 ${CONTENT_PADDING}px`,
+            height: 'auto',
+            minHeight: 56,
+            lineHeight: 'normal',
+            padding: `${token.paddingSM}px ${contentPadding}px`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: token.marginSM,
             background: token.colorBgContainer,
             borderBottom: `1px solid ${token.colorBorderSecondary}`,
+            flexWrap: 'wrap',
           }}
         >
-          <Space size={token.marginSM} style={{ minWidth: 0 }} align="center">
+          <Space size={token.marginSM} style={{ minWidth: 0, flex: 1 }} align="center" wrap>
+            {isMobile && (
+              <Button
+                type="text"
+                icon={<MenuOutlined />}
+                aria-label="Abrir menu de navegação"
+                onClick={() => setMobileMenuOpen(true)}
+              />
+            )}
             {isAdmin && (
               <>
-                <Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
-                  Selecione o Avaliado:
-                </Text>
+                {!isMobile && (
+                  <Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
+                    Selecione o Avaliado:
+                  </Text>
+                )}
                 <Select
-                  style={{ minWidth: 240 }}
+                  style={{ minWidth: isMobile ? 160 : 240, maxWidth: '100%' }}
                   placeholder="Selecione o Avaliado"
                   value={selectedLearnerId ?? undefined}
                   onChange={onSelectLearner}
                   options={learners.map((l) => ({ value: l.userId, label: l.email }))}
+                  aria-label="Selecione o avaliado"
                 />
               </>
             )}
             {saveStatus === 'saving' && <Text type="secondary">Salvando…</Text>}
-            {saveStatus === 'error' && <Text type="danger">Erro ao salvar</Text>}
           </Space>
-          <Space size={token.marginXS} wrap={false}>
+          <Space size={token.marginXS} wrap className="app-header-actions">
             <Button
               icon={store.theme === 'dark' ? <BulbFilled /> : <BulbOutlined />}
               onClick={() => setTheme(store.theme === 'light' ? 'dark' : 'light')}
@@ -543,32 +656,51 @@ function AppShell({
                 exportProgress(userEmail)
                 message.success('Relatório PDF exportado.')
               }}
+              aria-label="Exportar relatório"
             >
-              Exportar
+              {!isMobile && 'Exportar'}
             </Button>
             <Button
               type="primary"
               icon={<PrinterOutlined />}
               onClick={() => openPrintReport(store, userEmail)}
+              aria-label="Imprimir relatório"
             >
-              Imprimir
+              {!isMobile && 'Imprimir'}
             </Button>
             <Button
               icon={<LogoutOutlined />}
               onClick={() => onSignOut()}
+              aria-label="Sair da conta"
             >
-              Sair
+              {!isMobile && 'Sair'}
             </Button>
           </Space>
         </Header>
 
+        {(saveStatus === 'error' && error) || actionError ? (
+          <Alert
+            type="error"
+            showIcon
+            role="alert"
+            aria-live="assertive"
+            title={actionError ?? error ?? 'Erro ao salvar'}
+            closable
+            onClose={() => setActionError(null)}
+            style={{ margin: `0 ${contentPadding}px`, flexShrink: 0 }}
+          />
+        ) : null}
+
         <Content
+          id="main-content"
           ref={contentRef}
           className="app-content-scroll"
+          role="main"
+          tabIndex={-1}
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: CONTENT_PADDING,
+            padding: contentPadding,
             width: '100%',
             boxSizing: 'border-box',
           }}
@@ -600,7 +732,7 @@ function AppShell({
                 <Tag style={{ marginBottom: 12, background: '#2f54eb', color: '#fff', border: 'none' }}>
                   Desenvolvimento aplicado à sprint
                 </Tag>
-                <Title level={2} style={{ marginTop: 0, marginBottom: 12 }}>
+                <Title level={1} style={{ marginTop: 0, marginBottom: 12, fontSize: isMobile ? 24 : 30 }}>
                   Evolução visível, não apenas conteúdo assistido.
                 </Title>
                 <Paragraph type="secondary" style={{ maxWidth: 540 }}>
@@ -771,6 +903,8 @@ function AppShell({
         onCancel={closeEvidenceModal}
         footer={null}
         destroyOnHidden
+        width={modalWidth}
+        style={isMobile ? { top: 16, maxWidth: 'calc(100vw - 32px)' } : undefined}
       >
         <EvidenceForm
           defaultWeek={evidenceWeek}
@@ -796,6 +930,8 @@ function AppShell({
         onCancel={() => setQuizTarget(null)}
         footer={null}
         destroyOnClose
+        width={modalWidth}
+        style={isMobile ? { top: 16, maxWidth: 'calc(100vw - 32px)' } : undefined}
       >
         {quizTarget && (
           <QuizForm
@@ -817,7 +953,8 @@ function AppShell({
         onCancel={() => setPrompt(null)}
         footer={null}
         destroyOnHidden
-        width={640}
+        width={modalWidth}
+        style={isMobile ? { top: 16, maxWidth: 'calc(100vw - 32px)' } : undefined}
       >
         {prompt && <PromptPanel topic={prompt.topic} link={prompt.link} week={prompt.week} />}
       </Modal>

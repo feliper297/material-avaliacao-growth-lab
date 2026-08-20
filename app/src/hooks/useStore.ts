@@ -18,6 +18,9 @@ export function useStore(userId: string | null, options: UseStoreOptions = {}) {
   const [loadStatus, setLoadStatus] = useState<LoadStatus>(userId ? 'loading' : 'idle')
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
+
+  const reload = useCallback(() => setReloadKey((key) => key + 1), [])
 
   useEffect(() => {
     if (!userId) {
@@ -46,7 +49,7 @@ export function useStore(userId: string | null, options: UseStoreOptions = {}) {
     return () => {
       active = false
     }
-  }, [userId])
+  }, [userId, reloadKey])
 
   const persist = useCallback(
     async (next: AppStore) => {
@@ -173,6 +176,7 @@ export function useStore(userId: string | null, options: UseStoreOptions = {}) {
     loadStatus,
     saveStatus,
     error,
+    reload,
     toggleComplete,
     addEvidence,
     deleteEvidence,

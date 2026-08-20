@@ -8,6 +8,44 @@ body {
   min-height: 100vh;
 }
 
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 1000;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #0958d9;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  top: 16px;
+}
+
+.login-form .ant-input-affix-wrapper,
+.login-form .ant-input-affix-wrapper-lg,
+.login-form .ant-btn-lg {
+  min-height: 44px;
+}
+
+.login-form .ant-btn-lg {
+  padding-block: 10px;
+}
+
+.app-header-actions .ant-btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (max-width: 991px) {
+  .app-mobile-drawer .ant-drawer-body {
+    padding-bottom: 24px;
+  }
+}
+
 .app-main-layout {
   box-sizing: border-box;
 }

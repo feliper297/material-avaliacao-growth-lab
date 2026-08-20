@@ -1,5 +1,5 @@
 import { DeleteOutlined, EditOutlined, EyeOutlined, FileSearchOutlined, LinkOutlined } from '@ant-design/icons'
-import { Button, Space, Tag, Tooltip, Typography, theme as antdTheme } from 'antd'
+import { Button, Space, Tag, Typography, theme as antdTheme } from 'antd'
 import type { Evidence } from '../../../shared/types/store'
 import { linkifyText } from '../../utils/linkifyText'
 
@@ -152,15 +152,15 @@ export function QuizResultSummary({ title, score, total, onReview }: QuizResultS
         <QuizScoreTag score={score} total={total} />
       </div>
       {onReview && (
-        <Tooltip title="Revisar teste">
-          <Button
-            type="default"
-            size="small"
-            aria-label={`Revisar teste ${title}`}
-            icon={<EyeOutlined />}
-            onClick={onReview}
-          />
-        </Tooltip>
+        <Button
+          type="default"
+          size="small"
+          aria-label={`Revisar teste ${title}`}
+          icon={<EyeOutlined />}
+          onClick={onReview}
+        >
+          Revisar teste
+        </Button>
       )}
     </div>
   )
