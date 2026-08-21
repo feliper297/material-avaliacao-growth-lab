@@ -158,8 +158,9 @@ export function QuizResultSummary({ title, score, total, onReview }: QuizResultS
           aria-label={`Revisar teste ${title}`}
           icon={<EyeOutlined />}
           onClick={onReview}
+          style={{ flexShrink: 0, whiteSpace: 'nowrap' }}
         >
-          Revisar teste
+          Revisar
         </Button>
       )}
     </div>
