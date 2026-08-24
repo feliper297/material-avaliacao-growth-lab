@@ -198,7 +198,7 @@ body {
 
 .evaluation-attachments__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 12px;
   margin-top: 12px;
 }
@@ -206,8 +206,22 @@ body {
 .evaluation-attachments__item {
   border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 8px;
-  overflow: hidden;
   background: rgba(0, 0, 0, 0.02);
+  overflow: visible;
+}
+
+.evaluation-attachments__preview {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px 8px 0 0;
+}
+
+.evaluation-attachments__remove-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .evaluation-attachments__image {
