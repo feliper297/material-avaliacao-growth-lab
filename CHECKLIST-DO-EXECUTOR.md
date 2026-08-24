@@ -4,6 +4,8 @@ Autor: Bruno Liberato Girardi
 
 Este é o roteiro operacional. O executor deve marcar cada item somente quando houver evidência. A lista não substitui o sistema: ela orienta o trabalho até que o painel dentro do produto esteja funcionando.
 
+**Estado atual do software** (deploy, mock, Supabase, feito vs planejado): [app/ESTADO-DO-SISTEMA.md](./app/ESTADO-DO-SISTEMA.md) — não inferir a partir deste checklist.
+
 ## Como usar
 
 - `[ ]` pendente;

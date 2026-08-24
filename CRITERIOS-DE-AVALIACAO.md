@@ -2,6 +2,8 @@
 
 Autor: Bruno Liberato Girardi
 
+> Critérios do **avaliador**. Comportamento implementado da app: [app/ESTADO-DO-SISTEMA.md](./app/ESTADO-DO-SISTEMA.md).
+
 ## Distribuicao de peso
 
 | Frente | Peso |

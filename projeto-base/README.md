@@ -24,3 +24,5 @@ Antes de editar:
 
 O arquivo `index.html` foi normalizado a partir do protótipo original apenas para facilitar a execução. Não trate essa estrutura como arquitetura recomendada. O desafio avalia a capacidade de questionar o ponto de partida.
 
+A aplicação construída está em `app/`. Contraste protótipo vs produto: [app/ESTADO-DO-SISTEMA.md](../app/ESTADO-DO-SISTEMA.md).
+

@@ -61,11 +61,25 @@ Se escolher outra stack, deve documentar os comandos de instalação, desenvolvi
 
 ## Estrutura do pacote
 
+### Documentação da aplicação construída
+
+O pacote inclui muitos guias sobre o **processo de avaliação**. Para o **software em `app/`**, use apenas:
+
+| Documento | Conteúdo |
+|-----------|----------|
+| [app/ESTADO-DO-SISTEMA.md](./app/ESTADO-DO-SISTEMA.md) | Protótipo vs publicado vs mock vs Supabase; feito vs planejado |
+| [app/README.md](./app/README.md) | Instalação e comandos |
+| [app/VALIDACAO-LOCAL.md](./app/VALIDACAO-LOCAL.md) | Última validação lint/test/build |
+
+Evite inferir o comportamento da app a partir de ADRs da Semana 1 ou do protótipo em `projeto-base/` sem ler `ESTADO-DO-SISTEMA.md`.
+
+### Materiais do desafio (avaliador e executor)
+
 - [DESAFIO-DUPLO.md](./DESAFIO-DUPLO.md): objetivos, fases, desafios semanais e entregas.
 - [CONTRATO-COM-EXECUTOR.md](./CONTRATO-COM-EXECUTOR.md): regras de trabalho com Claude, Cursor e IA.
 - [PRIMEIRA-SEMANA.md](./PRIMEIRA-SEMANA.md): mensagem pronta, roteiro diário e rubrica da primeira sexta-feira.
 - [COMPORTAMENTOS-E-FEEDBACK.md](./COMPORTAMENTOS-E-FEEDBACK.md): dimensão comportamental observável, rubrica e exemplos de feedback.
-- [RUBRICA-DO-AVALIADOR.md](./RUBRICA-DO-AVALIADOR.md): régua completa para as quatro semanas e para a nota final.
+- [RUBRICA-DO-AVALIADOR.md](./RUBRICA-DO-AVALIADOR.md): régua das quatro semanas (complementa [CRITERIOS-DE-AVALIACAO.md](./CRITERIOS-DE-AVALIACAO.md), não precisa ler os dois por completo).
 - [PROMPT-DE-ESTUDO-COM-IA.md](./PROMPT-DE-ESTUDO-COM-IA.md): prompt socrático, teste de conhecimento e critério de conclusão.
 - [TRILHA-DE-APRENDIZAGEM.md](./TRILHA-DE-APRENDIZAGEM.md): dois estudos obrigatórios, um variável e aplicação por semana.
 - [PAINEL-DE-ACOMPANHAMENTO.md](./PAINEL-DE-ACOMPANHAMENTO.md): visão visual das fases complementares, Gantt e trilhas de evolução.
@@ -74,15 +88,13 @@ Se escolher outra stack, deve documentar os comandos de instalação, desenvolvi
 - [MVP-DA-FASE-1.md](./MVP-DA-FASE-1.md): critérios para o sistema ficar utilizável já na primeira semana.
 - [MODELO-DE-ONBOARDING.md](./MODELO-DE-ONBOARDING.md): como o produto ensina, pergunta, orienta e se constrói ao mesmo tempo.
 - [GUIA-DO-EXECUTOR.md](./GUIA-DO-EXECUTOR.md): conteúdo detalhado por fase, avanço esperado, checklist e feedback.
-- `GUIA-DO-EXECUTOR.pdf`: versão visual para compartilhar junto com o Notion.
-- Página compartilhável no Notion: [Growth Lab — Onboarding, checklist e prompt do executor](https://app.notion.com/p/3b3fa6874d5f81fe84ccf95927acb07a).
-- [CHECKLIST-DO-EXECUTOR.md](./CHECKLIST-DO-EXECUTOR.md): checklist visual semanal para o executor.
+- [CHECKLIST-DO-EXECUTOR.md](./CHECKLIST-DO-EXECUTOR.md): checklist operacional — **não duplica** [app/ESTADO-DO-SISTEMA.md](./app/ESTADO-DO-SISTEMA.md) (processo vs estado do código).
 - [PROMPT-MESTRE-CURSOR.md](./PROMPT-MESTRE-CURSOR.md): prompt inicial e prompt de continuidade para o Cursor no Mac.
 - O painel privado do avaliador para o Notion fica fora deste pacote e não deve ser enviado ao executor.
 - [BRIEF.md](./BRIEF.md): problema, usuário, hipóteses e recorte.
 - [ARQUITETURA-E-DECISOES.md](./ARQUITETURA-E-DECISOES.md): fronteiras entre front-end, BFF, back-end, banco e agentes.
 - [JORNADAS-E-TESTES.md](./JORNADAS-E-TESTES.md): jornadas, comportamentos e falhas obrigatórias.
-- [CRITERIOS-DE-AVALIACAO.md](./CRITERIOS-DE-AVALIACAO.md): rubrica de 100 pontos e red flags.
+- [CRITERIOS-DE-AVALIACAO.md](./CRITERIOS-DE-AVALIACAO.md): rubrica de 100 pontos e red flags — critérios do avaliador, não spec da app.
 - [RECURSOS.md](./RECURSOS.md): índice rápido dos estudos oficiais.
 - `estudos/`: guias curtos, exercícios e definição de concluído por tema.
 - `anexos/`: modelos para registro de IA, ADRs, check-in, auditoria, nota, feedback e evidências.

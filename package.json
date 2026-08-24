@@ -10,6 +10,7 @@
     "build": "cd app && npm run build",
     "lint": "cd app && npm run lint",
     "test": "cd app && npm run test",
+    "validate": "cd app && npm run validate",
     "preview": "cd app && npm run preview",
     "install-app": "cd app && npm install"
   }

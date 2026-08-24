@@ -1,13 +1,29 @@
-# Growth Lab App — Semana 1
+# Growth Lab App
 
-Walking skeleton da trilha de Product Design (ADR-001 a ADR-014).
+Aplicação React do desafio — trilha de Product Design, evidências e painel do avaliador.
+
+> **Estado atual (mock vs real, deploy, o que funciona):** leia [ESTADO-DO-SISTEMA.md](./ESTADO-DO-SISTEMA.md) — documento canônico.  
+> Este README cobre apenas instalação e comandos.
 
 ## Stack
 
-- **Front-end:** Vite + React + TypeScript + Tailwind (ADR-003, ADR-004, ADR-008)
-- **BFF:** Express na porta 3001 (ADR-005)
-- **Domínio:** `shared/domain/` — funções puras (ADR-006)
-- **Persistência:** `server/data/store.json` — mock local honesto (ADR-007)
+| Camada | Tecnologia |
+|--------|------------|
+| Front-end | Vite + React + TypeScript + Ant Design |
+| Persistência **ativa** | Supabase (Auth + Postgres) |
+| Persistência **legada** | BFF Express + `server/data/store.json` (Semana 1, não usada pelo front) |
+| PDF | jspdf (exportação de relatório) |
+
+## Pré-requisitos
+
+Crie `app/.env.local` com:
+
+```
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=sua-chave-anon
+```
+
+Sem isso a app autentica mas não persiste trilha/evidências.
 
 ## Rodar
 
@@ -17,36 +33,26 @@ npm install
 npm run dev
 ```
 
-Abre:
-
 - Front-end: http://127.0.0.1:5173/
-- BFF: http://127.0.0.1:3001/api/health
+- BFF legado (opcional, paralelo): http://127.0.0.1:3001/api/health
 
 ## Scripts
 
 | Comando | Descrição |
-|---|---|
-| `npm run dev` | Front + BFF em paralelo |
+|---------|-----------|
+| `npm run dev` | Vite + BFF legado em paralelo |
 | `npm run dev:client` | Só Vite |
-| `npm run dev:server` | Só Express BFF |
+| `npm run validate` | Lint + testes + build |
 | `npm run test` | Vitest (domínio) |
 | `npm run build` | Build de produção |
-| `npm run lint` | oxlint |
 
-## Rollback (ADR-014)
+## Deploy
 
-1. Parar servidores
-2. Restaurar `server/data/store.json` a partir de backup ou `server/data/store.example.json`
-3. Reiniciar `npm run dev`
+- **Produção:** https://app-zeta-tan-38.vercel.app
+- **Comando:** `npx vercel deploy --prod --cwd app`
+- CI/CD remoto: **não configurado** (deploy manual)
 
-## Limites declarados
+## Documentação relacionada
 
-- Sem Storybook (ADR-009) — Fase 4
-- Sem CI/CD remoto (ADR-012) — Fase 4
-- Sem deploy (ADR-010) — local dev
-- Recorte B: trilha + checklist; gate auditável completo do MVP `[→]` Semana 2 se evoluir para híbrido
-
-## Evidência
-
-- Testes: `npm run test`
-- Smoke BFF: `GET /api/health` → `{ ok: true, persistence: "json-file" }`
+- [ESTADO-DO-SISTEMA.md](./ESTADO-DO-SISTEMA.md) — protótipo vs publicado vs mock vs Supabase; feito vs planejado
+- [VALIDACAO-LOCAL.md](./VALIDACAO-LOCAL.md) — última execução de lint/test/build/audit
