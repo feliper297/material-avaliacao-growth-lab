@@ -379,7 +379,12 @@ function AppShell({
         </Text>
         <br />
         <Text strong>{getCycleStatus(progress)}</Text>
-        <Progress percent={progress} size="small" style={{ marginTop: 8 }} />
+        <Progress
+          percent={progress}
+          size="small"
+          status={progress >= 100 ? 'success' : 'active'}
+          style={{ marginTop: 8 }}
+        />
         <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 4 }}>
           {store.completed.length} de {ALL_RESOURCE_IDS.length} conteúdos
         </Text>

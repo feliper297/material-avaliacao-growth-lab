@@ -186,9 +186,6 @@ export function InlineQuizResult({ score, total }: { score: number; total: numbe
           Teste concluído
         </Tag>
         <QuizScoreTag score={score} total={total} />
-        <Text type="secondary" style={{ fontSize: 11 }}>
-          de {total} perguntas
-        </Text>
       </Space>
     </div>
   )

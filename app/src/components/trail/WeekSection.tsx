@@ -20,7 +20,7 @@
   TableOutlined,
   UpOutlined,
 } from '@ant-design/icons'
-import { Avatar, Button, Card, Col, Modal, Row, Space, Tag, Typography, theme as antdTheme } from 'antd'
+import { Avatar, Button, Card, Col, Modal, Row, Space, Typography, theme as antdTheme } from 'antd'
 import { useState, type ComponentType } from 'react'
 import { weekAccentHex, type TrailResource, type TrailWeek } from '../../../shared/data/weeks'
 import { getResourceQuiz } from '../../../shared/data/resource-quizzes'
@@ -140,10 +140,7 @@ export function WeekSection({
                 {String(week.id).padStart(2, '0')}
               </Avatar>
               <div style={{ minWidth: 0, flex: '1 1 auto' }}>
-                <Text type="secondary" style={{ fontSize: 11, textTransform: 'uppercase' }}>
-                  Semana {week.id}
-                </Text>
-                <Title level={3} style={{ margin: '2px 0 0', textWrap: 'balance' }}>
+                <Title level={3} style={{ margin: 0, textWrap: 'balance' }}>
                   {week.title}
                 </Title>
                 <Paragraph type="secondary" style={{ margin: '4px 0 0', fontWeight: 400 }}>
@@ -187,19 +184,9 @@ export function WeekSection({
                               {resourceIcon(resource.icon)}
                             </Avatar>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <Text strong style={{ display: 'block', marginBottom: 6 }}>
+                              <Text strong style={{ display: 'block', marginBottom: 12 }}>
                                 {resource.title}
                               </Text>
-                              <Space size={6} wrap style={{ marginBottom: 12 }}>
-                                <Text type="secondary" style={{ fontSize: 12 }}>
-                                  {resource.source}
-                                </Text>
-                                <Text type="secondary">·</Text>
-                                <Text type="secondary" style={{ fontSize: 12 }}>
-                                  {resource.duration}
-                                </Text>
-                                <Tag>{resource.type}</Tag>
-                              </Space>
                               <div
                                 style={{
                                   display: 'flex',
