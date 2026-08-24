@@ -108,36 +108,19 @@ export function EvaluationAttachmentsField({
         <div className="evaluation-attachments__grid">
           {value.map((attachment) => (
             <div key={attachment.id} className="evaluation-attachments__item">
-              <div className="evaluation-attachments__preview">
-                <Image
-                  src={attachment.url}
-                  alt={attachment.name}
-                  className="evaluation-attachments__image"
-                  preview={{ mask: 'Ampliar' }}
-                />
-                {!readOnly && (
-                  <Button
-                    type="primary"
-                    danger
-                    size="small"
-                    icon={<DeleteOutlined />}
-                    className="evaluation-attachments__remove-overlay"
-                    aria-label={`Excluir print ${attachment.name}`}
-                    onClick={() => handleRemove(attachment)}
-                  >
-                    Excluir
-                  </Button>
-                )}
-              </div>
+              <Image
+                src={attachment.url}
+                alt={attachment.name}
+                className="evaluation-attachments__image"
+                preview={{ mask: 'Ampliar' }}
+              />
               <div className="evaluation-attachments__meta">
                 <Text ellipsis className="evaluation-attachments__name">
                   {attachment.name}
                 </Text>
                 {!readOnly && (
                   <Button
-                    type="primary"
                     danger
-                    ghost
                     block
                     size="small"
                     icon={<DeleteOutlined />}

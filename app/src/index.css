@@ -206,28 +206,15 @@ body {
 .evaluation-attachments__item {
   border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.02);
-  overflow: visible;
-}
-
-.evaluation-attachments__preview {
-  position: relative;
   overflow: hidden;
-  border-radius: 8px 8px 0 0;
-}
-
-.evaluation-attachments__remove-overlay {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .evaluation-attachments__image {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
+  display: block;
 }
 
 .evaluation-attachments__meta {
@@ -246,6 +233,7 @@ body {
 
 .evaluation-attachments__remove {
   width: 100%;
+  margin-top: 4px;
 }
 
 .app-sider-menu.ant-menu {
