@@ -2,8 +2,6 @@ import { supabase } from '../lib/supabase'
 import type { EvaluationAttachment } from '../../shared/types/evaluation'
 
 const BUCKET = 'evaluation-prints'
-const MAX_FILE_SIZE = 5 * 1024 * 1024
-const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 
 function sanitizeFileName(name: string) {
   return name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 80)
@@ -29,11 +27,8 @@ export async function uploadEvaluationPrint(
   scope: 'week' | 'final',
   week: number | null,
 ): Promise<EvaluationAttachment> {
-  if (!ALLOWED_TYPES.has(file.type)) {
-    throw new Error('Formato inválido. Use JPG, PNG, WEBP ou GIF.')
-  }
-  if (file.size > MAX_FILE_SIZE) {
-    throw new Error('Imagem muito grande. O limite é 5 MB.')
+  if (!file.type.startsWith('image/')) {
+    throw new Error('Envie apenas arquivos de imagem.')
   }
 
   const path = buildStoragePath(learnerId, scope, week, file.name)
