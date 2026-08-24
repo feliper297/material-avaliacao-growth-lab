@@ -95,7 +95,7 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
   const [selectedLearnerId, setSelectedLearnerId] = useState<string | null>(null)
 
   const evaluationUserId = isAdmin ? selectedLearnerId : profile?.userId ?? null
-  const evaluations = useEvaluations(evaluationUserId, !profileLoading && !!profile)
+  const evaluations = useEvaluations(evaluationUserId, !profileLoading && !!profile, isAdmin)
 
   useEffect(() => {
     if (isAdmin && evaluations.learners.length > 0 && !selectedLearnerId) {

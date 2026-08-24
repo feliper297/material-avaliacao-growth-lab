@@ -38,16 +38,11 @@ const evaluationSelect =
 
 export const evaluationApi = {
   async ensureProfile(email: string): Promise<Profile> {
-    await requireSupabaseUser()
-    const existing = await this.getProfile()
-    if (existing) return existing
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Usuário não autenticado.')
+    const user = await requireSupabaseUser()
 
     const { data, error } = await supabase
       .from('profiles')
-      .insert({ user_id: user.id, email })
+      .upsert({ user_id: user.id, email }, { onConflict: 'user_id' })
       .select('user_id, email, role, active')
       .single()
 
