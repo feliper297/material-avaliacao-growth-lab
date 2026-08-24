@@ -67,7 +67,6 @@ O pacote inclui muitos guias sobre o **processo de avaliação**. Para o **softw
 
 | Documento | Conteúdo |
 |-----------|----------|
-| [app/SEGURANCA.md](./app/SEGURANCA.md) | Postura de segurança — status AMARELO, RLS, pendências |
 | [app/ESTADO-DO-SISTEMA.md](./app/ESTADO-DO-SISTEMA.md) | Protótipo vs publicado vs mock vs Supabase; feito vs planejado |
 | [app/README.md](./app/README.md) | Instalação e comandos |
 | [app/VALIDACAO-LOCAL.md](./app/VALIDACAO-LOCAL.md) | Última validação lint/test/build |

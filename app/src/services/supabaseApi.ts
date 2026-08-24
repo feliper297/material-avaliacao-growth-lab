@@ -1,15 +1,14 @@
 import { supabase } from '../lib/supabase'
 import type { AppStore, Evidence } from '../../shared/types/store'
 import type { EvidenceInput } from '../../shared/domain/evidence'
-import { assertLearnerAccess } from '../../shared/domain/authorization'
 import { DEFAULT_STORE } from '../../shared/types/store'
-import { requireAuthSubject, requireSupabaseUser } from './sessionAuth'
 
 export const supabaseApi = {
   async getState(userId?: string): Promise<AppStore> {
-    const subject = await requireAuthSubject()
-    const targetUserId = userId ?? subject.userId
-    assertLearnerAccess(subject, targetUserId)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Usuário não autenticado.')
+
+    const targetUserId = userId ?? user.id
 
     const { data, error } = await supabase
       .from('user_state')
@@ -51,8 +50,8 @@ export const supabaseApi = {
   },
 
   async saveState(store: AppStore): Promise<void> {
-    await requireAuthSubject()
-    const user = await requireSupabaseUser()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Usuário não autenticado.')
 
     const { error } = await supabase
       .from('user_state')
@@ -72,8 +71,8 @@ export const supabaseApi = {
   },
 
   async addEvidence(input: EvidenceInput): Promise<Evidence> {
-    await requireAuthSubject()
-    const user = await requireSupabaseUser()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Usuário não autenticado.')
 
     const { data, error } = await supabase
       .from('evidences')
@@ -102,8 +101,8 @@ export const supabaseApi = {
   },
 
   async deleteEvidence(id: string): Promise<void> {
-    await requireAuthSubject()
-    const user = await requireSupabaseUser()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Usuário não autenticado.')
 
     const { error } = await supabase
       .from('evidences')
@@ -115,8 +114,8 @@ export const supabaseApi = {
   },
 
   async updateEvidence(id: string, input: EvidenceInput): Promise<Evidence> {
-    await requireAuthSubject()
-    const user = await requireSupabaseUser()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Usuário não autenticado.')
 
     const { data, error } = await supabase
       .from('evidences')

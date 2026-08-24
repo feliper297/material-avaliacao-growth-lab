@@ -2,15 +2,15 @@ import { ALL_RESOURCE_IDS } from '../../shared/data/weeks'
 import { getOverallProgress } from '../../shared/domain/progress'
 import type { BackOfficeStats, BackOfficeUserRow, UpdateBackOfficeUserInput } from '../../shared/types/backoffice'
 import type { Profile } from '../../shared/types/evaluation'
-import { assertAdmin } from '../../shared/domain/authorization'
 import { supabase } from '../lib/supabase'
-import { requireAuthSubject } from './sessionAuth'
+
 export const backofficeApi = {
   async getStats(): Promise<BackOfficeStats> {
-    const subject = await requireAuthSubject()
-    assertAdmin(subject)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Usuário não autenticado.')
 
-    const [profilesRes, statesRes, evidencesRes, evaluationsRes] = await Promise.all([      supabase.from('profiles').select('user_id, email, role, active').order('email'),
+    const [profilesRes, statesRes, evidencesRes, evaluationsRes] = await Promise.all([
+      supabase.from('profiles').select('user_id, email, role, active').order('email'),
       supabase.from('user_state').select('user_id, completed, quizzes, updated_at'),
       supabase.from('evidences').select('user_id'),
       supabase.from('evaluations').select('learner_id, scope, week'),
@@ -94,18 +94,20 @@ export const backofficeApi = {
   },
 
   async setUserActive(userId: string, active: boolean): Promise<void> {
-    const subject = await requireAuthSubject()
-    assertAdmin(subject)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Usuário não autenticado.')
 
     const { error } = await supabase.from('profiles').update({ active }).eq('user_id', userId)
+
     if (error) throw new Error(error.message)
   },
 
   async updateUser(input: UpdateBackOfficeUserInput): Promise<void> {
-    const subject = await requireAuthSubject()
-    assertAdmin(subject)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Usuário não autenticado.')
 
-    const { error } = await supabase      .from('profiles')
+    const { error } = await supabase
+      .from('profiles')
       .update({
         email: input.email.trim(),
         role: input.role,

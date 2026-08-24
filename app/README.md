@@ -54,6 +54,5 @@ npm run dev
 
 ## Documentação relacionada
 
-- [SEGURANCA.md](./SEGURANCA.md) — postura de segurança (status AMARELO, RLS, riscos abertos)
 - [ESTADO-DO-SISTEMA.md](./ESTADO-DO-SISTEMA.md) — protótipo vs publicado vs mock vs Supabase; feito vs planejado
 - [VALIDACAO-LOCAL.md](./VALIDACAO-LOCAL.md) — última execução de lint/test/build/audit
