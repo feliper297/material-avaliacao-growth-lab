@@ -5,7 +5,9 @@ import type {
   Profile,
   WeekEvaluationInput,
 } from '../../shared/types/evaluation'
+import { assertAdmin, assertLearnerAccess } from '../../shared/domain/authorization'
 import { parseEvaluationAttachments } from './evaluationAttachmentApi'
+import { requireAuthSubject, requireSupabaseUser } from './sessionAuth'
 
 function mapEvaluation(row: {
   id: string
@@ -36,14 +38,16 @@ const evaluationSelect =
 
 export const evaluationApi = {
   async ensureProfile(email: string): Promise<Profile> {
+    await requireSupabaseUser()
+    const existing = await this.getProfile()
+    if (existing) return existing
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Usuário não autenticado.')
 
-    const role = email === 'admin@gmail.com' ? 'admin' : 'learner'
-
     const { data, error } = await supabase
       .from('profiles')
-      .upsert({ user_id: user.id, email, role }, { onConflict: 'user_id' })
+      .insert({ user_id: user.id, email })
       .select('user_id, email, role, active')
       .single()
 
@@ -79,6 +83,9 @@ export const evaluationApi = {
   },
 
   async listLearners(): Promise<Profile[]> {
+    const subject = await requireAuthSubject()
+    assertAdmin(subject)
+
     const { data, error } = await supabase
       .from('profiles')
       .select('user_id, email, role, active')
@@ -96,6 +103,9 @@ export const evaluationApi = {
   },
 
   async getEvaluations(learnerId: string): Promise<Evaluation[]> {
+    const subject = await requireAuthSubject()
+    assertLearnerAccess(subject, learnerId)
+
     const { data, error } = await supabase
       .from('evaluations')
       .select(evaluationSelect)
@@ -108,6 +118,9 @@ export const evaluationApi = {
   },
 
   async saveWeekEvaluation(input: WeekEvaluationInput): Promise<Evaluation> {
+    const subject = await requireAuthSubject()
+    assertAdmin(subject)
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Usuário não autenticado.')
 
@@ -161,6 +174,9 @@ export const evaluationApi = {
   },
 
   async saveFinalEvaluation(input: FinalEvaluationInput): Promise<Evaluation> {
+    const subject = await requireAuthSubject()
+    assertAdmin(subject)
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Usuário não autenticado.')
 

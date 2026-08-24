@@ -59,7 +59,7 @@ Para testar o mock JSON localmente (opcional): `npm run dev:server` + trocar man
 | **Cliente** | `src/lib/supabase.ts`, `src/services/supabaseApi.ts`, `src/services/evaluationApi.ts` |
 | **Variáveis** | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (arquivo `.env` local; secrets na Vercel) |
 | **Tabelas usadas** | `user_state`, `evidences`, `evaluations`, `profiles` (+ storage para prints de avaliação) |
-| **Segurança** | Apenas chave **anon** no front; RLS no projeto Supabase |
+| **Segurança** | Apenas chave **anon** no front; RLS no Supabase — ver [SEGURANCA.md](./SEGURANCA.md) (status **AMARELO**, não aprovado) |
 
 Sem `.env` configurado, `npm run dev` abre a UI mas **falha ao carregar dados** após login.
 
@@ -120,6 +120,7 @@ Validação: `npm run validate` — detalhes em [VALIDACAO-LOCAL.md](./VALIDACAO
 | Pergunta | Documento |
 |----------|-----------|
 | O que o software faz **hoje**? | **Este arquivo** |
+| Postura de segurança (honesta) | [SEGURANCA.md](./SEGURANCA.md) |
 | Como instalar e rodar? | [README.md](./README.md) |
 | Contrato do desafio de avaliação | [../README.md](../README.md) |
 | Protótipo HTML inicial | [../projeto-base/README.md](../projeto-base/README.md) |

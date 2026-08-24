@@ -1,7 +1,8 @@
 # Validação local — Growth Lab
 
 Registro técnico de lint, testes, build e audit.  
-Para **mock vs real, deploy e escopo funcional**, use [ESTADO-DO-SISTEMA.md](./ESTADO-DO-SISTEMA.md).
+Para **mock vs real, deploy e escopo funcional**, use [ESTADO-DO-SISTEMA.md](./ESTADO-DO-SISTEMA.md).  
+Para **postura de segurança (AMARELO)**, use [SEGURANCA.md](./SEGURANCA.md).
 
 ## Comando único
 
@@ -43,9 +44,7 @@ Lint:  OK (2 warnings pré-existentes)
        - server/index.ts: import DEFAULT_STORE não usado
        - src/utils/progressReport.ts: no-control-regex
 
-Test:  OK — 2 arquivos, 6 testes (Vitest)
-       - shared/domain/evidence.test.ts
-       - shared/domain/progress.test.ts
+Test:  OK — 3 arquivos, 11 testes (Vitest, incl. authorization.test.ts)
 
 Build: OK — tsc -b + vite build
        Bundle: index-D50FuTq8.js, index-Ya9HHuJt.css
