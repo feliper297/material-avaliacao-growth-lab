@@ -24,7 +24,7 @@ export function EvaluationAttachmentsField({
   readOnly = false,
   onChange,
 }: EvaluationAttachmentsFieldProps) {
-  const { message } = App.useApp()
+  const { message, modal } = App.useApp()
   const [uploading, setUploading] = useState(false)
   const attachmentsRef = useRef(value)
 
@@ -56,6 +56,17 @@ export function EvaluationAttachmentsField({
       }
       return false
     },
+  }
+
+  function confirmRemove(attachment: EvaluationAttachment) {
+    modal.confirm({
+      title: 'Remover este print?',
+      content: `"${attachment.name}" será excluído permanentemente.`,
+      okText: 'Remover',
+      okButtonProps: { danger: true },
+      cancelText: 'Cancelar',
+      onOk: () => handleRemove(attachment),
+    })
   }
 
   async function handleRemove(attachment: EvaluationAttachment) {
@@ -119,7 +130,7 @@ export function EvaluationAttachmentsField({
                     icon={<DeleteOutlined />}
                     className="evaluation-attachments__remove"
                     aria-label={`Excluir print ${attachment.name}`}
-                    onClick={() => handleRemove(attachment)}
+                    onClick={() => confirmRemove(attachment)}
                   >
                     Excluir print
                   </Button>

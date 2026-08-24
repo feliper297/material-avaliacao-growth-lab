@@ -30,6 +30,7 @@ import type { Evaluation, EvaluationAttachment } from '../../../shared/types/eva
 import { EvidenceItem, InlineQuizResult, QuizResultSummary } from './EvidenceItem'
 import { QuizReview } from './QuizReview'
 import { WeekEvaluationPanel } from '../admin/WeekEvaluationPanel'
+import { useBreakpointLayout } from '../../hooks/useBreakpointLayout'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -87,6 +88,7 @@ export function WeekSection({
   onDeleteEvidence,
 }: WeekSectionProps) {
   const { token } = antdTheme.useToken()
+  const { modalWidth, modalStyle, modalStyles, sectionGutter, layoutGutter } = useBreakpointLayout()
   const accent = weekAccentHex(week.id)
   const [expanded, setExpanded] = useState(true)
   const [quizReview, setQuizReview] = useState<{
@@ -123,14 +125,11 @@ export function WeekSection({
     )
 
   return (
-    <div id={`week-${week.id}`} style={{ scrollMarginTop: 96, marginTop: 24 }}>
+    <div id={`week-${week.id}`} className="week-section">
       <Card styles={{ body: { padding: 0 } }}>
         <div
+          className={`week-section-header${expanded ? ' week-section-header--expanded' : ''}`}
           style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: 12,
-            padding: '20px 24px',
             borderBottom: expanded ? `1px solid ${token.colorBorderSecondary}` : 'none',
           }}
         >
@@ -159,15 +158,15 @@ export function WeekSection({
             style={{ flex: 'none' }}
           />
         </div>
-        <div style={{ padding: expanded ? '20px 24px 24px' : 0 }}>
+        <div className={`week-section-body${expanded ? ' is-expanded' : ''}`}>
           {expanded && (
             <>
-              <Row gutter={24} align="top">
+              <Row gutter={layoutGutter} align="top">
                 <Col span={24}>
                   <Title level={4} style={{ margin: 0, marginBottom: 12 }}>
                     Conteúdos selecionados
                   </Title>
-                  <Row gutter={[16, 12]} align="stretch">
+                  <Row gutter={sectionGutter} align="stretch">
                     {week.resources.map((resource) => {
                       const completed = store.completed.includes(resource.id)
                       const rawQuiz = store.quizzes[resource.id]
@@ -248,7 +247,7 @@ export function WeekSection({
                 </Col>
               </Row>
 
-              <Row gutter={[16, 16]} style={{ marginTop: 20, alignItems: 'stretch' }}>
+              <Row gutter={sectionGutter} style={{ marginTop: 20, alignItems: 'stretch' }}>
                 <Col xs={24} md={12} style={{ display: 'flex' }}>
                   <Card size="small" style={{ width: '100%' }}>
                     <Text strong>Testes de conhecimento</Text>
@@ -332,7 +331,9 @@ export function WeekSection({
         onCancel={() => setQuizReview(null)}
         footer={null}
         destroyOnClose
-        width={640}
+        width={modalWidth}
+        style={modalStyle}
+        styles={modalStyles}
       >
         {quizReview && (
           <QuizReview

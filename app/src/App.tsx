@@ -7,7 +7,6 @@ import {
   Col,
   ConfigProvider,
   Drawer,
-  Grid,
   Layout,
   Menu,
   type MenuProps,
@@ -54,15 +53,12 @@ import { useEvaluations } from './hooks/useEvaluations'
 import { FinalEvaluationPanel } from './components/admin/FinalEvaluationPanel'
 import { BackOfficePanel } from './components/admin/BackOfficePanel'
 import { useBackOffice } from './hooks/useBackOffice'
+import { SIDEBAR_WIDTH, useBreakpointLayout } from './hooks/useBreakpointLayout'
 import type { Evidence } from '../shared/types/store'
 import type { BackOfficeStats } from '../shared/types/backoffice'
 
 const { Sider, Header, Content } = Layout
 const { Title, Text, Paragraph } = Typography
-
-const SIDEBAR_WIDTH = 280
-const CONTENT_PADDING = 32
-const MOBILE_BREAKPOINT = 'lg'
 
 const BASE_NAV_ITEMS: { href: string; label: string }[] = [
   ...WEEKS.map((w) => ({ href: `#week-${w.id}`, label: `Semana ${w.id}` })),
@@ -236,8 +232,14 @@ function AppShell({
 }) {
   const { message, modal } = AntApp.useApp()
   const { token } = antdTheme.useToken()
-  const screens = Grid.useBreakpoint()
-  const isMobile = !screens[MOBILE_BREAKPOINT]
+  const {
+    isMobile,
+    contentPadding,
+    modalWidth,
+    modalStyle,
+    modalStyles,
+    gridGutter,
+  } = useBreakpointLayout()
 
   const [evidenceOpen, setEvidenceOpen] = useState(false)
   const [evidenceWeek, setEvidenceWeek] = useState(1)
@@ -504,12 +506,10 @@ function AppShell({
     )
   }
 
-  const contentPadding = isMobile ? 16 : CONTENT_PADDING
   const mainOffset = isMobile ? 0 : SIDEBAR_WIDTH
-  const modalWidth = isMobile ? '100%' : 640
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout className="app-shell" style={{ minHeight: '100vh' }}>
       <a href="#main-content" className="skip-link">
         Ir para o conteúdo principal
       </a>
@@ -546,10 +546,12 @@ function AppShell({
       </Drawer>
 
       <Layout
-        className="app-main-layout"
+        className={`app-main-layout${isMobile ? ' app-main-layout--compact' : ''}`}
         style={{
           marginLeft: mainOffset,
-          width: mainOffset ? `calc(100% - ${mainOffset}px)` : '100%',
+          width: isMobile ? '100%' : `calc(100% - ${mainOffset}px)`,
+          maxWidth: '100vw',
+          minWidth: 0,
           height: '100vh',
           display: 'flex',
           flexDirection: 'column',
@@ -584,7 +586,12 @@ function AppShell({
             )}
             {isAdmin && (
               <Select
-                style={{ minWidth: isMobile ? 160 : 240, maxWidth: '100%' }}
+                style={{
+                  minWidth: isMobile ? 0 : 240,
+                  flex: isMobile ? '1 1 120px' : undefined,
+                  maxWidth: '100%',
+                  width: isMobile ? '100%' : undefined,
+                }}
                 placeholder="Participante"
                 value={selectedLearnerId ?? undefined}
                 onChange={onSelectLearner}
@@ -655,7 +662,7 @@ function AppShell({
             />
           ) : (
             <>
-              <Row gutter={16} style={{ marginBottom: 16 }}>
+              <Row gutter={gridGutter} style={{ marginBottom: 16 }}>
                 {[
                   { label: 'Progresso de aprendizagem', value: `${progress}%`, icon: <ArrowUpOutlined />, color: token.colorPrimary },
                   { label: 'Conteúdos concluídos', value: store.completed.length, icon: <CheckCircleOutlined />, color: token.colorSuccess },
@@ -727,7 +734,8 @@ function AppShell({
         footer={null}
         destroyOnHidden
         width={modalWidth}
-        style={isMobile ? { top: 16, maxWidth: 'calc(100vw - 32px)' } : undefined}
+        style={modalStyle}
+        styles={modalStyles}
       >
         <EvidenceForm
           defaultWeek={evidenceWeek}
@@ -754,7 +762,8 @@ function AppShell({
         footer={null}
         destroyOnClose
         width={modalWidth}
-        style={isMobile ? { top: 16, maxWidth: 'calc(100vw - 32px)' } : undefined}
+        style={modalStyle}
+        styles={modalStyles}
       >
         {quizTarget && (
           <QuizForm

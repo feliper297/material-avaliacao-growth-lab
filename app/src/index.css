@@ -46,21 +46,59 @@ body {
   align-items: center;
 }
 
+.app-shell {
+  min-height: 100vh;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
 .app-main-layout {
   box-sizing: border-box;
+  min-width: 0;
+}
+
+.app-main-layout--compact {
+  margin-left: 0 !important;
+  width: 100% !important;
+  max-width: 100vw;
 }
 
 .app-content-scroll {
   box-sizing: border-box;
   scroll-padding-top: var(--app-scroll-margin);
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.app-content-scroll .ant-row {
+  max-width: 100%;
+}
+
+.app-content-scroll .ant-col {
+  min-width: 0;
+}
+
+.app-content-scroll .ant-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.app-header.ant-layout-header {
+  line-height: normal;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .app-sider-fixed {
   box-sizing: border-box;
 }
 
-.app-header.ant-layout-header {
-  line-height: normal;
+.week-section {
+  scroll-margin-top: var(--app-scroll-margin);
+  margin-top: 24px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .week-section-header {
@@ -68,6 +106,7 @@ body {
   align-items: flex-start;
   gap: 12px;
   padding: var(--app-section-padding);
+  min-width: 0;
 }
 
 .week-section-body {
@@ -163,6 +202,14 @@ body {
 
 .week-evaluation-panel-card .ant-card-body {
   padding-bottom: 28px;
+}
+
+.evaluation-score-radios {
+  max-width: 100%;
+}
+
+.evaluation-score-radios .ant-radio-group {
+  max-width: 100%;
 }
 
 .evaluation-score-radios .ant-radio-button-wrapper {
@@ -302,8 +349,33 @@ body {
     --app-scroll-margin: 80px;
   }
 
+  .app-sider-fixed {
+    display: none !important;
+  }
+
+  .app-header-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .app-header-actions .ant-btn {
+    min-width: 44px;
+  }
+
+  .app-content-scroll .ant-card-body {
+    overflow-x: auto;
+  }
+
   .app-mobile-drawer .ant-drawer-body {
     padding-bottom: 24px;
+  }
+
+  .week-section-header .ant-typography {
+    word-break: break-word;
+  }
+
+  .trail-resource-card .ant-card-body {
+    overflow-x: hidden;
   }
 
   .final-evaluation-dimension-card .ant-card-body {
@@ -315,6 +387,11 @@ body {
   .backoffice-users-table .backoffice-user-email .ant-typography {
     white-space: normal;
     word-break: break-word;
+  }
+
+  .backoffice-panel .ant-table-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
   }
 
   .final-evaluation-footer__actions {
@@ -331,6 +408,29 @@ body {
   :root {
     --app-section-padding: 12px;
     --app-scroll-margin: 72px;
+  }
+
+  .app-header.ant-layout-header {
+    padding-inline: 12px !important;
+  }
+
+  .app-content-scroll {
+    padding: 12px !important;
+  }
+
+  .week-section-header {
+    gap: 8px;
+  }
+
+  .week-section-header .ant-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    font-size: 13px !important;
+  }
+
+  .evaluation-attachments__grid {
+    grid-template-columns: 1fr;
   }
 
   .week-evidence-header .ant-btn {
