@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Evaluation, EvaluationAttachment, Profile } from '../../shared/types/evaluation'
 import { evaluationApi } from '../services/evaluationApi'
 
-export function useEvaluations(learnerId: string | null, enabled: boolean, isAdmin: boolean) {
+export function useEvaluations(learnerId: string | null, enabled: boolean) {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([])
   const [learners, setLearners] = useState<Profile[]>([])
   const [loading, setLoading] = useState(false)
@@ -14,12 +14,8 @@ export function useEvaluations(learnerId: string | null, enabled: boolean, isAdm
     setLoading(true)
     setError(null)
     try {
-      if (isAdmin) {
-        const learnerList = await evaluationApi.listLearners()
-        setLearners(learnerList)
-      } else {
-        setLearners([])
-      }
+      const learnerList = await evaluationApi.listLearners()
+      setLearners(learnerList)
 
       if (learnerId) {
         const data = await evaluationApi.getEvaluations(learnerId)
@@ -32,7 +28,7 @@ export function useEvaluations(learnerId: string | null, enabled: boolean, isAdm
     } finally {
       setLoading(false)
     }
-  }, [enabled, isAdmin, learnerId])
+  }, [enabled, learnerId])
 
   useEffect(() => {
     load()
