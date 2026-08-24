@@ -52,6 +52,7 @@ body {
 
 .app-content-scroll {
   box-sizing: border-box;
+  scroll-padding-top: var(--app-scroll-margin);
 }
 
 .app-sider-fixed {
@@ -217,10 +218,20 @@ body {
 
 .evaluation-attachments__meta {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
   gap: 8px;
-  padding: 8px;
+  padding: 10px;
+}
+
+.evaluation-attachments__name {
+  font-size: 12px;
+  display: block;
+  width: 100%;
+}
+
+.evaluation-attachments__remove {
+  width: 100%;
 }
 
 .app-sider-menu.ant-menu {

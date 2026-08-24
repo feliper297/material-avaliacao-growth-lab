@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { DeleteOutlined, InboxOutlined, PictureOutlined } from '@ant-design/icons'
-import { App, Button, Image, Space, Typography, Upload, type UploadProps } from 'antd'
+import { DeleteOutlined, InboxOutlined } from '@ant-design/icons'
+import { Alert, App, Button, Image, Typography, Upload, type UploadProps } from 'antd'
 import type { EvaluationAttachment } from '../../../shared/types/evaluation'
 import { removeEvaluationPrint, uploadEvaluationPrint } from '../../services/evaluationAttachmentApi'
 
@@ -61,7 +61,9 @@ export function EvaluationAttachmentsField({
   async function handleRemove(attachment: EvaluationAttachment) {
     try {
       await removeEvaluationPrint(attachment.url)
-      onChange?.(value.filter((item) => item.id !== attachment.id))
+      const next = attachmentsRef.current.filter((item) => item.id !== attachment.id)
+      attachmentsRef.current = next
+      onChange?.(next)
       message.success('Print removido.')
     } catch (err) {
       message.error(err instanceof Error ? err.message : 'Falha ao remover print.')
@@ -79,12 +81,19 @@ export function EvaluationAttachmentsField({
           <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
             Prints de referência (opcional)
           </Text>
+          <Alert
+            type="info"
+            showIcon
+            style={{ marginBottom: 12 }}
+            title="Como anexar"
+            description="Arraste o print para a área abaixo ou clique nela para selecionar uma imagem do computador. Você pode remover qualquer foto antes de salvar a avaliação."
+          />
           <Dragger {...uploadProps} className="evaluation-attachments__dropzone">
             <p className="ant-upload-drag-icon">
               <InboxOutlined />
             </p>
-            <p className="ant-upload-text">Arraste o print aqui ou clique para anexar</p>
-            <p className="ant-upload-hint">Imagens em qualquer formato · sem limite de quantidade</p>
+            <p className="ant-upload-text">Arraste o print aqui</p>
+            <p className="ant-upload-hint">ou clique para selecionar do computador</p>
           </Dragger>
         </>
       )}
@@ -106,21 +115,21 @@ export function EvaluationAttachmentsField({
                 preview={{ mask: 'Ampliar' }}
               />
               <div className="evaluation-attachments__meta">
-                <Space size={6} align="start">
-                  <PictureOutlined />
-                  <Text ellipsis style={{ fontSize: 12, maxWidth: 140 }}>
-                    {attachment.name}
-                  </Text>
-                </Space>
+                <Text ellipsis className="evaluation-attachments__name">
+                  {attachment.name}
+                </Text>
                 {!readOnly && (
                   <Button
-                    type="text"
-                    size="small"
                     danger
+                    variant="outlined"
+                    size="small"
                     icon={<DeleteOutlined />}
-                    aria-label={`Remover print ${attachment.name}`}
+                    className="evaluation-attachments__remove"
+                    aria-label={`Excluir print ${attachment.name}`}
                     onClick={() => handleRemove(attachment)}
-                  />
+                  >
+                    Excluir
+                  </Button>
                 )}
               </div>
             </div>

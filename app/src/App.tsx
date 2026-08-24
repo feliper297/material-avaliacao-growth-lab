@@ -248,6 +248,19 @@ function AppShell({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  const isNavScrollingRef = useRef(false)
+
+  const scrollToSection = useCallback((sectionId: string, behavior: ScrollBehavior = 'smooth') => {
+    const container = contentRef.current
+    const target = document.getElementById(sectionId)
+    if (!container || !target) return
+
+    const scrollMarginTop = Number.parseFloat(window.getComputedStyle(target).scrollMarginTop) || 0
+    const delta = target.getBoundingClientRect().top - container.getBoundingClientRect().top
+    const nextTop = Math.max(0, container.scrollTop + delta - scrollMarginTop)
+
+    container.scrollTo({ top: nextTop, behavior })
+  }, [])
 
   const progress = useMemo(
     () => getOverallProgress(store.completed.length, ALL_RESOURCE_IDS.length),
@@ -303,23 +316,30 @@ function AppShell({
     }
   })
 
-  const handleNavClick = useCallback((key: string) => {
-    if (key === '#backoffice') {
-      setActiveView('backoffice')
-      setActiveSection('#backoffice')
-      contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-      setMobileMenuOpen(false)
-      return
-    }
+  const handleNavClick = useCallback(
+    (key: string) => {
+      if (key === '#backoffice') {
+        setActiveView('backoffice')
+        setActiveSection('#backoffice')
+        contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+        setMobileMenuOpen(false)
+        return
+      }
 
-    setActiveView('trail')
-    setActiveSection(key)
-    contentRef.current?.scrollTo({ top: 0, behavior: 'auto' })
-    requestAnimationFrame(() => {
-      document.getElementById(key.replace('#', ''))?.scrollIntoView({ behavior: 'smooth' })
-    })
-    setMobileMenuOpen(false)
-  }, [])
+      setActiveView('trail')
+      setActiveSection(key)
+      isNavScrollingRef.current = true
+
+      scrollToSection(key.replace('#', ''))
+
+      window.setTimeout(() => {
+        isNavScrollingRef.current = false
+      }, 700)
+
+      setMobileMenuOpen(false)
+    },
+    [scrollToSection],
+  )
 
   useEffect(() => {
     if (activeView !== 'trail') return
@@ -333,6 +353,8 @@ function AppShell({
 
     const observer = new IntersectionObserver(
       (entries) => {
+        if (isNavScrollingRef.current) return
+
         const intersecting = entries.filter((entry) => entry.isIntersecting)
         if (intersecting.length === 0) return
 
