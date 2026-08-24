@@ -167,6 +167,44 @@ body {
   padding-top: var(--app-section-padding);
 }
 
+.week-block {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.week-block__title {
+  margin: 0 0 12px !important;
+}
+
+.week-block--panels {
+  margin-top: 20px;
+}
+
+.week-two-col-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.week-grid-card {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+}
+
+.week-grid-card .ant-card-body {
+  height: 100%;
+}
+
+@media (min-width: 768px) {
+  .week-two-col-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
 .week-evidence-header {
   display: flex;
   flex-wrap: wrap;
