@@ -179,6 +179,10 @@ body {
   overflow-wrap: anywhere;
 }
 
+.trail-resource-card {
+  height: 100%;
+}
+
 .evaluation-attachments {
   margin-top: 12px;
 }

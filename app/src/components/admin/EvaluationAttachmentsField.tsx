@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { DeleteOutlined, InboxOutlined } from '@ant-design/icons'
-import { Alert, App, Button, Image, Typography, Upload, type UploadProps } from 'antd'
+import { App, Button, Image, Typography, Upload, type UploadProps } from 'antd'
 import type { EvaluationAttachment } from '../../../shared/types/evaluation'
 import { removeEvaluationPrint, uploadEvaluationPrint } from '../../services/evaluationAttachmentApi'
 
@@ -81,13 +81,6 @@ export function EvaluationAttachmentsField({
           <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
             Prints de referência (opcional)
           </Text>
-          <Alert
-            type="info"
-            showIcon
-            style={{ marginBottom: 12 }}
-            title="Como anexar"
-            description="Arraste o print para a área abaixo ou clique nela para selecionar uma imagem do computador. Você pode remover qualquer foto antes de salvar a avaliação."
-          />
           <Dragger {...uploadProps} className="evaluation-attachments__dropzone">
             <p className="ant-upload-drag-icon">
               <InboxOutlined />

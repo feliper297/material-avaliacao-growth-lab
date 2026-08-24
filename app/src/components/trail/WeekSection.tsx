@@ -164,10 +164,10 @@ export function WeekSection({
             <>
               <Row gutter={24} align="top">
                 <Col span={24}>
-                  <Title level={4} style={{ margin: 0, marginBottom: 4 }}>
+                  <Title level={4} style={{ margin: 0, marginBottom: 12 }}>
                     Conteúdos selecionados
                   </Title>
-                  <Space orientation="vertical" size={12} style={{ width: '100%' }}>
+                  <Row gutter={[16, 12]} align="stretch">
                     {week.resources.map((resource) => {
                       const completed = store.completed.includes(resource.id)
                       const rawQuiz = store.quizzes[resource.id]
@@ -178,71 +178,73 @@ export function WeekSection({
                       const canRetakeQuiz = hasQuizAttempt && !hasDetailedQuiz
 
                       return (
-                        <Card key={resource.id} size="small">
-                          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                            <Avatar shape="square" style={{ background: `${accent}1a`, color: accent, flex: 'none' }}>
-                              {resourceIcon(resource.icon)}
-                            </Avatar>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <Text strong style={{ display: 'block', marginBottom: 12 }}>
-                                {resource.title}
-                              </Text>
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  flexWrap: 'wrap',
-                                  alignItems: 'center',
-                                  gap: 8,
-                                }}
-                              >
-                                <Space size={8} wrap style={{ flex: 1 }}>
-                                  {(!hasQuizAttempt || canRetakeQuiz) && resourceQuiz.length > 0 && (
+                        <Col key={resource.id} xs={24} md={12} style={{ display: 'flex' }}>
+                          <Card size="small" className="trail-resource-card" style={{ width: '100%' }}>
+                            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                              <Avatar shape="square" style={{ background: `${accent}1a`, color: accent, flex: 'none' }}>
+                                {resourceIcon(resource.icon)}
+                              </Avatar>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <Text strong style={{ display: 'block', marginBottom: 12 }}>
+                                  {resource.title}
+                                </Text>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                  }}
+                                >
+                                  <Space size={8} wrap style={{ flex: 1 }}>
+                                    {(!hasQuizAttempt || canRetakeQuiz) && resourceQuiz.length > 0 && (
+                                      <Button
+                                        className="app-trail-action-btn"
+                                        variant="outlined"
+                                        icon={<QuestionCircleOutlined />}
+                                        aria-label={`Fazer teste de ${resource.title}`}
+                                        disabled={readOnly}
+                                        onClick={() => onOpenQuiz(resource, week)}
+                                      >
+                                        {canRetakeQuiz ? 'Refazer teste' : 'Fazer teste'}
+                                      </Button>
+                                    )}
                                     <Button
                                       className="app-trail-action-btn"
-                                      variant="outlined"
-                                      icon={<QuestionCircleOutlined />}
-                                      aria-label={`Fazer teste de ${resource.title}`}
-                                      disabled={readOnly}
-                                      onClick={() => onOpenQuiz(resource, week)}
+                                      type="primary"
+                                      icon={<LinkOutlined />}
+                                      href={resource.url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      aria-label={`Abrir ${resource.title} (${resource.source})`}
                                     >
-                                      {canRetakeQuiz ? 'Refazer teste' : 'Fazer teste'}
+                                      Abrir
                                     </Button>
-                                  )}
+                                  </Space>
                                   <Button
-                                    className="app-trail-action-btn"
-                                    type="primary"
-                                    icon={<LinkOutlined />}
-                                    href={resource.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    aria-label={`Abrir ${resource.title} (${resource.source})`}
-                                  >
-                                    Abrir
-                                  </Button>
-                                </Space>
-                                <Button
-                                  size="small"
-                                  shape="circle"
-                                  type={completed ? 'primary' : 'default'}
-                                  icon={completed ? <CheckOutlined /> : undefined}
-                                  style={{ flex: 'none' }}
-                                  disabled={readOnly}
-                                  aria-label={
-                                    completed
-                                      ? `Marcar "${resource.title}" como pendente`
-                                      : `Marcar "${resource.title}" como concluído`
-                                  }
-                                  aria-pressed={completed}
-                                  onClick={() => onToggleComplete(resource.id)}
-                                />
+                                    size="small"
+                                    shape="circle"
+                                    type={completed ? 'primary' : 'default'}
+                                    icon={completed ? <CheckOutlined /> : undefined}
+                                    style={{ flex: 'none' }}
+                                    disabled={readOnly}
+                                    aria-label={
+                                      completed
+                                        ? `Marcar "${resource.title}" como pendente`
+                                        : `Marcar "${resource.title}" como concluído`
+                                    }
+                                    aria-pressed={completed}
+                                    onClick={() => onToggleComplete(resource.id)}
+                                  />
+                                </div>
+                                {hasQuizAttempt && <InlineQuizResult score={quizScore} total={resourceQuiz.length} />}
                               </div>
-                              {hasQuizAttempt && <InlineQuizResult score={quizScore} total={resourceQuiz.length} />}
                             </div>
-                          </div>
-                        </Card>
+                          </Card>
+                        </Col>
                       )
                     })}
-                  </Space>
+                  </Row>
                 </Col>
               </Row>
 
@@ -284,9 +286,11 @@ export function WeekSection({
                             : 'Registre Figma, fluxo, diagrama, protótipo ou documentação.'}
                         </Text>
                       </div>
-                      <Button type="primary" style={{ flex: 'none' }} disabled={readOnly} onClick={() => onAddEvidence(week.id)}>
-                        Adicionar evidência
-                      </Button>
+                      {!readOnly && (
+                        <Button type="primary" style={{ flex: 'none' }} onClick={() => onAddEvidence(week.id)}>
+                          Adicionar evidência
+                        </Button>
+                      )}
                     </div>
 
                     {weekEvidences.length > 0 && (
