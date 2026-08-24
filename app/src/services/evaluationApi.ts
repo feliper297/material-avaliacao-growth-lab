@@ -5,6 +5,7 @@ import type {
   Profile,
   WeekEvaluationInput,
 } from '../../shared/types/evaluation'
+import { parseEvaluationAttachments } from './evaluationAttachmentApi'
 
 function mapEvaluation(row: {
   id: string
@@ -14,6 +15,7 @@ function mapEvaluation(row: {
   week: number | null
   scores: Record<string, number>
   notes: string
+  attachments?: unknown
   updated_at: string
 }): Evaluation {
   return {
@@ -24,12 +26,13 @@ function mapEvaluation(row: {
     week: row.week,
     scores: row.scores ?? {},
     notes: row.notes ?? '',
+    attachments: parseEvaluationAttachments(row.attachments),
     updatedAt: row.updated_at,
   }
 }
 
 const evaluationSelect =
-  'id, learner_id, evaluator_id, scope, week, scores, notes, updated_at'
+  'id, learner_id, evaluator_id, scope, week, scores, notes, attachments, updated_at'
 
 export const evaluationApi = {
   async ensureProfile(email: string): Promise<Profile> {
@@ -121,6 +124,7 @@ export const evaluationApi = {
     const row = {
       scores: { overall: input.overall },
       notes: input.notes,
+      attachments: input.attachments,
       evaluator_id: user.id,
       updated_at: new Date().toISOString(),
     }
@@ -146,6 +150,7 @@ export const evaluationApi = {
         week: input.week,
         scores: row.scores,
         notes: row.notes,
+        attachments: row.attachments,
         updated_at: row.updated_at,
       })
       .select(evaluationSelect)
@@ -171,6 +176,7 @@ export const evaluationApi = {
     const row = {
       scores: input.scores,
       notes: input.notes,
+      attachments: input.attachments,
       evaluator_id: user.id,
       updated_at: new Date().toISOString(),
     }
@@ -196,6 +202,7 @@ export const evaluationApi = {
         week: null,
         scores: row.scores,
         notes: row.notes,
+        attachments: row.attachments,
         updated_at: row.updated_at,
       })
       .select(evaluationSelect)

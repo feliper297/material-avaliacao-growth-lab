@@ -1,4 +1,4 @@
-import { Slider, theme as antdTheme } from 'antd'
+import { Radio, Space, theme as antdTheme } from 'antd'
 
 const DEFAULT_MARKS = { 1: '1', 2: '2', 3: '3', 4: '4', 5: '5' }
 const SCALE_VALUES = [1, 2, 3, 4, 5] as const
@@ -15,7 +15,7 @@ interface EvaluationScoreSliderProps {
   marks?: Record<number, string>
 }
 
-/** Slider de nota 1–5 — um único ponto por posição (sem handle + dot sobrepostos). */
+/** Nota 1–5 em radio buttons. */
 export function EvaluationScoreSlider({
   value,
   accent,
@@ -27,45 +27,43 @@ export function EvaluationScoreSlider({
   const { token } = antdTheme.useToken()
 
   return (
-    <div
-      className={`evaluation-score-slider ${readOnly ? 'evaluation-score-slider--readonly' : 'evaluation-score-slider--editable'}`}
-      style={{ ['--eval-accent' as string]: accent }}
-      aria-label={readOnly ? `Nota ${value} de 5` : undefined}
+    <Radio.Group
+      className="evaluation-score-radios"
+      value={value}
+      disabled={readOnly}
+      onChange={(e) => {
+        const next = Number(e.target.value)
+        onChange?.(next)
+        onChangeComplete?.(next)
+      }}
+      aria-label={readOnly ? `Nota ${value} de 5` : 'Selecione a nota de 1 a 5'}
     >
-      <Slider
-        min={1}
-        max={5}
-        step={1}
-        marks={marks}
-        value={value}
-        onChange={onChange}
-        onChangeComplete={onChangeComplete}
-        tooltip={{ open: false }}
-        styles={{
-          track: { background: accent },
-          rail: { background: `${accent}26` },
-        }}
-        style={{
-          marginTop: 4,
-          marginBottom: 0,
-          ...(readOnly ? { pointerEvents: 'none' } : {}),
-        }}
-      />
-      <div className="evaluation-scale-labels" aria-hidden>
-        {SCALE_VALUES.map((mark) => (
-          <span
-            key={mark}
-            className={mark === value ? 'evaluation-scale-labels__active' : undefined}
-            style={{
-              color: mark <= value ? accent : token.colorTextSecondary,
-              fontWeight: mark === value ? 600 : 400,
-            }}
-          >
-            {mark}
-          </span>
-        ))}
-      </div>
-    </div>
+      <Space wrap size={8}>
+        {SCALE_VALUES.map((mark) => {
+          const selected = mark === value
+          return (
+            <Radio.Button
+              key={mark}
+              value={mark}
+              style={
+                selected
+                  ? {
+                      borderColor: accent,
+                      color: accent,
+                      background: `${accent}14`,
+                      fontWeight: 600,
+                    }
+                  : {
+                      color: token.colorTextSecondary,
+                    }
+              }
+            >
+              {marks[mark] ?? mark}
+            </Radio.Button>
+          )
+        })}
+      </Space>
+    </Radio.Group>
   )
 }
 

@@ -2,10 +2,17 @@ html,
 body {
   margin: 0;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 #root {
   min-height: 100vh;
+}
+
+:root {
+  --app-content-padding: 32px;
+  --app-section-padding: 24px;
+  --app-scroll-margin: 96px;
 }
 
 .skip-link {
@@ -35,15 +42,8 @@ body {
   padding-block: 10px;
 }
 
-.app-header-actions .ant-btn {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-@media (max-width: 991px) {
-  .app-mobile-drawer .ant-drawer-body {
-    padding-bottom: 24px;
-  }
+.app-header-actions {
+  align-items: center;
 }
 
 .app-main-layout {
@@ -60,6 +60,87 @@ body {
 
 .app-header.ant-layout-header {
   line-height: normal;
+}
+
+.week-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: var(--app-section-padding);
+}
+
+.week-section-body {
+  padding: 0 var(--app-section-padding) var(--app-section-padding);
+}
+
+.week-section-body.is-expanded {
+  padding-top: var(--app-section-padding);
+}
+
+.week-evidence-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.week-evidence-header__content {
+  min-width: 0;
+  flex: 1 1 200px;
+}
+
+.quiz-result-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quiz-result-summary__content {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.evaluation-label-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.evaluation-panel-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.final-evaluation-footer {
+  width: 100%;
+}
+
+.final-evaluation-footer__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.app-form-footer {
+  margin-bottom: 0;
+  text-align: right;
+}
+
+.app-form-footer .ant-space {
+  justify-content: flex-end;
+}
+
+.app-stat-card .ant-statistic-content-value {
+  font-size: clamp(18px, 4vw, 24px);
 }
 
 .final-evaluation-dimension-card {
@@ -83,17 +164,8 @@ body {
   padding-bottom: 28px;
 }
 
-.evaluation-score-slider .ant-slider-mark-text {
-  display: none !important;
-}
-
-.evaluation-scale-labels {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  margin-top: 6px;
-  padding-inline: 5px;
-  font-size: 12px;
-  line-height: 1;
+.evaluation-score-radios .ant-radio-button-wrapper {
+  min-width: 44px;
   text-align: center;
 }
 
@@ -101,56 +173,41 @@ body {
   margin-top: 16px;
 }
 
-.evaluation-score-slider .ant-slider-rail,
-.evaluation-score-slider .ant-slider-track {
-  height: 4px;
+.feedback-display {
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
-/* Leitura: só os pontos das marcas — handle oculto evita “dois pontinhos”. */
-.evaluation-score-slider--readonly .ant-slider-handle {
-  display: none !important;
+.evaluation-attachments {
+  margin-top: 12px;
 }
 
-.evaluation-score-slider--readonly .ant-slider-dot {
-  width: 10px;
-  height: 10px;
-  inset-block-start: calc(50% - 5px);
-  border-width: 2px;
+.evaluation-attachments__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
 }
 
-.evaluation-score-slider--readonly .ant-slider-dot-active {
-  border-color: var(--eval-accent, #0958d9);
-  background-color: #fff;
+.evaluation-attachments__item {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.02);
 }
 
-/* Edição: só o handle como ponto — dots ocultos evitam sobreposição. */
-.evaluation-score-slider--editable .ant-slider-dot {
-  display: none !important;
+.evaluation-attachments__image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
 }
 
-.evaluation-score-slider--editable .ant-slider-handle {
-  width: 10px !important;
-  height: 10px !important;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  inset-block-start: calc(50% - 5px) !important;
-  transform: translateX(-50%) !important;
-  margin-top: 0 !important;
-}
-
-.evaluation-score-slider--editable .ant-slider-handle::before {
-  display: none !important;
-}
-
-.evaluation-score-slider--editable .ant-slider-handle::after {
-  width: 10px !important;
-  height: 10px !important;
-  inset: 0 !important;
-  border-radius: 50%;
-  background-color: #fff !important;
-  border: 2px solid var(--eval-accent, #0958d9) !important;
-  box-shadow: none !important;
+.evaluation-attachments__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px;
 }
 
 .app-sider-menu.ant-menu {
@@ -172,6 +229,24 @@ body {
   width: 100%;
 }
 
+.backoffice-user-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.backoffice-user-card__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.backoffice-user-card__label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
 .backoffice-users-table .backoffice-user-email {
   white-space: nowrap;
 }
@@ -182,6 +257,87 @@ body {
 
 .backoffice-users-table .ant-table-cell {
   vertical-align: top;
+}
+
+.quiz-form .ant-radio-wrapper {
+  align-items: flex-start;
+  line-height: 1.5;
+  padding-block: 6px;
+}
+
+@media (max-width: 991px) {
+  :root {
+    --app-content-padding: 16px;
+    --app-section-padding: 16px;
+    --app-scroll-margin: 80px;
+  }
+
+  .app-mobile-drawer .ant-drawer-body {
+    padding-bottom: 24px;
+  }
+
+  .final-evaluation-dimension-card .ant-card-body {
+    min-height: auto;
+    padding-bottom: 24px;
+  }
+
+  .backoffice-users-table .backoffice-user-email,
+  .backoffice-users-table .backoffice-user-email .ant-typography {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .final-evaluation-footer__actions {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .final-evaluation-footer__actions .ant-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 575px) {
+  :root {
+    --app-section-padding: 12px;
+    --app-scroll-margin: 72px;
+  }
+
+  .week-evidence-header .ant-btn {
+    width: 100%;
+  }
+
+  .quiz-result-summary {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .quiz-result-summary .ant-btn {
+    width: 100%;
+  }
+
+  .app-form-footer {
+    text-align: stretch;
+  }
+
+  .app-form-footer .ant-space {
+    display: flex;
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+
+  .app-form-footer .ant-space-item,
+  .app-form-footer .ant-btn {
+    width: 100%;
+  }
+
+  .week-evaluation-save {
+    text-align: stretch;
+  }
+
+  .week-evaluation-save .ant-btn {
+    width: 100%;
+  }
 }
 
 @media print {

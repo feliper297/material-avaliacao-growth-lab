@@ -6,7 +6,6 @@ import {
   Card,
   Col,
   ConfigProvider,
-  Empty,
   Drawer,
   Grid,
   Layout,
@@ -19,8 +18,6 @@ import {
   Space,
   Spin,
   Statistic,
-  Steps,
-  Tag,
   theme as antdTheme,
   Typography,
   Alert,
@@ -32,30 +29,23 @@ import {
   ApiOutlined,
   AppstoreOutlined,
   ArrowUpOutlined,
-  BulbFilled,
-  BulbOutlined,
   CheckCircleOutlined,
-  CheckOutlined,
   CompassOutlined,
   DashboardOutlined,
   DownloadOutlined,
   FileSearchOutlined,
-  HomeOutlined,
   LogoutOutlined,
   MenuOutlined,
-  PlusOutlined,
-  PrinterOutlined,
   RobotOutlined,
   StarOutlined,
   TrophyOutlined,
 } from '@ant-design/icons'
 import { ALL_RESOURCE_IDS, WEEKS, weekAccentHex, type TrailResource, type TrailWeek } from '../shared/data/weeks'
 import { getResourceQuiz } from '../shared/data/resource-quizzes'
-import { calculateAverage, getCycleStatus, getOverallProgress, getWeekProgress } from '../shared/domain/progress'
+import { calculateAverage, getCycleStatus, getOverallProgress } from '../shared/domain/progress'
 import { SCORE_DIMENSIONS } from '../shared/types/store'
-import type { Evaluation, Profile } from '../shared/types/evaluation'
+import type { Evaluation, EvaluationAttachment, Profile } from '../shared/types/evaluation'
 import { EvidenceForm } from './components/trail/EvidenceForm'
-import { PromptPanel } from './components/trail/PromptPanel'
 import { QuizForm } from './components/trail/QuizForm'
 import { WeekSection } from './components/trail/WeekSection'
 import { useStore } from './hooks/useStore'
@@ -63,7 +53,6 @@ import { useProfile } from './hooks/useProfile'
 import { useEvaluations } from './hooks/useEvaluations'
 import { FinalEvaluationPanel } from './components/admin/FinalEvaluationPanel'
 import { BackOfficePanel } from './components/admin/BackOfficePanel'
-import { openPrintReport } from './utils/progressReport'
 import { useBackOffice } from './hooks/useBackOffice'
 import type { Evidence } from '../shared/types/store'
 import type { BackOfficeStats } from '../shared/types/backoffice'
@@ -76,9 +65,7 @@ const CONTENT_PADDING = 32
 const MOBILE_BREAKPOINT = 'lg'
 
 const BASE_NAV_ITEMS: { href: string; label: string }[] = [
-  { href: '#overview', label: 'Visão geral' },
-  ...WEEKS.map((w) => ({ href: `#week-${w.id}`, label: `S${w.id} · ${w.title}` })),
-  { href: '#evidences', label: 'Evidências' },
+  ...WEEKS.map((w) => ({ href: `#week-${w.id}`, label: `Semana ${w.id}` })),
   { href: '#assessment', label: 'Avaliação final' },
 ]
 
@@ -176,9 +163,6 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
       theme={{
         algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: { colorPrimary: '#0958d9' },
-        components: isDark
-          ? { Slider: { colorTextDescription: 'rgba(255, 255, 255, 0.65)' } }
-          : undefined,
       }}
     >
       <AntApp>
@@ -216,7 +200,6 @@ function AppShell({
   deleteEvidence,
   updateEvidence,
   saveQuiz,
-  setTheme,
   exportProgress,
   readOnly,
   userEmail,
@@ -244,8 +227,8 @@ function AppShell({
   getWeekEvaluation: (week: number) => Evaluation | undefined
   finalEvaluation: Evaluation | null
   evaluationSaving: boolean
-  onSaveWeekEvaluation: (week: number, overall: number, notes: string) => Promise<void>
-  onSaveFinalEvaluation: (scores: Record<string, number>, notes: string) => Promise<void>
+  onSaveWeekEvaluation: (week: number, overall: number, notes: string, attachments?: EvaluationAttachment[]) => Promise<void>
+  onSaveFinalEvaluation: (scores: Record<string, number>, notes: string, attachments?: EvaluationAttachment[]) => Promise<void>
   backOfficeStats: BackOfficeStats | null
   backOfficeLoading: boolean
   backOfficeError: string | null
@@ -260,9 +243,8 @@ function AppShell({
   const [evidenceWeek, setEvidenceWeek] = useState(1)
   const [editingEvidence, setEditingEvidence] = useState<Evidence | null>(null)
   const [quizTarget, setQuizTarget] = useState<{ resource: TrailResource; week: TrailWeek } | null>(null)
-  const [prompt, setPrompt] = useState<{ topic: string; link: string; week: string } | null>(null)
   const [activeView, setActiveView] = useState<'trail' | 'backoffice'>('trail')
-  const [activeSection, setActiveSection] = useState('#overview')
+  const [activeSection, setActiveSection] = useState('#week-1')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -290,48 +272,6 @@ function AppShell({
 
   const displayAverage = finalAverage ?? weekEvaluationsAverage ?? 0
 
-  const cycleStepItems = useMemo(() => {
-    const firstIncompleteIndex = WEEKS.findIndex((w) => getWeekProgress(w, store) < 100)
-    return WEEKS.map((w, index) => {
-      const weekProgress = getWeekProgress(w, store)
-      const isComplete = weekProgress >= 100
-      const isCurrent = !isComplete && index === firstIncompleteIndex
-
-      return {
-        title: `Semana ${w.id}`,
-        description: w.title,
-        status: isComplete ? ('finish' as const) : isCurrent ? ('process' as const) : ('wait' as const),
-      }
-    })
-  }, [store])
-
-  const renderCycleStepIcon = useCallback(
-    (node: ReactNode, info: { item: { status?: string } }) => {
-      if (info.item.status !== 'finish') return node
-
-      return (
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: token.controlHeightSM,
-            height: token.controlHeightSM,
-            borderRadius: '50%',
-            backgroundColor: token.colorSuccess,
-            border: `${token.lineWidth}px solid ${token.colorSuccess}`,
-            color: token.colorWhite,
-            fontSize: token.fontSizeSM,
-            lineHeight: 1,
-          }}
-        >
-          <CheckOutlined />
-        </span>
-      )
-    },
-    [token],
-  )
-
   const navItems = useMemo(() => {
     const items = [...BASE_NAV_ITEMS]
     if (isAdmin) {
@@ -341,12 +281,10 @@ function AppShell({
   }, [isAdmin])
 
   const navIcon: Record<string, { icon: ReactNode; color: string }> = {
-    '#overview': { icon: <HomeOutlined />, color: token.colorPrimary },
     '#week-1': { icon: <AppstoreOutlined />, color: weekAccentHex(1) },
     '#week-2': { icon: <CompassOutlined />, color: weekAccentHex(2) },
     '#week-3': { icon: <ApiOutlined />, color: weekAccentHex(3) },
     '#week-4': { icon: <RobotOutlined />, color: weekAccentHex(4) },
-    '#evidences': { icon: <FileSearchOutlined />, color: token.colorInfo },
     '#assessment': { icon: <TrophyOutlined />, color: token.colorWarning },
     '#backoffice': { icon: <DashboardOutlined />, color: '#531dab' },
   }
@@ -365,26 +303,23 @@ function AppShell({
     }
   })
 
-  const handleNavClick = useCallback(
-    (key: string) => {
-      if (key === '#backoffice') {
-        setActiveView('backoffice')
-        setActiveSection('#backoffice')
-        contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-        setMobileMenuOpen(false)
-        return
-      }
-
-      setActiveView('trail')
-      setActiveSection(key)
-      contentRef.current?.scrollTo({ top: 0, behavior: 'auto' })
-      requestAnimationFrame(() => {
-        document.getElementById(key.replace('#', ''))?.scrollIntoView({ behavior: 'smooth' })
-      })
+  const handleNavClick = useCallback((key: string) => {
+    if (key === '#backoffice') {
+      setActiveView('backoffice')
+      setActiveSection('#backoffice')
+      contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
       setMobileMenuOpen(false)
-    },
-    [],
-  )
+      return
+    }
+
+    setActiveView('trail')
+    setActiveSection(key)
+    contentRef.current?.scrollTo({ top: 0, behavior: 'auto' })
+    requestAnimationFrame(() => {
+      document.getElementById(key.replace('#', ''))?.scrollIntoView({ behavior: 'smooth' })
+    })
+    setMobileMenuOpen(false)
+  }, [])
 
   useEffect(() => {
     if (activeView !== 'trail') return
@@ -440,19 +375,14 @@ function AppShell({
 
       <Card size="small" style={{ marginBottom: 16 }}>
         <Text type="secondary" style={{ fontSize: 11, textTransform: 'uppercase' }}>
-          Progresso geral
+          Progresso
         </Text>
         <br />
         <Text strong>{getCycleStatus(progress)}</Text>
         <Progress percent={progress} size="small" style={{ marginTop: 8 }} />
-        <Space style={{ width: '100%', justifyContent: 'space-between', marginTop: 4 }}>
-          <Text type="secondary" style={{ fontSize: 11 }}>
-            {store.completed.length} de {ALL_RESOURCE_IDS.length} conteúdos
-          </Text>
-          <Text type="secondary" style={{ fontSize: 11 }}>
-            {store.evidences.length} evidência{store.evidences.length === 1 ? '' : 's'}
-          </Text>
-        </Space>
+        <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 4 }}>
+          {store.completed.length} de {ALL_RESOURCE_IDS.length} conteúdos
+        </Text>
       </Card>
 
       <nav aria-label="Navegação da trilha">
@@ -626,31 +556,21 @@ function AppShell({
               />
             )}
             {isAdmin && (
-              <>
-                {!isMobile && (
-                  <Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
-                    Selecione o Avaliado:
-                  </Text>
-                )}
-                <Select
-                  style={{ minWidth: isMobile ? 160 : 240, maxWidth: '100%' }}
-                  placeholder="Selecione o Avaliado"
-                  value={selectedLearnerId ?? undefined}
-                  onChange={onSelectLearner}
-                  options={learners.map((l) => ({ value: l.userId, label: l.email }))}
-                  aria-label="Selecione o avaliado"
-                />
-              </>
+              <Select
+                style={{ minWidth: isMobile ? 160 : 240, maxWidth: '100%' }}
+                placeholder="Participante"
+                value={selectedLearnerId ?? undefined}
+                onChange={onSelectLearner}
+                options={learners.map((l) => ({ value: l.userId, label: l.email }))}
+                aria-label="Selecione o participante"
+              />
             )}
             {saveStatus === 'saving' && <Text type="secondary">Salvando…</Text>}
           </Space>
-          <Space size={token.marginXS} wrap className="app-header-actions">
+          <Space size={token.marginXS} wrap align="center" className="app-header-actions">
             <Button
-              icon={store.theme === 'dark' ? <BulbFilled /> : <BulbOutlined />}
-              onClick={() => setTheme(store.theme === 'light' ? 'dark' : 'light')}
-              aria-label="Alternar tema"
-            />
-            <Button
+              className="app-trail-action-btn"
+              type="primary"
               icon={<DownloadOutlined />}
               onClick={() => {
                 exportProgress(userEmail)
@@ -661,14 +581,8 @@ function AppShell({
               {!isMobile && 'Exportar'}
             </Button>
             <Button
-              type="primary"
-              icon={<PrinterOutlined />}
-              onClick={() => openPrintReport(store, userEmail)}
-              aria-label="Imprimir relatório"
-            >
-              {!isMobile && 'Imprimir'}
-            </Button>
-            <Button
+              className="app-trail-action-btn"
+              variant="outlined"
               icon={<LogoutOutlined />}
               onClick={() => onSignOut()}
               aria-label="Sair da conta"
@@ -714,184 +628,66 @@ function AppShell({
             />
           ) : (
             <>
-          {isAdmin && (
-            <Alert
-              type="info"
-              showIcon
-              style={{ marginBottom: 16 }}
-              title={`Modo avaliador — acompanhando ${learners.find((l) => l.userId === selectedLearnerId)?.email ?? 'participante'}. Somente você pode registrar avaliações.`}
-            />
-          )}
-          <Card
-            id="overview"
-            style={{ marginBottom: 16, background: token.colorPrimaryBg, borderColor: token.colorPrimaryBorder }}
-            styles={{ body: { padding: 28 } }}
-          >
-            <Row gutter={[32, 24]} align="middle">
-              <Col xs={24} lg={15}>
-                <Tag style={{ marginBottom: 12, background: '#2f54eb', color: '#fff', border: 'none' }}>
-                  Desenvolvimento aplicado à sprint
-                </Tag>
-                <Title level={1} style={{ marginTop: 0, marginBottom: 12, fontSize: isMobile ? 24 : 30 }}>
-                  Evolução visível, não apenas conteúdo assistido.
-                </Title>
-                <Paragraph type="secondary" style={{ maxWidth: 540 }}>
-                  Trilha de 30 dias para qualidade, raciocínio de produto, sistemas, IA e autonomia — com aplicação
-                  em demandas reais.
-                </Paragraph>
-                <Space wrap>
-                  <Button
-                    type="primary"
-                    size="large"
-                    onClick={() => document.getElementById('week-1')?.scrollIntoView({ behavior: 'smooth' })}
-                  >
-                    Começar trilha
-                  </Button>
-                  <Button
-                    size="large"
-                    icon={<RobotOutlined />}
-                    onClick={() =>
-                      setPrompt({ topic: 'Trilha completa de Product Design', link: '', week: 'Ciclo de 30 dias' })
+              <Row gutter={16} style={{ marginBottom: 16 }}>
+                {[
+                  { label: 'Progresso de aprendizagem', value: `${progress}%`, icon: <ArrowUpOutlined />, color: token.colorPrimary },
+                  { label: 'Conteúdos concluídos', value: store.completed.length, icon: <CheckCircleOutlined />, color: token.colorSuccess },
+                  { label: 'Evidências registradas', value: store.evidences.length, icon: <FileSearchOutlined />, color: token.colorInfo },
+                  { label: 'Média de avaliação', value: displayAverage > 0 ? displayAverage.toFixed(1) : '—', icon: <StarOutlined />, color: token.colorWarning },
+                ].map((stat) => (
+                  <Col xs={12} md={6} key={stat.label}>
+                    <Card size="small">
+                      <Statistic
+                        title={stat.label}
+                        value={stat.value}
+                        prefix={stat.icon}
+                        styles={{ content: { color: stat.color, fontSize: 24 } }}
+                      />
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+
+              {WEEKS.map((week) => (
+                <WeekSection
+                  key={week.id}
+                  week={week}
+                  store={store}
+                  readOnly={readOnly}
+                  learnerId={selectedLearnerId ?? ''}
+                  evaluation={getWeekEvaluation(week.id)}
+                  evaluationReadOnly={!isAdmin}
+                  evaluationSaving={evaluationSaving}
+                  onSaveEvaluation={async (overall, notes, attachments) => {
+                    try {
+                      await onSaveWeekEvaluation(week.id, overall, notes, attachments)
+                      message.success(`Avaliação da semana ${week.id} salva.`)
+                    } catch (err) {
+                      message.error(err instanceof Error ? err.message : 'Falha ao salvar avaliação.')
                     }
-                  >
-                    Abrir tutor de IA
-                  </Button>
-                </Space>
-              </Col>
-              <Col xs={24} lg={9}>
-                <Card size="small">
-                  <Text strong>Mapa do ciclo</Text>
-                  <br />
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    4 semanas · quatro checkpoints
-                  </Text>
-                  <Steps
-                    variant="filled"
-                    orientation="vertical"
-                    size="small"
-                    style={{ marginTop: 16 }}
-                    items={cycleStepItems}
-                    iconRender={renderCycleStepIcon}
-                  />
-                </Card>
-              </Col>
-            </Row>
-          </Card>
+                  }}
+                  onToggleComplete={handleToggle}
+                  onOpenQuiz={(resource, week) => setQuizTarget({ resource, week })}
+                  onAddEvidence={(id) => openEvidenceModal(id)}
+                  onEditEvidence={(evidence) => openEvidenceModal(evidence.week, evidence)}
+                  onDeleteEvidence={confirmDeleteEvidence}
+                />
+              ))}
 
-          <Row gutter={16} style={{ marginBottom: 16 }}>
-            {[
-              { label: 'Progresso de aprendizagem', value: `${progress}%`, icon: <ArrowUpOutlined />, color: token.colorPrimary },
-              { label: 'Conteúdos concluídos', value: store.completed.length, icon: <CheckCircleOutlined />, color: token.colorSuccess },
-              { label: 'Evidências registradas', value: store.evidences.length, icon: <FileSearchOutlined />, color: token.colorInfo },
-              { label: 'Média de avaliação', value: displayAverage > 0 ? displayAverage.toFixed(1) : '—', icon: <StarOutlined />, color: token.colorWarning },
-            ].map((stat) => (
-              <Col xs={12} md={6} key={stat.label}>
-                <Card size="small">
-                  <Statistic
-                    title={stat.label}
-                    value={stat.value}
-                    prefix={stat.icon}
-                    styles={{ content: { color: stat.color, fontSize: 24 } }}
-                  />
-                </Card>
-              </Col>
-            ))}
-          </Row>
-
-          {WEEKS.map((week) => (
-            <div key={week.id}>
-              <WeekSection
-                week={week}
-                store={store}
-                readOnly={readOnly}
-                evaluation={getWeekEvaluation(week.id)}
-                evaluationReadOnly={!isAdmin}
-                evaluationSaving={evaluationSaving}
-                onSaveEvaluation={async (overall, notes) => {
+              <FinalEvaluationPanel
+                learnerId={selectedLearnerId ?? ''}
+                evaluation={finalEvaluation}
+                readOnly={!isAdmin}
+                saving={evaluationSaving}
+                onSave={async (scores, notes, attachments) => {
                   try {
-                    await onSaveWeekEvaluation(week.id, overall, notes)
-                    message.success(`Avaliação da semana ${week.id} salva.`)
+                    await onSaveFinalEvaluation(scores, notes, attachments)
+                    message.success('Avaliação final salva.')
                   } catch (err) {
-                    message.error(err instanceof Error ? err.message : 'Falha ao salvar avaliação.')
+                    message.error(err instanceof Error ? err.message : 'Falha ao salvar avaliação final.')
                   }
                 }}
-                onToggleComplete={handleToggle}
-                onOpenPrompt={(topic, link, weekLabel) => setPrompt({ topic, link, week: weekLabel })}
-                onOpenQuiz={(resource, week) => setQuizTarget({ resource, week })}
-                onAddEvidence={(id) => openEvidenceModal(id)}
-                onEditEvidence={(evidence) => openEvidenceModal(evidence.week, evidence)}
-                onDeleteEvidence={confirmDeleteEvidence}
               />
-            </div>
-          ))}
-
-          <div id="evidences" style={{ scrollMarginTop: 72, marginTop: 40 }}>
-            <Row justify="space-between" align="bottom" wrap gutter={[16, 16]}>
-              <Col>
-                <Title level={3} style={{ marginBottom: 4 }}>
-                  Evidências de evolução
-                </Title>
-                <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                  Registre links do Figma, Loom, documentos, diagramas, comparações e decisões aplicadas.
-                </Paragraph>
-              </Col>
-              <Col>
-                {!readOnly && (
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => openEvidenceModal(1)}
-                  >
-                    Nova evidência
-                  </Button>
-                )}
-              </Col>
-            </Row>
-
-            <div style={{ marginTop: 16 }}>
-              {store.evidences.length === 0 ? (
-                <Card>
-                  <Empty description="Nenhuma evidência registrada. Adicione a primeira aplicação da trilha." />
-                </Card>
-              ) : (
-                <Row gutter={[16, 16]}>
-                  {store.evidences.map((e) => (
-                    <Col xs={24} md={12} xl={8} key={e.id}>
-                      <Card
-                        size="small"
-                        title={<Tag color={weekAccentHex(e.week)}>Semana {e.week}</Tag>}
-                        extra={
-                          <Text type="secondary" style={{ fontSize: 11 }}>
-                            {new Date(e.createdAt).toLocaleDateString('pt-BR')}
-                          </Text>
-                        }
-                      >
-                        <Text strong>{e.title}</Text>
-                        <Paragraph type="secondary" style={{ fontSize: 12, marginTop: 4, marginBottom: 0 }}>
-                          {e.description}
-                        </Paragraph>
-                      </Card>
-                    </Col>
-                  ))}
-                </Row>
-              )}
-            </div>
-          </div>
-
-          <FinalEvaluationPanel
-            evaluation={finalEvaluation}
-            readOnly={!isAdmin}
-            saving={evaluationSaving}
-            onSave={async (scores, notes) => {
-              try {
-                await onSaveFinalEvaluation(scores, notes)
-                message.success('Avaliação final salva.')
-              } catch (err) {
-                message.error(err instanceof Error ? err.message : 'Falha ao salvar avaliação final.')
-              }
-            }}
-          />
-
             </>
           )}
         </Content>
@@ -945,18 +741,6 @@ function AppShell({
             onClose={() => setQuizTarget(null)}
           />
         )}
-      </Modal>
-
-      <Modal
-        open={!!prompt}
-        title={prompt?.topic.slice(0, 58) ?? 'Estudar com IA'}
-        onCancel={() => setPrompt(null)}
-        footer={null}
-        destroyOnHidden
-        width={modalWidth}
-        style={isMobile ? { top: 16, maxWidth: 'calc(100vw - 32px)' } : undefined}
-      >
-        {prompt && <PromptPanel topic={prompt.topic} link={prompt.link} week={prompt.week} />}
       </Modal>
     </Layout>
   )

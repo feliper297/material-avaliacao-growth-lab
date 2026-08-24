@@ -9,6 +9,13 @@ export interface Profile {
 
 export type EvaluationScope = 'week' | 'final'
 
+export interface EvaluationAttachment {
+  id: string
+  url: string
+  name: string
+  createdAt: string
+}
+
 export interface Evaluation {
   id: string
   learnerId: string
@@ -17,6 +24,7 @@ export interface Evaluation {
   week: number | null
   scores: Record<string, number>
   notes: string
+  attachments: EvaluationAttachment[]
   updatedAt: string
 }
 
@@ -25,12 +33,14 @@ export interface WeekEvaluationInput {
   week: number
   overall: number
   notes: string
+  attachments: EvaluationAttachment[]
 }
 
 export interface FinalEvaluationInput {
   learnerId: string
   scores: Record<string, number>
   notes: string
+  attachments: EvaluationAttachment[]
 }
 
 export const ADMIN_EMAIL = 'admin@gmail.com'

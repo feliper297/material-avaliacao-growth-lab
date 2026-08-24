@@ -322,6 +322,38 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
       answer: 1,
     },
   ],
+  'w3-bff': [
+    {
+      q: 'O padrão BFF (Backend for Frontend) existe principalmente para:',
+      options: [
+        'Substituir o banco de dados da aplicação',
+        'Adaptar APIs e contratos às necessidades de uma interface específica',
+        'Eliminar a camada de frontend',
+        'Armazenar componentes visuais do design system',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'No Growth Lab, uma responsabilidade adequada do BFF seria:',
+      options: [
+        'Concentrar todas as regras de negócio do produto',
+        'Expor contratos HTTP estáveis e adaptar payloads para a UI',
+        'Renderizar telas React no servidor',
+        'Gerenciar Auto Layout no Figma',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Ao decidir usar BFF, o designer deve considerar:',
+      options: [
+        'Apenas a cor dos botões da tela',
+        'Quais dados a UI precisa, estados de loading/erro e dependências entre serviços',
+        'Somente a quantidade de frames no protótipo',
+        'Que o BFF dispensa documentação de contrato',
+      ],
+      answer: 1,
+    },
+  ],
   'w4-study-mode': [
     {
       q: 'O Study Mode do ChatGPT é mais adequado para:',

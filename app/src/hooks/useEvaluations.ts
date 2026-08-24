@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { Evaluation, Profile } from '../../shared/types/evaluation'
+import type { Evaluation, EvaluationAttachment, Profile } from '../../shared/types/evaluation'
 import { evaluationApi } from '../services/evaluationApi'
 
 export function useEvaluations(learnerId: string | null, enabled: boolean) {
@@ -42,12 +42,12 @@ export function useEvaluations(learnerId: string | null, enabled: boolean) {
   const finalEvaluation = evaluations.find((e) => e.scope === 'final') ?? null
 
   const saveWeekEvaluation = useCallback(
-    async (week: number, overall: number, notes: string) => {
+    async (week: number, overall: number, notes: string, attachments: EvaluationAttachment[] = []) => {
       if (!learnerId) return
       setSaving(true)
       setError(null)
       try {
-        const saved = await evaluationApi.saveWeekEvaluation({ learnerId, week, overall, notes })
+        const saved = await evaluationApi.saveWeekEvaluation({ learnerId, week, overall, notes, attachments })
         setEvaluations((prev) => {
           const rest = prev.filter((e) => !(e.scope === 'week' && e.week === week))
           return [...rest, saved]
@@ -63,12 +63,12 @@ export function useEvaluations(learnerId: string | null, enabled: boolean) {
   )
 
   const saveFinalEvaluation = useCallback(
-    async (scores: Record<string, number>, notes: string) => {
+    async (scores: Record<string, number>, notes: string, attachments: EvaluationAttachment[] = []) => {
       if (!learnerId) return
       setSaving(true)
       setError(null)
       try {
-        const saved = await evaluationApi.saveFinalEvaluation({ learnerId, scores, notes })
+        const saved = await evaluationApi.saveFinalEvaluation({ learnerId, scores, notes, attachments })
         setEvaluations((prev) => [...prev.filter((e) => e.scope !== 'final'), saved])
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Falha ao salvar avaliação final.')

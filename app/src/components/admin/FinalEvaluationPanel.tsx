@@ -13,22 +13,25 @@ import {
   theme as antdTheme,
 } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
-import type { Evaluation } from '../../../shared/types/evaluation'
+import type { Evaluation, EvaluationAttachment } from '../../../shared/types/evaluation'
 import { SCORE_DIMENSIONS } from '../../../shared/types/store'
 import { calculateAverage } from '../../../shared/domain/progress'
+import { EvaluationAttachmentsField } from './EvaluationAttachmentsField'
 import { ColoredScoreDisplay, EvaluationScoreSlider, FeedbackDisplay } from './evaluationDisplay'
 
 const { Title, Text, Paragraph } = Typography
 const { TextArea } = Input
 
 interface FinalEvaluationPanelProps {
+  learnerId: string
   evaluation: Evaluation | null
   readOnly: boolean
   saving?: boolean
-  onSave?: (scores: Record<string, number>, notes: string) => Promise<void>
+  onSave?: (scores: Record<string, number>, notes: string, attachments: EvaluationAttachment[]) => Promise<void>
 }
 
 export function FinalEvaluationPanel({
+  learnerId,
   evaluation,
   readOnly,
   saving,
@@ -37,6 +40,7 @@ export function FinalEvaluationPanel({
   const { token } = antdTheme.useToken()
   const [scores, setScores] = useState<Record<string, number>>({})
   const [notes, setNotes] = useState('')
+  const [attachments, setAttachments] = useState<EvaluationAttachment[]>([])
   const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
@@ -46,6 +50,7 @@ export function FinalEvaluationPanel({
     })
     setScores(initial)
     setNotes(evaluation?.notes ?? '')
+    setAttachments(evaluation?.attachments ?? [])
     setDirty(false)
   }, [evaluation])
 
@@ -130,6 +135,19 @@ export function FinalEvaluationPanel({
                 placeholder="Síntese final: evolução observada, pontos fortes, gaps críticos e recomendação para o próximo ciclo."
               />
             )}
+            <div style={{ marginTop: 16 }}>
+              <EvaluationAttachmentsField
+                learnerId={learnerId}
+                scope="final"
+                week={null}
+                value={attachments}
+                readOnly={readOnly}
+                onChange={(next) => {
+                  setAttachments(next)
+                  setDirty(true)
+                }}
+              />
+            </div>
           </Card>
         </Col>
 
@@ -153,7 +171,7 @@ export function FinalEvaluationPanel({
                     <Button
                       type="primary"
                       loading={saving}
-                      onClick={() => onSave(scores, notes)}
+                      onClick={() => onSave(scores, notes, attachments)}
                     >
                       Salvar avaliação final
                     </Button>

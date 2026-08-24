@@ -167,6 +167,17 @@ export const WEEKS: TrailWeek[] = [
         url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status',
         topic: 'Respostas do sistema e tradução de situações técnicas em comportamentos compreensíveis da interface.',
       },
+      {
+        id: 'w3-bff',
+        title: 'Backends for Frontends (BFF)',
+        source: 'Microsoft Learn',
+        type: 'Padrão de arquitetura',
+        duration: '10–12 min',
+        icon: 'ClusterOutlined',
+        url: 'https://learn.microsoft.com/pt-br/azure/architecture/patterns/backends-for-frontends',
+        topic:
+          'BFF: camada entre interface e APIs, adaptação de contratos por experiência, limites de responsabilidade e quando o padrão faz sentido.',
+      },
     ],
   },
   {
