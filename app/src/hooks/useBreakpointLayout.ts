@@ -43,9 +43,9 @@ export function useBreakpointLayout() {
     },
   }
 
-  const gridGutter: [number, number] = isMobile ? [8, 8] : [16, 16]
-  const sectionGutter: [number, number] = isMobile ? [8, 12] : [16, 12]
-  const layoutGutter = isMobile ? 12 : 24
+  const gridGutter: [number, number] = isMobile ? [0, 8] : [16, 16]
+  const sectionGutter: [number, number] = isMobile ? [0, 8] : [16, 12]
+  const layoutGutter = isMobile ? 0 : 24
 
   return {
     screens,

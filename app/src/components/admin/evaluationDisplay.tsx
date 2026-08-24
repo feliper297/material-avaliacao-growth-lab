@@ -1,4 +1,5 @@
 import { Radio, Space, theme as antdTheme } from 'antd'
+import { linkifyText } from '../../utils/linkifyText'
 
 const DEFAULT_MARKS = { 1: '1', 2: '2', 3: '3', 4: '4', 5: '5' }
 const SCALE_VALUES = [1, 2, 3, 4, 5] as const
@@ -89,7 +90,9 @@ export function FeedbackDisplay({ text, belowScale = false }: FeedbackDisplayPro
 
   return (
     <div
-      className={belowScale ? 'evaluation-feedback-below-scale' : undefined}
+      className={['feedback-display', belowScale ? 'evaluation-feedback-below-scale' : '']
+        .filter(Boolean)
+        .join(' ')}
       style={{
         padding: '12px 16px',
         background: token.colorFillAlter,
@@ -102,7 +105,7 @@ export function FeedbackDisplay({ text, belowScale = false }: FeedbackDisplayPro
         whiteSpace: 'pre-wrap',
       }}
     >
-      {text.trim() || '—'}
+      {text.trim() ? linkifyText(text.trim()) : '—'}
     </div>
   )
 }

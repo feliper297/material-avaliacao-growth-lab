@@ -4,7 +4,6 @@ import {
   Avatar,
   Button,
   Card,
-  Col,
   ConfigProvider,
   Drawer,
   Layout,
@@ -12,7 +11,6 @@ import {
   type MenuProps,
   Modal,
   Progress,
-  Row,
   Select,
   Space,
   Spin,
@@ -238,7 +236,6 @@ function AppShell({
     modalWidth,
     modalStyle,
     modalStyles,
-    gridGutter,
   } = useBreakpointLayout()
 
   const [evidenceOpen, setEvidenceOpen] = useState(false)
@@ -662,25 +659,23 @@ function AppShell({
             />
           ) : (
             <>
-              <Row gutter={gridGutter} style={{ marginBottom: 16 }}>
+              <div className="app-stats-grid">
                 {[
                   { label: 'Progresso de aprendizagem', value: `${progress}%`, icon: <ArrowUpOutlined />, color: token.colorPrimary },
                   { label: 'Conteúdos concluídos', value: store.completed.length, icon: <CheckCircleOutlined />, color: token.colorSuccess },
                   { label: 'Evidências registradas', value: store.evidences.length, icon: <FileSearchOutlined />, color: token.colorInfo },
                   { label: 'Média de avaliação', value: displayAverage > 0 ? displayAverage.toFixed(1) : '—', icon: <StarOutlined />, color: token.colorWarning },
                 ].map((stat) => (
-                  <Col xs={12} md={6} key={stat.label}>
-                    <Card size="small">
-                      <Statistic
-                        title={stat.label}
-                        value={stat.value}
-                        prefix={stat.icon}
-                        styles={{ content: { color: stat.color, fontSize: 24 } }}
-                      />
-                    </Card>
-                  </Col>
+                  <Card key={stat.label} size="small" className="app-stat-card">
+                    <Statistic
+                      title={stat.label}
+                      value={stat.value}
+                      prefix={stat.icon}
+                      styles={{ content: { color: stat.color, fontSize: 24 } }}
+                    />
+                  </Card>
                 ))}
-              </Row>
+              </div>
 
               {WEEKS.map((week) => (
                 <WeekSection

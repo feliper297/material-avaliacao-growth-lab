@@ -247,7 +247,7 @@ export function WeekSection({
                 </Col>
               </Row>
 
-              <Row gutter={sectionGutter} style={{ marginTop: 20, alignItems: 'stretch' }}>
+              <Row gutter={sectionGutter} className="app-week-grid" style={{ marginTop: 20, alignItems: 'stretch' }}>
                 <Col xs={24} md={12} style={{ display: 'flex' }}>
                   <Card size="small" style={{ width: '100%' }}>
                     <Text strong>Testes de conhecimento</Text>
