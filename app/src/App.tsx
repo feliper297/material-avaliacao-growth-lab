@@ -54,6 +54,7 @@ import { FinalEvaluationPanel } from './components/admin/FinalEvaluationPanel'
 import { BackOfficePanel } from './components/admin/BackOfficePanel'
 import { useBackOffice } from './hooks/useBackOffice'
 import { SIDEBAR_WIDTH, useBreakpointLayout } from './hooks/useBreakpointLayout'
+import { BrandLogo } from './components/BrandLogo'
 import type { Evidence } from '../shared/types/store'
 import type { BackOfficeStats } from '../shared/types/backoffice'
 
@@ -427,18 +428,9 @@ function AppShell({
 
   const sidebarBody = (
     <>
-      <Space align="center" style={{ marginBottom: 20 }}>
-        <Avatar shape="square" style={{ background: token.colorPrimary }}>
-          G
-        </Avatar>
-        <div>
-          <Text strong>Growth Lab</Text>
-          <br />
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            Product Design · 30 dias
-          </Text>
-        </div>
-      </Space>
+      <div style={{ marginBottom: 20 }}>
+        <BrandLogo variant="sidebar" />
+      </div>
 
       <Card size="small" style={{ marginBottom: 16 }}>
         <Text type="secondary" style={{ fontSize: 11, textTransform: 'uppercase' }}>

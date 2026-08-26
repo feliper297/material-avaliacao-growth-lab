@@ -35,6 +35,21 @@ body {
   top: 16px;
 }
 
+.brand-logo {
+  display: block;
+  height: auto;
+  object-fit: contain;
+}
+
+.brand-logo--login {
+  width: min(220px, 72vw);
+  margin-inline: auto;
+}
+
+.brand-logo--sidebar {
+  width: min(168px, 100%);
+}
+
 .login-form .ant-input-affix-wrapper,
 .login-form .ant-input-affix-wrapper-lg,
 .login-form .ant-btn-lg {
