@@ -244,6 +244,9 @@ export function WeekSection({
               </section>
 
               <section className="week-block week-block--panels">
+                <Title level={4} className="week-block__title">
+                  Avaliações
+                </Title>
                 <div className="week-two-col-grid">
                   <Card size="small" className="week-grid-card">
                     <Text strong>Testes de conhecimento</Text>

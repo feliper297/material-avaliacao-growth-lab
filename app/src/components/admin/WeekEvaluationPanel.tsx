@@ -137,8 +137,6 @@ export function WeekEvaluationPanel({
         className="week-evaluation-panel-embedded"
         style={{
           marginTop: 20,
-          paddingTop: 20,
-          borderTop: `1px solid ${token.colorBorderSecondary}`,
         }}
       >
         <div style={{ marginBottom: 12 }}>{title}</div>

@@ -22,7 +22,8 @@ import {
 import ptBR from 'antd/locale/pt_BR'
 import { isSupabaseConfigured } from './lib/supabase'
 import { useAuth } from './hooks/useAuth'
-import { LoginScreen } from './components/auth/LoginScreen'
+import { AuthScreen } from './components/auth/AuthScreen'
+import { ResetPasswordScreen } from './components/auth/ResetPasswordScreen'
 import {
   ApiOutlined,
   AppstoreOutlined,
@@ -106,6 +107,19 @@ function AppWithAuth() {
     )
   }
 
+  if (auth.recoveryMode) {
+    return (
+      <ConfigProvider
+        locale={ptBR}
+        theme={{ algorithm: antdTheme.defaultAlgorithm, token: { colorPrimary: '#0958d9' } }}
+      >
+        <AntApp>
+          <ResetPasswordScreen onComplete={auth.completePasswordRecovery} />
+        </AntApp>
+      </ConfigProvider>
+    )
+  }
+
   if (auth.status === 'unauthenticated') {
     return (
       <ConfigProvider
@@ -113,7 +127,7 @@ function AppWithAuth() {
         theme={{ algorithm: antdTheme.defaultAlgorithm, token: { colorPrimary: '#0958d9' } }}
       >
         <AntApp>
-          <LoginScreen />
+          <AuthScreen />
         </AntApp>
       </ConfigProvider>
     )
@@ -641,7 +655,7 @@ function AppShell({
               }}
               aria-label="Exportar relatório"
             >
-              {!isMobile && 'Exportar'}
+              Exportar
             </Button>
             <Button
               className="app-trail-action-btn"
@@ -650,7 +664,7 @@ function AppShell({
               onClick={() => onSignOut()}
               aria-label="Sair da conta"
             >
-              {!isMobile && 'Sair'}
+              Sair
             </Button>
           </Space>
         </Header>
