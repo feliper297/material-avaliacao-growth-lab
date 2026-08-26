@@ -71,7 +71,7 @@ export function LoginScreen() {
             Growth Lab
           </Title>
           <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 0 }}>
-            Trilha de evolução pessoal · 30 dias
+            Trilha de evolução pessoal
           </Paragraph>
         </div>
 
