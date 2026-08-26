@@ -51,7 +51,9 @@ export async function removeEvaluationPrint(url: string) {
 
   const path = decodeURIComponent(url.slice(index + marker.length))
   const { error } = await supabase.storage.from(BUCKET).remove([path])
-  if (error) throw new Error(error.message)
+  if (error && !/not found|object not found|404/i.test(error.message)) {
+    throw new Error(error.message)
+  }
 }
 
 export function parseEvaluationAttachments(value: unknown): EvaluationAttachment[] {

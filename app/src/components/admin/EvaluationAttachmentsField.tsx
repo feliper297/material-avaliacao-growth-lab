@@ -13,6 +13,7 @@ interface EvaluationAttachmentsFieldProps {
   week: number | null
   value: EvaluationAttachment[]
   readOnly?: boolean
+  busy?: boolean
   onChange?: (attachments: EvaluationAttachment[]) => void
 }
 
@@ -22,6 +23,7 @@ export function EvaluationAttachmentsField({
   week,
   value,
   readOnly = false,
+  busy = false,
   onChange,
 }: EvaluationAttachmentsFieldProps) {
   const { message, modal } = App.useApp()
@@ -36,14 +38,14 @@ export function EvaluationAttachmentsField({
     const attachment = await uploadEvaluationPrint(file, learnerId, scope, week)
     const next = [...attachmentsRef.current, attachment]
     attachmentsRef.current = next
-    onChange?.(next)
+    await onChange?.(next)
   }
 
   const uploadProps: UploadProps = {
     accept: 'image/*',
     showUploadList: false,
     multiple: true,
-    disabled: uploading,
+    disabled: uploading || busy,
     beforeUpload: async (file) => {
       setUploading(true)
       try {
@@ -74,10 +76,11 @@ export function EvaluationAttachmentsField({
       await removeEvaluationPrint(attachment.url)
       const next = attachmentsRef.current.filter((item) => item.id !== attachment.id)
       attachmentsRef.current = next
-      onChange?.(next)
+      await onChange?.(next)
       message.success('Print removido.')
     } catch (err) {
       message.error(err instanceof Error ? err.message : 'Falha ao remover print.')
+      throw err
     }
   }
 
@@ -130,6 +133,7 @@ export function EvaluationAttachmentsField({
                     icon={<DeleteOutlined />}
                     className="evaluation-attachments__remove"
                     aria-label={`Excluir print ${attachment.name}`}
+                    disabled={busy}
                     onClick={() => confirmRemove(attachment)}
                   >
                     Excluir print

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Alert,
+  App,
   Button,
   Card,
   Col,
@@ -37,11 +38,13 @@ export function FinalEvaluationPanel({
   saving,
   onSave,
 }: FinalEvaluationPanelProps) {
+  const { message } = App.useApp()
   const { token } = antdTheme.useToken()
   const [scores, setScores] = useState<Record<string, number>>({})
   const [notes, setNotes] = useState('')
   const [attachments, setAttachments] = useState<EvaluationAttachment[]>([])
   const [dirty, setDirty] = useState(false)
+  const [attachmentsSaving, setAttachmentsSaving] = useState(false)
 
   useEffect(() => {
     const initial: Record<string, number> = {}
@@ -62,6 +65,25 @@ export function FinalEvaluationPanel({
   function updateScore(index: number, value: number) {
     setScores((prev) => ({ ...prev, [String(index)]: value }))
     setDirty(true)
+  }
+
+  async function handleAttachmentsChange(next: EvaluationAttachment[]) {
+    const previous = attachments
+    setAttachments(next)
+    setDirty(true)
+    if (readOnly || !onSave) return
+
+    setAttachmentsSaving(true)
+    try {
+      await onSave(scores, notes, next)
+      setDirty(false)
+      message.success('Prints atualizados.')
+    } catch (err) {
+      setAttachments(previous)
+      message.error(err instanceof Error ? err.message : 'Falha ao salvar prints.')
+    } finally {
+      setAttachmentsSaving(false)
+    }
   }
 
   return (
@@ -142,10 +164,8 @@ export function FinalEvaluationPanel({
                 week={null}
                 value={attachments}
                 readOnly={readOnly}
-                onChange={(next) => {
-                  setAttachments(next)
-                  setDirty(true)
-                }}
+                busy={attachmentsSaving || saving}
+                onChange={handleAttachmentsChange}
               />
             </div>
           </Card>
@@ -170,8 +190,12 @@ export function FinalEvaluationPanel({
                     )}
                     <Button
                       type="primary"
-                      loading={saving}
-                      onClick={() => onSave(scores, notes, attachments)}
+                      loading={saving || attachmentsSaving}
+                      onClick={async () => {
+                        if (!onSave) return
+                        await onSave(scores, notes, attachments)
+                        setDirty(false)
+                      }}
                     >
                       Salvar avaliação final
                     </Button>

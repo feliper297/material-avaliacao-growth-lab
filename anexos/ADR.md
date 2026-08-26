@@ -335,6 +335,10 @@ Pergunta 7 do tutor: onde persistir trilha, evidências, quizzes e scores na Sem
 
 Decisão humana: "b" (sessão Cursor, 2026-08-05).
 
+### Evolução (2026-08+)
+
+A versão publicada migrou para **Supabase** (Auth + Postgres). O JSON/BFF permanece no repo como legado da Semana 1. Estado atual: [app/ESTADO-DO-SISTEMA.md](../app/ESTADO-DO-SISTEMA.md).
+
 ## Por quê
 
 Alinha com ADR-005 (BFF leve): front-end usa `fetch`, não localStorage direto. JSON é reproduzível, auditável e substituível por SQLite/Supabase na Fase 2 sem mudar contrato HTTP.
