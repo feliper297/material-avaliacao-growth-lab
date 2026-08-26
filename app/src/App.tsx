@@ -20,8 +20,10 @@ import {
   Alert,
 } from 'antd'
 import ptBR from 'antd/locale/pt_BR'
+import { isSupabaseConfigured } from './lib/supabase'
 import { useAuth } from './hooks/useAuth'
-import { LoginScreen } from './components/auth/LoginScreen'
+import { AuthScreen } from './components/auth/AuthScreen'
+import { ResetPasswordScreen } from './components/auth/ResetPasswordScreen'
 import {
   ApiOutlined,
   AppstoreOutlined,
@@ -64,6 +66,37 @@ const BASE_NAV_ITEMS: { href: string; label: string }[] = [
 ]
 
 export default function App() {
+  if (!isSupabaseConfigured) {
+    return (
+      <ConfigProvider
+        locale={ptBR}
+        theme={{ algorithm: antdTheme.defaultAlgorithm, token: { colorPrimary: '#0958d9' } }}
+      >
+        <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', padding: 24 }}>
+          <Card style={{ maxWidth: 520 }}>
+            <Title level={4} style={{ marginTop: 0 }}>
+              Configuração incompleta
+            </Title>
+            <Paragraph type="secondary">
+              As variáveis <Text code>VITE_SUPABASE_URL</Text> e{' '}
+              <Text code>VITE_SUPABASE_ANON_KEY</Text> não estão definidas neste ambiente de deploy.
+            </Paragraph>
+            <Alert
+              type="warning"
+              showIcon
+              title="Preview da Vercel"
+              description="No painel da Vercel, adicione essas variáveis ao projeto app-zeta-tan-38 para Production e Preview, depois redeploy."
+            />
+          </Card>
+        </div>
+      </ConfigProvider>
+    )
+  }
+
+  return <AppWithAuth />
+}
+
+function AppWithAuth() {
   const auth = useAuth()
 
   if (auth.status === 'loading') {
@@ -74,6 +107,19 @@ export default function App() {
     )
   }
 
+  if (auth.recoveryMode) {
+    return (
+      <ConfigProvider
+        locale={ptBR}
+        theme={{ algorithm: antdTheme.defaultAlgorithm, token: { colorPrimary: '#0958d9' } }}
+      >
+        <AntApp>
+          <ResetPasswordScreen onComplete={auth.completePasswordRecovery} />
+        </AntApp>
+      </ConfigProvider>
+    )
+  }
+
   if (auth.status === 'unauthenticated') {
     return (
       <ConfigProvider
@@ -81,7 +127,7 @@ export default function App() {
         theme={{ algorithm: antdTheme.defaultAlgorithm, token: { colorPrimary: '#0958d9' } }}
       >
         <AntApp>
-          <LoginScreen />
+          <AuthScreen />
         </AntApp>
       </ConfigProvider>
     )
@@ -609,7 +655,7 @@ function AppShell({
               }}
               aria-label="Exportar relatório"
             >
-              {!isMobile && 'Exportar'}
+              Exportar
             </Button>
             <Button
               className="app-trail-action-btn"
@@ -618,7 +664,7 @@ function AppShell({
               onClick={() => onSignOut()}
               aria-label="Sair da conta"
             >
-              {!isMobile && 'Sair'}
+              Sair
             </Button>
           </Space>
         </Header>
