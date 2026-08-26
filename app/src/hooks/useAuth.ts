@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase'
+import { isSupabaseConfigured, supabase } from '../lib/supabase'
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
 
@@ -9,6 +9,11 @@ export function useAuth() {
   const [status, setStatus] = useState<AuthStatus>('loading')
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setStatus('unauthenticated')
+      return
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
       setStatus(data.session ? 'authenticated' : 'unauthenticated')
