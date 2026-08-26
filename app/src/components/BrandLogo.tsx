@@ -1,4 +1,6 @@
-const LOGO_SRC = '/growth-lab-logo.png'
+const LOGO_1X = '/growth-lab-logo-hq.png'
+const LOGO_2X = '/growth-lab-logo@2x.png'
+const LOGO_3X = '/growth-lab-logo@3x.png'
 const LOGO_RATIO = 164 / 316
 
 interface BrandLogoProps {
@@ -16,7 +18,8 @@ export function BrandLogo({ variant = 'login', className }: BrandLogoProps) {
 
   return (
     <img
-      src={LOGO_SRC}
+      src={LOGO_1X}
+      srcSet={`${LOGO_1X} 1x, ${LOGO_2X} 2x, ${LOGO_3X} 3x`}
       alt="Growth Lab"
       width={width}
       height={logoHeight(width)}
