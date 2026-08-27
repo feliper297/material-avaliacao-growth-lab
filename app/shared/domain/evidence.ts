@@ -1,4 +1,4 @@
-import type { Evidence } from '../types/store'
+import type { Evidence, EvidenceAttachment } from '../types/store'
 
 export interface EvidenceInput {
   week: number
@@ -6,6 +6,7 @@ export interface EvidenceInput {
   title: string
   url?: string
   description: string
+  attachments?: EvidenceAttachment[]
 }
 
 export function validateEvidence(input: EvidenceInput): string[] {
@@ -34,6 +35,7 @@ export function createEvidence(input: EvidenceInput, id: string): Evidence {
     title: input.title.trim(),
     url: input.url?.trim() || undefined,
     description: input.description.trim(),
+    attachments: input.attachments ?? [],
     createdAt: new Date().toISOString(),
   }
 }

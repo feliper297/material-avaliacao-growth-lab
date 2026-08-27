@@ -1,3 +1,10 @@
+export interface EvidenceAttachment {
+  id: string
+  url: string
+  name: string
+  createdAt: string
+}
+
 export interface Evidence {
   id: string
   week: number
@@ -5,6 +12,7 @@ export interface Evidence {
   title: string
   url?: string
   description: string
+  attachments: EvidenceAttachment[]
   createdAt: string
 }
 

@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Alert, Button, Form, Input, Select, Space } from 'antd'
 import { EVIDENCE_TYPES } from '../../../shared/data/weeks'
 import type { EvidenceInput } from '../../../shared/domain/evidence'
-import type { Evidence } from '../../../shared/types/store'
+import type { Evidence, EvidenceAttachment } from '../../../shared/types/store'
+import { removeEvidenceFile } from '../../services/evidenceAttachmentApi'
+import { EvidenceAttachmentsField } from './EvidenceAttachmentsField'
 
 interface EvidenceFormProps {
+  userId: string
   defaultWeek?: number
   initialEvidence?: Evidence | null
   loading?: boolean
@@ -13,6 +16,7 @@ interface EvidenceFormProps {
 }
 
 export function EvidenceForm({
+  userId,
   defaultWeek = 1,
   initialEvidence = null,
   loading,
@@ -21,6 +25,9 @@ export function EvidenceForm({
 }: EvidenceFormProps) {
   const [form] = Form.useForm<EvidenceInput>()
   const [error, setError] = useState<string | null>(null)
+  const [attachments, setAttachments] = useState<EvidenceAttachment[]>([])
+  const [selectedWeek, setSelectedWeek] = useState(defaultWeek)
+  const initialAttachmentIdsRef = useRef<Set<string>>(new Set())
   const isEditing = initialEvidence != null
 
   useEffect(() => {
@@ -32,20 +39,48 @@ export function EvidenceForm({
         url: initialEvidence.url ?? '',
         description: initialEvidence.description,
       })
+      setAttachments(initialEvidence.attachments)
+      setSelectedWeek(initialEvidence.week)
+      initialAttachmentIdsRef.current = new Set(initialEvidence.attachments.map((item) => item.id))
       return
     }
 
     form.resetFields()
     form.setFieldsValue({ week: defaultWeek, type: EVIDENCE_TYPES[0] })
+    setAttachments([])
+    setSelectedWeek(defaultWeek)
+    initialAttachmentIdsRef.current = new Set()
   }, [initialEvidence, defaultWeek, form])
+
+  async function cleanupPendingAttachments(current: EvidenceAttachment[]) {
+    const initialIds = initialAttachmentIdsRef.current
+    const pending = current.filter((item) => !initialIds.has(item.id))
+    await Promise.all(pending.map((item) => removeEvidenceFile(item.url)))
+  }
+
+  async function handleCancel() {
+    try {
+      await cleanupPendingAttachments(attachments)
+    } catch {
+      // Ignora falha de limpeza ao cancelar — usuário pode tentar de novo.
+    }
+    onCancel()
+  }
 
   async function handleFinish(values: EvidenceInput) {
     setError(null)
     try {
-      await onSubmit(values)
+      await onSubmit({
+        ...values,
+        url: values.url?.trim() || undefined,
+        attachments,
+      })
+      initialAttachmentIdsRef.current = new Set(attachments.map((item) => item.id))
       if (!isEditing) {
         form.resetFields()
         form.setFieldsValue({ week: defaultWeek, type: EVIDENCE_TYPES[0] })
+        setAttachments([])
+        setSelectedWeek(defaultWeek)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar.')
@@ -58,6 +93,9 @@ export function EvidenceForm({
       layout="vertical"
       initialValues={{ week: defaultWeek, type: EVIDENCE_TYPES[0] }}
       onFinish={handleFinish}
+      onValuesChange={(changed) => {
+        if (changed.week != null) setSelectedWeek(changed.week)
+      }}
     >
       {error && <Alert type="error" showIcon title={error} style={{ marginBottom: 16 }} />}
 
@@ -96,10 +134,19 @@ export function EvidenceForm({
         <Input placeholder="https://..." />
       </Form.Item>
 
+      <EvidenceAttachmentsField
+        userId={userId}
+        week={selectedWeek}
+        value={attachments}
+        busy={loading}
+        onChange={setAttachments}
+      />
+
       <Form.Item
         name="description"
         label="O que foi aplicado e o que mudou?"
         rules={[{ required: true, message: 'Descrição é obrigatória.' }]}
+        style={{ marginTop: 16 }}
       >
         <Input.TextArea
           rows={4}
@@ -109,7 +156,7 @@ export function EvidenceForm({
 
       <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
         <Space>
-          <Button onClick={onCancel}>Cancelar</Button>
+          <Button onClick={handleCancel}>Cancelar</Button>
           <Button type="primary" htmlType="submit" loading={loading}>
             {isEditing ? 'Salvar alterações' : 'Salvar evidência'}
           </Button>

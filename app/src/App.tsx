@@ -210,6 +210,7 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
         <AppShell
           {...store}
           userEmail={userEmail}
+          currentUserId={profile!.userId}
           onSignOut={onSignOut}
           isAdmin={isAdmin}
           selectedLearnerId={selectedLearnerId}
@@ -244,6 +245,7 @@ function AppShell({
   exportProgress,
   readOnly,
   userEmail,
+  currentUserId,
   onSignOut,
   isAdmin,
   selectedLearnerId,
@@ -260,6 +262,7 @@ function AppShell({
   onReloadBackOffice,
 }: ReturnType<typeof useStore> & {
   userEmail?: string
+  currentUserId: string
   onSignOut: () => void
   isAdmin: boolean
   selectedLearnerId: string | null
@@ -771,6 +774,7 @@ function AppShell({
         styles={modalStyles}
       >
         <EvidenceForm
+          userId={currentUserId}
           defaultWeek={evidenceWeek}
           initialEvidence={editingEvidence}
           loading={saveStatus === 'saving'}

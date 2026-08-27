@@ -1,4 +1,4 @@
-import { DeleteOutlined, EditOutlined, EyeOutlined, FileSearchOutlined, LinkOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeOutlined, FileOutlined, FileSearchOutlined, LinkOutlined } from '@ant-design/icons'
 import { Button, Space, Tag, Typography, theme as antdTheme } from 'antd'
 import type { Evidence } from '../../../shared/types/store'
 import { linkifyText } from '../../utils/linkifyText'
@@ -81,6 +81,19 @@ export function EvidenceItem({ evidence, accent, readOnly = false, onEdit, onDel
                 Abrir link
               </Button>
             )}
+            {evidence.attachments.map((attachment) => (
+              <Button
+                key={attachment.id}
+                size="small"
+                variant="outlined"
+                icon={<FileOutlined />}
+                href={attachment.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {attachment.name}
+              </Button>
+            ))}
             {!readOnly && onEdit && (
               <Button
                 size="small"
