@@ -289,6 +289,10 @@ body {
   font-size: clamp(18px, 4vw, 24px);
 }
 
+.final-evaluation-section {
+  margin-top: 40px;
+}
+
 .final-evaluation-dimension-card {
   height: 100%;
 }
@@ -296,10 +300,8 @@ body {
 .final-evaluation-dimension-card .ant-card-body {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 148px;
-  padding-top: 24px;
-  padding-bottom: 36px;
+  justify-content: space-between;
+  height: 100%;
 }
 
 .final-evaluation-dimension-card .ant-card-body > * {
@@ -501,8 +503,7 @@ body {
   }
 
   .final-evaluation-dimension-card .ant-card-body {
-    min-height: auto;
-    padding-bottom: 24px;
+    justify-content: flex-start;
   }
 
   .backoffice-users-table .backoffice-user-email,

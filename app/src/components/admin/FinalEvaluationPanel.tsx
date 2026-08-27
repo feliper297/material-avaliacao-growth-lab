@@ -87,130 +87,144 @@ export function FinalEvaluationPanel({
   }
 
   return (
-    <div id="assessment" style={{ scrollMarginTop: 72, marginTop: 40 }}>
-      <Title level={3} style={{ marginBottom: 4 }}>
-        Avaliação final do ciclo
-      </Title>
-      <Paragraph type="secondary">
-        {readOnly
-          ? 'Consolidação das seis dimensões registrada pelo avaliador ao fim dos 30 dias.'
-          : 'Registre a avaliação completa do participante com base em evidências observáveis ao longo do ciclo.'}
-      </Paragraph>
+    <div id="assessment" className="week-section final-evaluation-section">
+      <Card styles={{ body: { padding: 0 } }}>
+        <div
+          className="week-section-header week-section-header--expanded"
+          style={{ borderBottom: `1px solid ${token.colorBorderSecondary}` }}
+        >
+          <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+            <Title level={3} style={{ margin: 0 }}>
+              Avaliação final do ciclo
+            </Title>
+            <Paragraph type="secondary" style={{ margin: '4px 0 0' }}>
+              {readOnly
+                ? 'Consolidação das seis dimensões registrada pelo avaliador ao fim dos 30 dias.'
+                : 'Registre a avaliação completa do participante com base em evidências observáveis ao longo do ciclo.'}
+            </Paragraph>
+          </div>
+        </div>
 
-      {!readOnly && (
-        <Alert
-          type="info"
-          showIcon
-          style={{ marginBottom: 16 }}
-          title="Somente o admin pode editar esta avaliação. O participante visualiza o resultado em modo leitura."
-        />
-      )}
+        <div className="week-section-body is-expanded">
+          {!readOnly && (
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+              title="Somente o admin pode editar esta avaliação. O participante visualiza o resultado em modo leitura."
+            />
+          )}
 
-      <Row gutter={[16, 16]} style={{ alignItems: 'stretch' }}>
-        {SCORE_DIMENSIONS.map((dimension, index) => {
-          const evaluated = evaluation?.scores[String(index)] != null
-          const scoreValue = scores[String(index)] ?? 3
-          return (
-            <Col xs={24} md={12} key={dimension} style={{ display: 'flex' }}>
-              <Card size="small" className="final-evaluation-dimension-card" style={{ width: '100%' }}>
-                <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <Space size={6}>
-                    <Text strong style={{ fontSize: 12 }}>
-                      {dimension}
-                    </Text>
-                    {!evaluated && readOnly && (
-                      <Tag color="default" style={{ fontSize: 11 }}>
-                        Ainda não avaliado
+          <section className="week-block">
+            <div className="week-two-col-grid">
+              {SCORE_DIMENSIONS.map((dimension, index) => {
+                const evaluated = evaluation?.scores[String(index)] != null
+                const scoreValue = scores[String(index)] ?? 3
+                return (
+                  <Card key={dimension} size="small" className="week-grid-card final-evaluation-dimension-card">
+                    <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <Space size={6} wrap>
+                        <Text strong style={{ fontSize: 12 }}>
+                          {dimension}
+                        </Text>
+                        {!evaluated && readOnly && (
+                          <Tag color="default" style={{ fontSize: 11 }}>
+                            Ainda não avaliado
+                          </Tag>
+                        )}
+                      </Space>
+                      <Tag
+                        color={readOnly && evaluated ? token.colorPrimary : undefined}
+                        style={{ fontWeight: 600, flex: 'none' }}
+                      >
+                        {scoreValue}/5
                       </Tag>
+                    </Space>
+                    {readOnly ? (
+                      <ColoredScoreDisplay value={scoreValue} accent={token.colorPrimary} />
+                    ) : (
+                      <EvaluationScoreSlider
+                        value={scoreValue}
+                        accent={token.colorPrimary}
+                        onChange={(value) => updateScore(index, value)}
+                      />
                     )}
-                  </Space>
-                  <Tag color={readOnly && evaluated ? token.colorPrimary : undefined} style={{ fontWeight: 600 }}>
-                    {scoreValue}/5
-                  </Tag>
-                </Space>
-                {readOnly ? (
-                  <ColoredScoreDisplay value={scoreValue} accent={token.colorPrimary} />
-                ) : (
-                  <EvaluationScoreSlider
-                    value={scoreValue}
-                    accent={token.colorPrimary}
-                    onChange={(value) => updateScore(index, value)}
-                  />
-                )}
-              </Card>
-            </Col>
-          )
-        })}
-
-        <Col span={24}>
-          <Card size="small" title="Parecer geral">
-            {readOnly ? (
-              <FeedbackDisplay text={notes} />
-            ) : (
-              <TextArea
-                rows={5}
-                value={notes}
-                onChange={(e) => {
-                  setNotes(e.target.value)
-                  setDirty(true)
-                }}
-                placeholder="Síntese final: evolução observada, pontos fortes, gaps críticos e recomendação para o próximo ciclo."
-              />
-            )}
-            <div style={{ marginTop: 16 }}>
-              <EvaluationAttachmentsField
-                learnerId={learnerId}
-                scope="final"
-                week={null}
-                value={attachments}
-                readOnly={readOnly}
-                busy={attachmentsSaving || saving}
-                onChange={handleAttachmentsChange}
-              />
+                  </Card>
+                )
+              })}
             </div>
-          </Card>
-        </Col>
+          </section>
 
-        <Col span={24}>
-          <Card size="small">
-            <Row justify="space-between" align="middle" gutter={[16, 16]}>
-              <Col>
-                <Statistic title="Média final" value={Number(average.toFixed(1))} suffix="/ 5" />
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  Meta sugerida: média ≥ 3,5 e nenhuma dimensão crítica abaixo de 3.
-                </Text>
-              </Col>
-              {!readOnly && onSave && (
-                <Col>
-                  <Space direction="vertical" align="end" size={4}>
-                    {dirty && (
-                      <Text type="warning" style={{ fontSize: 12 }}>
-                        <ExclamationCircleOutlined /> Alterações não salvas
-                      </Text>
-                    )}
-                    <Button
-                      type="primary"
-                      loading={saving || attachmentsSaving}
-                      onClick={async () => {
-                        if (!onSave) return
-                        await onSave(scores, notes, attachments)
-                        setDirty(false)
-                      }}
-                    >
-                      Salvar avaliação final
-                    </Button>
-                  </Space>
-                </Col>
+          <section className="week-block week-block--panels">
+            <Card size="small" className="week-grid-card" title="Parecer geral">
+              {readOnly ? (
+                <FeedbackDisplay text={notes} />
+              ) : (
+                <TextArea
+                  rows={5}
+                  value={notes}
+                  onChange={(e) => {
+                    setNotes(e.target.value)
+                    setDirty(true)
+                  }}
+                  placeholder="Síntese final: evolução observada, pontos fortes, gaps críticos e recomendação para o próximo ciclo."
+                />
               )}
-            </Row>
-            {readOnly && evaluation?.updatedAt && (
-              <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 12 }}>
-                Atualizado em {new Date(evaluation.updatedAt).toLocaleString('pt-BR')}
-              </Text>
-            )}
-          </Card>
-        </Col>
-      </Row>
+              <div style={{ marginTop: 16 }}>
+                <EvaluationAttachmentsField
+                  learnerId={learnerId}
+                  scope="final"
+                  week={null}
+                  value={attachments}
+                  readOnly={readOnly}
+                  busy={attachmentsSaving || saving}
+                  onChange={handleAttachmentsChange}
+                />
+              </div>
+            </Card>
+          </section>
+
+          <section className="week-block week-block--panels">
+            <Card size="small" className="week-grid-card">
+              <Row justify="space-between" align="middle" gutter={[16, 16]}>
+                <Col>
+                  <Statistic title="Média final" value={Number(average.toFixed(1))} suffix="/ 5" />
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    Meta sugerida: média ≥ 3,5 e nenhuma dimensão crítica abaixo de 3.
+                  </Text>
+                </Col>
+                {!readOnly && onSave && (
+                  <Col>
+                    <Space direction="vertical" align="end" size={4} className="final-evaluation-footer__actions">
+                      {dirty && (
+                        <Text type="warning" style={{ fontSize: 12 }}>
+                          <ExclamationCircleOutlined /> Alterações não salvas
+                        </Text>
+                      )}
+                      <Button
+                        type="primary"
+                        loading={saving || attachmentsSaving}
+                        onClick={async () => {
+                          if (!onSave) return
+                          await onSave(scores, notes, attachments)
+                          setDirty(false)
+                        }}
+                      >
+                        Salvar avaliação final
+                      </Button>
+                    </Space>
+                  </Col>
+                )}
+              </Row>
+              {readOnly && evaluation?.updatedAt && (
+                <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 12 }}>
+                  Atualizado em {new Date(evaluation.updatedAt).toLocaleString('pt-BR')}
+                </Text>
+              )}
+            </Card>
+          </section>
+        </div>
+      </Card>
     </div>
   )
 }
