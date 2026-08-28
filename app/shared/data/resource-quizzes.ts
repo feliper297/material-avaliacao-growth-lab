@@ -354,6 +354,102 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
       answer: 1,
     },
   ],
+  'w3-git': [
+    {
+      q: 'O Git ajuda um time a:',
+      options: [
+        'Eliminar a necessidade de testes',
+        'Registrar histórico de mudanças e trabalhar em paralelo com branches',
+        'Substituir banco de dados por arquivos locais',
+        'Publicar código sem revisão',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Um commit representa:',
+      options: [
+        'Apenas um backup automático do Figma',
+        'Um snapshot nomeado de alterações no código ou arquivos versionados',
+        'O deploy final em produção',
+        'Uma permissão de administrador',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Versionar código faz parte da arquitetura porque:',
+      options: [
+        'Dispensa documentação e evidências',
+        'Permite rastrear o que mudou, quando e por quê',
+        'Impede rollback em caso de erro',
+        'Só interessa ao time de marketing',
+      ],
+      answer: 1,
+    },
+  ],
+  'w3-github-repos': [
+    {
+      q: 'Um repositório no GitHub é:',
+      options: [
+        'Somente uma pasta de imagens do protótipo',
+        'A unidade que concentra código, histórico e colaboração do projeto',
+        'Um substituto de banco relacional em produção',
+        'Apenas um chat de equipe',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Repositório público vs privado impacta principalmente:',
+      options: [
+        'A tipografia da interface',
+        'Quem pode ver e contribuir com o código',
+        'A velocidade do HTTP GET',
+        'O número de frames no Figma',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Ligar repositório a deploy (ex.: Vercel) significa que:',
+      options: [
+        'O design system deixa de existir',
+        'Mudanças aprovadas no código podem gerar nova versão publicada',
+        'Commits substituem testes automatizados',
+        'Pull requests deixam de ser necessários',
+      ],
+      answer: 1,
+    },
+  ],
+  'w3-github-pr': [
+    {
+      q: 'Um pull request serve para:',
+      options: [
+        'Enviar e-mail marketing',
+        'Propor mudanças, revisar e integrar código com rastreabilidade',
+        'Substituir o controle de versão',
+        'Ocultar histórico de alterações',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Antes de merge, uma boa prática é:',
+      options: [
+        'Ignorar comentários de revisão',
+        'Revisar diff, testes e impacto da mudança',
+        'Fazer push direto na branch principal sem revisão',
+        'Apagar issues relacionadas',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Para o Growth Lab, PR + deploy conectam arquitetura e entrega porque:',
+      options: [
+        'Eliminam a necessidade de Supabase',
+        'Separam desenvolvimento, revisão e publicação em etapas auditáveis',
+        'Dispensam evidências semanais',
+        'Garantem que mock vira dado real automaticamente',
+      ],
+      answer: 1,
+    },
+  ],
   'w4-study-mode': [
     {
       q: 'O Study Mode do ChatGPT é mais adequado para:',

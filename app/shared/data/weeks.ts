@@ -178,6 +178,39 @@ export const WEEKS: TrailWeek[] = [
         topic:
           'BFF: camada entre interface e APIs, adaptação de contratos por experiência, limites de responsabilidade e quando o padrão faz sentido.',
       },
+      {
+        id: 'w3-git',
+        title: 'Sobre o controle de versão do Git',
+        source: 'GitHub Docs',
+        type: 'Texto técnico',
+        duration: '12 min',
+        icon: 'CodeOutlined',
+        url: 'https://docs.github.com/pt/get-started/using-git/about-git',
+        topic:
+          'Git, commits, histórico de alterações, branches e por que versionar código faz parte da arquitetura de um sistema.',
+      },
+      {
+        id: 'w3-github-repos',
+        title: 'Sobre repositórios',
+        source: 'GitHub Docs',
+        type: 'Texto técnico',
+        duration: '10 min',
+        icon: 'InboxOutlined',
+        url: 'https://docs.github.com/pt/repositories/creating-and-managing-repositories/about-repositories',
+        topic:
+          'Repositório como unidade de código e dados do projeto, visibilidade, estrutura e relação com deploy e colaboração.',
+      },
+      {
+        id: 'w3-github-pr',
+        title: 'Sobre pull requests',
+        source: 'GitHub Docs',
+        type: 'Texto técnico',
+        duration: '12 min',
+        icon: 'GroupOutlined',
+        url: 'https://docs.github.com/pt/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests',
+        topic:
+          'Pull request como contrato de mudança: revisão, aprovação, integração de código e rastreabilidade no fluxo de entrega.',
+      },
     ],
   },
   {
