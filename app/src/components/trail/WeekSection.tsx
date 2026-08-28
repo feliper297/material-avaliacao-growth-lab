@@ -1,4 +1,4 @@
-﻿import {
+import {
   AimOutlined,
   ApiOutlined,
   AppstoreOutlined,
@@ -28,6 +28,7 @@ import { getQuizAnswers, getQuizScore, hasDetailedQuizResult, isLegacyQuizResult
 import type { AppStore, Evidence } from '../../../shared/types/store'
 import type { Evaluation, EvaluationAttachment } from '../../../shared/types/evaluation'
 import { EvidenceItem, InlineQuizResult, QuizResultSummary } from './EvidenceItem'
+import { PokemonApiModal } from './PokemonApiModal'
 import { QuizReview } from './QuizReview'
 import { WeekEvaluationPanel } from '../admin/WeekEvaluationPanel'
 import { useBreakpointLayout } from '../../hooks/useBreakpointLayout'
@@ -97,6 +98,7 @@ export function WeekSection({
     answers?: number[]
     isLegacy: boolean
   } | null>(null)
+  const [pokemonModalOpen, setPokemonModalOpen] = useState(false)
   const weekEvidences = store.evidences.filter((evidence) => evidence.week === week.id)
   const weekQuizResults = week.resources
     .map((resource) => {
@@ -290,6 +292,25 @@ export function WeekSection({
                       )}
                     </div>
 
+                    {week.id === 3 && (
+                      <div
+                        style={{
+                          marginTop: 12,
+                          paddingTop: 12,
+                          borderTop: `1px solid ${token.colorBorderSecondary}`,
+                        }}
+                      >
+                        <Button
+                          className="app-trail-action-btn"
+                          variant="outlined"
+                          icon={<ApiOutlined />}
+                          onClick={() => setPokemonModalOpen(true)}
+                        >
+                          Explorar API Pokémon
+                        </Button>
+                      </div>
+                    )}
+
                     {weekEvidences.length > 0 && (
                       <div style={{ marginTop: 12 }}>
                         {weekEvidences.map((evidence) => (
@@ -351,6 +372,14 @@ export function WeekSection({
           />
         )}
       </Modal>
+
+      <PokemonApiModal
+        open={pokemonModalOpen}
+        onClose={() => setPokemonModalOpen(false)}
+        width={modalWidth}
+        style={modalStyle}
+        styles={modalStyles}
+      />
     </div>
   )
 }
