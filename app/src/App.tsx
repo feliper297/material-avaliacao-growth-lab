@@ -53,7 +53,7 @@ import { useEvaluations } from './hooks/useEvaluations'
 import { FinalEvaluationPanel } from './components/admin/FinalEvaluationPanel'
 import { BackOfficePanel } from './components/admin/BackOfficePanel'
 import { useBackOffice } from './hooks/useBackOffice'
-import { SIDEBAR_WIDTH, useBreakpointLayout } from './hooks/useBreakpointLayout'
+import { SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_WIDTH, useBreakpointLayout } from './hooks/useBreakpointLayout'
 import { BrandLogo } from './components/BrandLogo'
 import type { Evidence } from '../shared/types/store'
 import type { BackOfficeStats } from '../shared/types/backoffice'
@@ -295,6 +295,7 @@ function AppShell({
   const [activeView, setActiveView] = useState<'trail' | 'backoffice'>('trail')
   const [activeSection, setActiveSection] = useState('#week-1')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const isNavScrollingRef = useRef(false)
@@ -427,30 +428,53 @@ function AppShell({
     return () => observer.disconnect()
   }, [activeView, navItems])
 
-  const sidebarPadding = isMobile ? 16 : 20
+  const sidebarPadding = isMobile ? 16 : sidebarCollapsed ? 8 : 20
 
   const sidebarBody = (
     <>
-      <div style={{ marginBottom: 20 }}>
-        <BrandLogo variant="sidebar" />
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: sidebarCollapsed ? 'center' : 'space-between',
+          gap: 8,
+          marginBottom: sidebarCollapsed ? 12 : 20,
+        }}
+      >
+        {!sidebarCollapsed && <BrandLogo variant="sidebar" />}
+        <Button
+          type="text"
+          icon={<MenuOutlined />}
+          aria-label={sidebarCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+          aria-expanded={!sidebarCollapsed}
+          onClick={() => {
+            if (isMobile) {
+              setMobileMenuOpen(false)
+              return
+            }
+            setSidebarCollapsed((value) => !value)
+          }}
+        />
       </div>
 
-      <Card size="small" style={{ marginBottom: 16 }}>
-        <Text type="secondary" style={{ fontSize: 11, textTransform: 'uppercase' }}>
-          Progresso
-        </Text>
-        <br />
-        <Text strong>{getCycleStatus(progress)}</Text>
-        <Progress
-          percent={progress}
-          size="small"
-          status={progress >= 100 ? 'success' : 'active'}
-          style={{ marginTop: 8 }}
-        />
-        <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 4 }}>
-          {store.completed.length} de {ALL_RESOURCE_IDS.length} conteúdos
-        </Text>
-      </Card>
+      {!sidebarCollapsed && (
+        <Card size="small" style={{ marginBottom: 16 }}>
+          <Text type="secondary" style={{ fontSize: 11, textTransform: 'uppercase' }}>
+            Progresso
+          </Text>
+          <br />
+          <Text strong>{getCycleStatus(progress)}</Text>
+          <Progress
+            percent={progress}
+            size="small"
+            status={progress >= 100 ? 'success' : 'active'}
+            style={{ marginTop: 8 }}
+          />
+          <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 4 }}>
+            {store.completed.length} de {ALL_RESOURCE_IDS.length} conteúdos
+          </Text>
+        </Card>
+      )}
 
       <nav aria-label="Navegação da trilha">
         <Menu
@@ -458,6 +482,7 @@ function AppShell({
           mode="inline"
           theme={store.theme}
           selectable
+          inlineCollapsed={!isMobile && sidebarCollapsed}
           selectedKeys={[activeView === 'backoffice' ? '#backoffice' : activeSection]}
           items={menuItems}
           style={{ border: 'none', background: 'transparent' }}
@@ -544,7 +569,8 @@ function AppShell({
     )
   }
 
-  const mainOffset = isMobile ? 0 : SIDEBAR_WIDTH
+  const sidebarWidth = sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH
+  const mainOffset = isMobile ? 0 : sidebarWidth
 
   return (
     <Layout className="app-shell" style={{ minHeight: '100vh' }}>
@@ -555,6 +581,10 @@ function AppShell({
       {!isMobile && (
         <Sider
           width={SIDEBAR_WIDTH}
+          collapsedWidth={SIDEBAR_COLLAPSED_WIDTH}
+          collapsed={sidebarCollapsed}
+          collapsible
+          trigger={null}
           theme={store.theme}
           className="no-print app-sider-fixed"
           style={{
@@ -594,6 +624,7 @@ function AppShell({
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
+          transition: 'margin-left 0.2s ease, width 0.2s ease',
         }}
       >
         <Header

@@ -5,6 +5,7 @@ import { useEffect, useState, type CSSProperties } from 'react'
 export const SIDEBAR_COLLAPSE_QUERY = '(max-width: 991px)'
 export const MOBILE_BREAKPOINT = 'lg' as const
 export const SIDEBAR_WIDTH = 280
+export const SIDEBAR_COLLAPSED_WIDTH = 72
 export const CONTENT_PADDING_DESKTOP = 32
 export const CONTENT_PADDING_MOBILE = 16
 
