@@ -205,7 +205,7 @@ export function FinalEvaluationPanel({
 
           <section className="week-block week-block--panels">
             <Card size="small" className="week-grid-card">
-              <Row justify="space-between" align="middle" gutter={[16, 16]}>
+              <Row justify="space-between" align="middle" gutter={[16, 16]} className="final-evaluation-footer">
                 <Col>
                   <Statistic title="Média final" value={Number(average.toFixed(1))} suffix="/ 5" />
                   <Text type="secondary" style={{ fontSize: 12 }}>

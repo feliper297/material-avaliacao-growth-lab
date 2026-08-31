@@ -69,7 +69,7 @@ export function EvidenceItem({ evidence, accent, readOnly = false, onEdit, onDel
           <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 8 }}>
             {new Date(evidence.createdAt).toLocaleString('pt-BR')}
           </Text>
-          <Space size={8} wrap>
+          <Space size={8} wrap className="evidence-item__actions">
             {evidence.url && (
               <Button
                 size="small"

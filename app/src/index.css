@@ -230,6 +230,12 @@ body {
   }
 }
 
+@media (min-width: 992px) and (max-width: 1199px) {
+  .week-two-col-grid {
+    gap: 12px;
+  }
+}
+
 .week-evidence-header {
   display: flex;
   flex-wrap: wrap;
@@ -384,6 +390,14 @@ body {
   box-sizing: border-box;
 }
 
+.evidence-item__actions {
+  width: 100%;
+}
+
+.evidence-item__actions .ant-btn {
+  max-width: 100%;
+}
+
 .course-content__orphans .evidence-item {
   width: 100%;
 }
@@ -419,6 +433,10 @@ body {
 
 .final-evaluation-footer {
   width: 100%;
+}
+
+.final-evaluation-footer .ant-col {
+  min-width: 0;
 }
 
 .final-evaluation-footer__actions {
@@ -626,6 +644,31 @@ body {
   padding-block: 6px;
 }
 
+.login-screen {
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f0f5ff 0%, #e6f4ff 100%);
+  padding: 24px 16px;
+}
+
+.login-screen__inner {
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-screen__brand {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-screen__card {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
 @media (max-width: 991px) {
   :root {
     --app-content-padding: 16px;
@@ -683,6 +726,7 @@ body {
   .backoffice-panel .ant-table-wrapper {
     max-width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .final-evaluation-footer__actions {
@@ -692,6 +736,58 @@ body {
 
   .final-evaluation-footer__actions .ant-btn {
     width: 100%;
+  }
+
+  .final-evaluation-footer .ant-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .course-content__item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .course-content__item-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .course-content__item-actions--material {
+    justify-content: flex-start;
+  }
+
+  .course-content__collapse .ant-collapse-header {
+    padding: 12px 14px !important;
+  }
+
+  .course-content__collapse .ant-collapse-content-box {
+    padding: 12px !important;
+  }
+
+  .evaluation-score-radios .ant-space {
+    width: 100%;
+  }
+
+  .evaluation-score-radios .ant-radio-button-wrapper {
+    flex: 1 1 auto;
+    min-width: 44px;
+    text-align: center;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 991px) {
+  :root {
+    --app-content-padding: 24px;
+    --app-section-padding: 20px;
+  }
+
+  .app-stats-grid {
+    gap: 12px;
+  }
+
+  .login-screen {
+    padding: 32px 24px;
   }
 }
 
@@ -707,6 +803,11 @@ body {
 }
 
 @media (max-width: 575px) {
+  .app-evidence-modal--phone .ant-modal {
+    max-width: calc(100vw - 16px) !important;
+    margin: 8px auto !important;
+  }
+
   :root {
     --app-section-padding: 12px;
     --app-scroll-margin: 72px;
@@ -720,6 +821,51 @@ body {
     padding: 12px !important;
   }
 
+  .app-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .app-header {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .app-header__primary,
+  .app-header__actions {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .app-header-actions {
+    justify-content: stretch;
+  }
+
+  .app-header-actions .ant-space {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .app-header-actions .ant-space-item {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+  }
+
+  .app-header-actions .ant-btn {
+    width: 100%;
+  }
+
+  .login-screen {
+    padding: 16px 12px;
+    align-items: flex-start;
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  .login-screen__brand {
+    margin-bottom: 24px;
+  }
+
   .week-section-header {
     gap: 8px;
   }
@@ -729,6 +875,20 @@ body {
     height: 36px !important;
     line-height: 36px !important;
     font-size: 13px !important;
+  }
+
+  .course-content__item-actions .ant-btn {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+  }
+
+  .course-content__item-actions .ant-btn-circle {
+    flex: 0 0 auto;
+  }
+
+  .evidence-item__actions .ant-btn {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
   }
 
   .evaluation-attachments__grid {
@@ -769,6 +929,10 @@ body {
 
   .week-evaluation-save .ant-btn {
     width: 100%;
+  }
+
+  .app-header-actions .ant-space-item {
+    flex: 1 1 100%;
   }
 }
 

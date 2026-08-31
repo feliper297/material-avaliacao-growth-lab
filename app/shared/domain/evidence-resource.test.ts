@@ -108,5 +108,73 @@ describe('resolveEvidenceResourceId', () => {
         week3,
       ),
     ).toBe('w3-client-server')
+
+    expect(
+      resolveEvidenceResourceId(
+        {
+          id: '7',
+          week: 3,
+          type: 'Documentação',
+          title: 'Documento de Client-Server usado neste sistema de Evolução',
+          description: 'Teste',
+          attachments: [],
+          createdAt: '2026-01-01',
+        },
+        week3,
+      ),
+    ).toBe('w3-client-server')
+  })
+
+  it('maps week 2 journey and problem framing evidences', () => {
+    const week2 = WEEKS[1]
+
+    expect(
+      resolveEvidenceResourceId(
+        {
+          id: '8',
+          week: 2,
+          type: 'Fluxo ou jornada',
+          title: 'Jornada do usuário e Userflow do projeto Onboarding',
+          description: 'Teste',
+          attachments: [],
+          createdAt: '2026-01-01',
+        },
+        week2,
+      ),
+    ).toBe('w2-journeys-flows')
+
+    expect(
+      resolveEvidenceResourceId(
+        {
+          id: '9',
+          week: 2,
+          type: 'Documentação',
+          title: 'Técnica dos 5 Porques no projeto de Onboarding',
+          description: 'Teste',
+          attachments: [],
+          createdAt: '2026-01-01',
+        },
+        week2,
+      ),
+    ).toBe('w2-problem-framing')
+  })
+
+  it('maps GitHub evidences stored in week 1 to Sobre repositórios in week 3', () => {
+    const week3 = WEEKS[2]
+
+    expect(
+      resolveEvidenceResourceId(
+        {
+          id: '3',
+          week: 1,
+          type: 'Documentação',
+          title: 'Github do front melhorado do Projeto de Gestão',
+          description: 'Teste',
+          attachments: [],
+          createdAt: '2026-01-01',
+        },
+        week3,
+      ),
+    ).toBe('w3-github-repos')
   })
 })

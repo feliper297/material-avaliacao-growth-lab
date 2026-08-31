@@ -285,6 +285,7 @@ function AppShell({
   const { token } = antdTheme.useToken()
   const {
     isMobile,
+    isPhone,
     contentPadding,
     modalWidth,
     modalStyle,
@@ -628,7 +629,7 @@ function AppShell({
             flexWrap: 'wrap',
           }}
         >
-          <Space size={token.marginSM} style={{ minWidth: 0, flex: 1 }} align="center" wrap>
+          <Space size={token.marginSM} style={{ minWidth: 0, flex: 1 }} align="center" wrap className="app-header__primary">
             {isMobile && (
               <Button
                 type="text"
@@ -640,7 +641,7 @@ function AppShell({
             {isAdmin && (
               <Select
                 style={{
-                  minWidth: isMobile ? 0 : 240,
+                  minWidth: isPhone ? 0 : isMobile ? 160 : 240,
                   flex: isMobile ? '1 1 120px' : undefined,
                   maxWidth: '100%',
                   width: isMobile ? '100%' : undefined,
@@ -654,7 +655,7 @@ function AppShell({
             )}
             {saveStatus === 'saving' && <Text type="secondary">Salvando…</Text>}
           </Space>
-          <Space size={token.marginXS} wrap align="center" className="app-header-actions">
+          <Space size={token.marginXS} wrap align="center" className="app-header-actions app-header__actions">
             <Button
               className="app-trail-action-btn"
               type="primary"
@@ -665,7 +666,7 @@ function AppShell({
               }}
               aria-label="Exportar relatório"
             >
-              Exportar
+              {isPhone ? null : 'Exportar'}
             </Button>
             <Button
               className="app-trail-action-btn"
@@ -674,7 +675,7 @@ function AppShell({
               onClick={() => onSignOut()}
               aria-label="Sair da conta"
             >
-              Sair
+              {isPhone ? null : 'Sair'}
             </Button>
           </Space>
         </Header>
@@ -790,6 +791,8 @@ function AppShell({
         width={modalWidth}
         style={modalStyle}
         styles={modalStyles}
+        centered={!isPhone}
+        wrapClassName={isPhone ? 'app-evidence-modal--phone' : undefined}
       >
         <EvidenceForm
           userId={currentUserId}

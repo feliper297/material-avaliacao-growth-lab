@@ -15,10 +15,6 @@ import { EvidenceItem } from './EvidenceItem'
 
 const { Text, Paragraph } = Typography
 
-function isGithubEvidence(evidence: Evidence): boolean {
-  return evidence.title.toLowerCase().includes('github')
-}
-
 interface CourseContentListProps {
   week: TrailWeek
   store: AppStore
@@ -51,9 +47,7 @@ export function CourseContentList({
 
   const items = week.resources.map((resource) => {
     const completed = store.completed.includes(resource.id)
-    const resourceEvidences = (evidencesByResource.get(resource.id) ?? []).filter(
-      (evidence) => !isGithubEvidence(evidence),
-    )
+    const resourceEvidences = evidencesByResource.get(resource.id) ?? []
     const defaultPracticalTitle = resource.practicalTasks?.find((task) => !task.action)?.title
     const hasPokemonAction = resource.practicalTasks?.some((task) => task.action === 'pokemon-api')
 

@@ -33,6 +33,25 @@ export function evidenceMatchesTask(evidence: Evidence, task: PracticalTask): bo
       'plataforma de gestao',
       'front da plataforma de gestao',
     ],
+    'w2-problem-framing-practice': [
+      'problem framing',
+      '5 porques',
+      'cinco porques',
+      'tecnica dos 5',
+      'tecnica dos cinco',
+      'porques no projeto',
+    ],
+    'w2-journeys-flows-practice': [
+      'jornada do usuario',
+      'jornada e fluxo',
+      'userflow',
+      'user flow',
+      'user journeys',
+      'user journeys vs',
+      'fluxo diferenciados',
+      'onboarding',
+    ],
+    'w2-empty-states-practice': ['empty state', 'estados vazios', 'matriz de estados', 'casos de borda'],
     'w3-github-repos-practice': [
       'github',
       'github do front',
@@ -50,6 +69,7 @@ export function evidenceMatchesTask(evidence: Evidence, task: PracticalTask): bo
       'cliente-servidor',
       'diagrama simplificado',
       'arquitetura client',
+      'documento de client',
     ],
   }
 
@@ -76,11 +96,20 @@ function matchResourceByEvidenceTitle(evidence: Evidence, week: TrailWeek): stri
 
 function evidenceBelongsToWeekView(evidence: Evidence, week: TrailWeek, resourceId: string): boolean {
   if (evidence.week === week.id) return true
-  // Evidências GitHub/repositório registradas sem semana correta ainda aparecem na Semana 3.
+
+  if (
+    evidence.resourceId === resourceId &&
+    week.resources.some((resource) => resource.id === resourceId)
+  ) {
+    return true
+  }
+
+  // Evidências GitHub/repositório registradas em outra semana aparecem na Semana 3.
   if (week.id === 3 && resourceId === 'w3-github-repos') {
     const title = normalizeTitle(evidence.title)
     return title.includes('github') || title.includes('repositorio')
   }
+
   return false
 }
 
