@@ -13,7 +13,7 @@ import {
 import type { AppStore, Evidence } from '../../../shared/types/store'
 import { EvidenceItem } from './EvidenceItem'
 
-const { Text, Paragraph } = Typography
+const { Text } = Typography
 
 interface CourseContentListProps {
   week: TrailWeek
@@ -62,19 +62,12 @@ export function CourseContentList({
       ),
       children: (
         <div className="course-content__panel">
-          <Paragraph type="secondary" style={{ margin: '0 0 12px' }}>
-            {resource.topic}
-          </Paragraph>
-
           <div className="course-content__items">
-            <div className="course-content__item">
+            <div className="course-content__item course-content__item--material">
               <ReadOutlined className="course-content__item-icon" aria-hidden />
-              <div className="course-content__item-body">
-                <Text strong>{resource.title}</Text>
-                <Text type="secondary" className="course-content__item-meta">
-                  {resource.source} • {resource.type} • {resource.duration}
-                </Text>
-              </div>
+              <Text type="secondary" className="course-content__item-topic">
+                {resource.topic}
+              </Text>
               <Space size={8} wrap className="course-content__item-actions course-content__item-actions--material">
                 <Button
                   className="app-trail-action-btn"

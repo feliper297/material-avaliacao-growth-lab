@@ -325,6 +325,26 @@ body {
   border-bottom: 1px solid var(--ant-color-border-secondary, #f0f0f0);
 }
 
+.course-content__item--material {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 12px 16px;
+}
+
+.course-content__item-topic {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  padding-right: 4px;
+}
+
 .course-content__item:last-child {
   border-bottom: none;
 }
@@ -354,6 +374,10 @@ body {
 
 .course-content__item-actions--material {
   align-items: center;
+  flex: none;
+  margin-left: auto;
+  max-width: min(100%, 420px);
+  justify-content: flex-end;
 }
 
 .course-content__item-actions--material .ant-btn-sm {
@@ -743,18 +767,31 @@ body {
     max-width: 100%;
   }
 
-  .course-content__item {
+  .course-content__item--material {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .course-content__item--material .course-content__item-topic {
+    flex: 1 1 calc(100% - 28px);
+    -webkit-line-clamp: 2;
+  }
+
+  .course-content__item--material .course-content__item-actions--material {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+
+  .course-content__item:not(.course-content__item--material) {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .course-content__item-actions {
+  .course-content__item-actions:not(.course-content__item-actions--material) {
     width: 100%;
     margin-left: 0;
-  }
-
-  .course-content__item-actions--material {
-    justify-content: flex-start;
   }
 
   .course-content__collapse .ant-collapse-header {
@@ -788,6 +825,18 @@ body {
 
   .login-screen {
     padding: 32px 24px;
+  }
+
+  .course-content__item--material {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+  }
+
+  .course-content__item--material .course-content__item-actions--material {
+    width: auto;
+    max-width: min(100%, 360px);
+    margin-left: auto;
+    justify-content: flex-end;
   }
 }
 
