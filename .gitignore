@@ -9,3 +9,5 @@ server/data/store.json
 *.tsbuildinfo
 .pixel-brain/runs/
 .vercel/
+
+.vercel

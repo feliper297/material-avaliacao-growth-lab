@@ -4,11 +4,12 @@ import type { EvidenceInput } from '../../shared/domain/evidence'
 import { DEFAULT_STORE } from '../../shared/types/store'
 import { parseEvidenceAttachments, removeEvidenceFile } from './evidenceAttachmentApi'
 
-const evidenceSelect = 'id, week, type, title, url, description, attachments, created_at'
+const evidenceSelect = 'id, week, resource_id, type, title, url, description, attachments, created_at'
 
 function mapEvidence(row: {
   id: string
   week: number
+  resource_id: string | null
   type: string
   title: string
   url: string | null
@@ -19,6 +20,7 @@ function mapEvidence(row: {
   return {
     id: row.id,
     week: row.week,
+    resourceId: row.resource_id ?? undefined,
     type: row.type,
     title: row.title,
     url: row.url ?? undefined,
@@ -96,6 +98,7 @@ export const supabaseApi = {
       .insert({
         user_id: user.id,
         week: input.week,
+        resource_id: input.resourceId ?? null,
         type: input.type ?? 'aplicacao',
         title: input.title,
         url: input.url ?? null,
@@ -143,6 +146,7 @@ export const supabaseApi = {
       .from('evidences')
       .update({
         week: input.week,
+        resource_id: input.resourceId ?? null,
         type: input.type ?? 'aplicacao',
         title: input.title,
         url: input.url ?? null,

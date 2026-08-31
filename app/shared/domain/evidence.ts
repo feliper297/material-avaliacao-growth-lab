@@ -2,6 +2,7 @@ import type { Evidence, EvidenceAttachment } from '../types/store'
 
 export interface EvidenceInput {
   week: number
+  resourceId?: string
   type: string
   title: string
   url?: string
@@ -31,6 +32,7 @@ export function createEvidence(input: EvidenceInput, id: string): Evidence {
   return {
     id,
     week: input.week,
+    resourceId: input.resourceId,
     type: input.type,
     title: input.title.trim(),
     url: input.url?.trim() || undefined,

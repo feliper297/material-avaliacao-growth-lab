@@ -18,6 +18,7 @@ export function EvidenceItem({ evidence, accent, readOnly = false, onEdit, onDel
 
   return (
     <article
+      className="evidence-item"
       style={{
         borderLeft: `3px solid ${accent}`,
         borderRadius: token.borderRadiusLG,

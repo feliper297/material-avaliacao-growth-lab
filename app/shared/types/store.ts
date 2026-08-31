@@ -8,6 +8,7 @@ export interface EvidenceAttachment {
 export interface Evidence {
   id: string
   week: number
+  resourceId?: string
   type: string
   title: string
   url?: string

@@ -1,4 +1,8 @@
 import type { AppStore } from '../types/store'
+import { SCORE_DIMENSIONS } from '../types/store'
+import { getResourceQuiz } from '../data/resource-quizzes'
+import type { TrailWeek } from '../data/weeks'
+import type { Evaluation } from '../types/evaluation'
 
 export function getAllResourceIds(weekResources: { id: string }[][]): string[] {
   return weekResources.flat().map((r) => r.id)
@@ -15,11 +19,29 @@ export function getWeekProgress(
 ): number {
   const resourceCount = week.resources.length
   const done = week.resources.filter((r) => store.completed.includes(r.id)).length
-  const quizzesDone = week.resources.filter((r) => store.quizzes[r.id] != null).length
+  const quizzesRequired = week.resources.filter((r) => getResourceQuiz(r.id).length > 0).length
+  const quizzesDone = week.resources.filter(
+    (r) => getResourceQuiz(r.id).length > 0 && store.quizzes[r.id] != null,
+  ).length
   const evidenceDone = store.evidences.some((e) => e.week === week.id) ? 1 : 0
-  const total = resourceCount * 2 + 1
+  const total = resourceCount + quizzesRequired + 1
   if (total === 0) return 0
   return Math.round(((done + quizzesDone + evidenceDone) / total) * 100)
+}
+
+/** Semana fechada: todos os conteúdos selecionados marcados como concluídos. */
+export function isWeekClosed(
+  week: TrailWeek,
+  store: Pick<AppStore, 'completed'>,
+): boolean {
+  if (week.resources.length === 0) return false
+  return week.resources.every((resource) => store.completed.includes(resource.id))
+}
+
+/** Avaliação final concluída: registro salvo com todas as dimensões pontuadas. */
+export function isFinalEvaluationComplete(evaluation: Evaluation | null): boolean {
+  if (!evaluation) return false
+  return SCORE_DIMENSIONS.every((_, index) => evaluation.scores[String(index)] != null)
 }
 
 export function calculateAverage(scores: Record<string, number>, dimensionCount: number): number {

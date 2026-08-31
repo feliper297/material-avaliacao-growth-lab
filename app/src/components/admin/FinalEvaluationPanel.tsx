@@ -13,10 +13,10 @@ import {
   Typography,
   theme as antdTheme,
 } from 'antd'
-import { ExclamationCircleOutlined } from '@ant-design/icons'
+import { ExclamationCircleOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import type { Evaluation, EvaluationAttachment } from '../../../shared/types/evaluation'
 import { SCORE_DIMENSIONS } from '../../../shared/types/store'
-import { calculateAverage } from '../../../shared/domain/progress'
+import { calculateAverage, isFinalEvaluationComplete } from '../../../shared/domain/progress'
 import { EvaluationAttachmentsField } from './EvaluationAttachmentsField'
 import { ColoredScoreDisplay, EvaluationScoreSlider, FeedbackDisplay } from './evaluationDisplay'
 
@@ -61,6 +61,7 @@ export function FinalEvaluationPanel({
     () => calculateAverage(scores, SCORE_DIMENSIONS.length),
     [scores],
   )
+  const evaluationComplete = isFinalEvaluationComplete(evaluation)
 
   function updateScore(index: number, value: number) {
     setScores((prev) => ({ ...prev, [String(index)]: value }))
@@ -94,9 +95,27 @@ export function FinalEvaluationPanel({
           style={{ borderBottom: `1px solid ${token.colorBorderSecondary}` }}
         >
           <div style={{ flex: '1 1 auto', minWidth: 0 }}>
-            <Title level={3} style={{ margin: 0 }}>
-              Avaliação final do ciclo
-            </Title>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                flexWrap: 'wrap',
+              }}
+            >
+              <Title level={3} style={{ margin: 0 }}>
+                Avaliação final do ciclo
+              </Title>
+              {evaluationComplete && (
+                <Tag
+                  icon={<CheckCircleOutlined />}
+                  color="success"
+                  style={{ margin: 0, fontWeight: 500 }}
+                >
+                  Concluído
+                </Tag>
+              )}
+            </div>
             <Paragraph type="secondary" style={{ margin: '4px 0 0' }}>
               {readOnly
                 ? 'Consolidação das seis dimensões registrada pelo avaliador ao fim dos 30 dias.'

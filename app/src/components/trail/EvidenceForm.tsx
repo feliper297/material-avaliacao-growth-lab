@@ -9,6 +9,9 @@ import { EvidenceAttachmentsField } from './EvidenceAttachmentsField'
 interface EvidenceFormProps {
   userId: string
   defaultWeek?: number
+  defaultResourceId?: string
+  defaultTitle?: string
+  lockWeek?: boolean
   initialEvidence?: Evidence | null
   loading?: boolean
   onSubmit: (input: EvidenceInput) => Promise<void>
@@ -18,6 +21,9 @@ interface EvidenceFormProps {
 export function EvidenceForm({
   userId,
   defaultWeek = 1,
+  defaultResourceId,
+  defaultTitle,
+  lockWeek = false,
   initialEvidence = null,
   loading,
   onSubmit,
@@ -34,6 +40,7 @@ export function EvidenceForm({
     if (initialEvidence) {
       form.setFieldsValue({
         week: initialEvidence.week,
+        resourceId: initialEvidence.resourceId,
         type: initialEvidence.type,
         title: initialEvidence.title,
         url: initialEvidence.url ?? '',
@@ -46,11 +53,16 @@ export function EvidenceForm({
     }
 
     form.resetFields()
-    form.setFieldsValue({ week: defaultWeek, type: EVIDENCE_TYPES[0] })
+    form.setFieldsValue({
+      week: defaultWeek,
+      resourceId: defaultResourceId,
+      type: EVIDENCE_TYPES[0],
+      title: defaultTitle ?? '',
+    })
     setAttachments([])
     setSelectedWeek(defaultWeek)
     initialAttachmentIdsRef.current = new Set()
-  }, [initialEvidence, defaultWeek, form])
+  }, [initialEvidence, defaultWeek, defaultResourceId, defaultTitle, form])
 
   async function cleanupPendingAttachments(current: EvidenceAttachment[]) {
     const initialIds = initialAttachmentIdsRef.current
@@ -78,7 +90,12 @@ export function EvidenceForm({
       initialAttachmentIdsRef.current = new Set(attachments.map((item) => item.id))
       if (!isEditing) {
         form.resetFields()
-        form.setFieldsValue({ week: defaultWeek, type: EVIDENCE_TYPES[0] })
+        form.setFieldsValue({
+          week: defaultWeek,
+          resourceId: defaultResourceId,
+          type: EVIDENCE_TYPES[0],
+          title: defaultTitle ?? '',
+        })
         setAttachments([])
         setSelectedWeek(defaultWeek)
       }
@@ -91,7 +108,7 @@ export function EvidenceForm({
     <Form
       form={form}
       layout="vertical"
-      initialValues={{ week: defaultWeek, type: EVIDENCE_TYPES[0] }}
+      initialValues={{ week: defaultWeek, type: EVIDENCE_TYPES[0], resourceId: defaultResourceId, title: defaultTitle ?? '' }}
       onFinish={handleFinish}
       onValuesChange={(changed) => {
         if (changed.week != null) setSelectedWeek(changed.week)
@@ -100,7 +117,14 @@ export function EvidenceForm({
       {error && <Alert type="error" showIcon title={error} style={{ marginBottom: 16 }} />}
 
       <Form.Item name="week" label="Semana" rules={[{ required: true }]}>
-        <Select options={[1, 2, 3, 4].map((w) => ({ value: w, label: `Semana ${w}` }))} />
+        <Select
+          disabled={lockWeek}
+          options={[1, 2, 3, 4].map((w) => ({ value: w, label: `Semana ${w}` }))}
+        />
+      </Form.Item>
+
+      <Form.Item name="resourceId" hidden>
+        <Input />
       </Form.Item>
 
       <Form.Item name="type" label="Tipo de evidência" rules={[{ required: true }]}>
