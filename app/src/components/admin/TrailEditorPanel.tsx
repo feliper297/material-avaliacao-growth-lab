@@ -250,12 +250,7 @@ export function TrailEditorPanel() {
 
   const collapseItems = draft.weeks.map((week) => ({
     key: String(week.id),
-    label: (
-      <Space wrap>
-        <Text strong>{`Semana ${week.id} — ${week.title}`}</Text>
-        <Tag>{week.resources.length} conteúdo{week.resources.length === 1 ? '' : 's'}</Tag>
-      </Space>
-    ),
+    label: <Text strong>{`Semana ${week.id} — ${week.title}`}</Text>,
     extra: (
       <Space onClick={(event) => event.stopPropagation()} wrap>
         <Button size="small" variant="outlined" onClick={() => openWeekModal('edit', week)}>
