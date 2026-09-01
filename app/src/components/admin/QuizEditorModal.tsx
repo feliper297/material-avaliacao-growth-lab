@@ -6,6 +6,20 @@ import { useBreakpointLayout } from '../../hooks/useBreakpointLayout'
 
 const { Text } = Typography
 
+function normalizeOptionLabel(value: unknown): string {
+  if (typeof value === 'string') return value.trim()
+  if (value == null) return ''
+  return String(value).trim()
+}
+
+function normalizeQuestionsForForm(questions: QuizItem[]): QuizEditorFormValues['questions'] {
+  return questions.map((question) => ({
+    q: typeof question.q === 'string' ? question.q : String(question.q ?? ''),
+    options: (question.options ?? []).map((option) => normalizeOptionLabel(option)),
+    answer: typeof question.answer === 'number' ? question.answer : Number(question.answer) || 0,
+  }))
+}
+
 interface QuizEditorFormValues {
   questions: Array<{
     q: string
@@ -36,7 +50,8 @@ function QuestionBlock({
   onRemoveQuestion: () => void
 }) {
   const form = Form.useFormInstance<QuizEditorFormValues>()
-  const options = Form.useWatch(['questions', field.name, 'options'], form) ?? []
+  const watchedOptions = Form.useWatch(['questions', field.name, 'options'], form)
+  const options = Array.isArray(watchedOptions) ? watchedOptions : []
 
   return (
     <section className="quiz-editor-question" aria-labelledby={`quiz-question-${field.key}`}>
@@ -113,7 +128,7 @@ function QuestionBlock({
             >
               <Radio.Group className="quiz-editor-answer-group">
                 {optionFields.map((_, optionIndex) => {
-                  const label = options[optionIndex]?.trim()
+                  const label = normalizeOptionLabel(options[optionIndex])
                   return (
                     <Radio key={optionIndex} value={optionIndex} className="quiz-editor-answer-option">
                       {label ? `Alternativa ${optionIndex + 1} — ${label}` : `Alternativa ${optionIndex + 1}`}
@@ -148,11 +163,7 @@ export function QuizEditorModal({
     form.setFieldsValue({
       questions:
         initialQuestions.length > 0
-          ? initialQuestions.map((question) => ({
-              q: question.q,
-              options: [...question.options],
-              answer: question.answer,
-            }))
+          ? normalizeQuestionsForForm(initialQuestions)
           : [{ q: '', options: ['', ''], answer: 0 }],
     })
   }, [form, initialQuestions, open])
@@ -204,8 +215,8 @@ export function QuizEditorModal({
                 const values = await form.validateFields()
                 await onSave(
                   values.questions.map((question) => ({
-                    q: question.q.trim(),
-                    options: question.options.map((option) => option.trim()),
+                    q: normalizeOptionLabel(question.q),
+                    options: question.options.map((option) => normalizeOptionLabel(option)),
                     answer: question.answer,
                   })),
                 )
