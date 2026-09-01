@@ -273,50 +273,47 @@ export function TrailEditorPanel() {
           {week.resources.map((resource) => {
             const quizCount = draft.quizzes[resource.id]?.length ?? 0
             return (
-              <Card key={resource.id} size="small" type="inner">
-                <Space direction="vertical" style={{ width: '100%' }} size={8}>
-                  <Space wrap style={{ justifyContent: 'space-between', width: '100%' }}>
-                    <div>
-                      <Text strong>{resource.title}</Text>
-                      <br />
-                      <Text type="secondary" style={{ fontSize: 12 }}>
-                        {resource.topic}
-                      </Text>
-                    </div>
-                    <Space wrap>
-                      <Tag color={quizCount > 0 ? 'blue' : 'default'}>
-                        {quizCount > 0 ? `${quizCount} pergunta${quizCount === 1 ? '' : 's'}` : 'Sem teste'}
-                      </Tag>
-                      <Button
-                        size="small"
-                        type="primary"
-                        onClick={() =>
-                          setQuizModal({ resourceId: resource.id, resourceTitle: resource.title })
-                        }
-                      >
-                        {quizCount > 0 ? 'Editar teste' : 'Cadastrar teste'}
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => openResourceModal('edit', week.id, resource)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        size="small"
-                        type="text"
-                        danger
-                        onClick={() => confirmRemoveResource(resource)}
-                      >
-                        Remover
-                      </Button>
-                    </Space>
-                  </Space>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    {resource.url}
+              <Card key={resource.id} size="small" type="inner" className="trail-editor-resource">
+                <div className="trail-editor-resource__header">
+                  <Text strong className="trail-editor-resource__title">
+                    {resource.title}
                   </Text>
-                </Space>
+                  <div className="trail-editor-resource__actions">
+                    <Tag color={quizCount > 0 ? 'blue' : 'default'}>
+                      {quizCount > 0 ? `${quizCount} pergunta${quizCount === 1 ? '' : 's'}` : 'Sem teste'}
+                    </Tag>
+                    <Button
+                      size="small"
+                      type="primary"
+                      onClick={() =>
+                        setQuizModal({ resourceId: resource.id, resourceTitle: resource.title })
+                      }
+                    >
+                      {quizCount > 0 ? 'Editar teste' : 'Cadastrar teste'}
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => openResourceModal('edit', week.id, resource)}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      size="small"
+                      type="text"
+                      danger
+                      onClick={() => confirmRemoveResource(resource)}
+                    >
+                      Remover
+                    </Button>
+                  </div>
+                </div>
+                <Text type="secondary" className="trail-editor-resource__topic">
+                  {resource.topic}
+                </Text>
+                <Text type="secondary" className="trail-editor-resource__url">
+                  {resource.url}
+                </Text>
               </Card>
             )
           })}
