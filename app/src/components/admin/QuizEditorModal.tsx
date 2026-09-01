@@ -1,7 +1,10 @@
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
-import { App, Button, Form, Input, Modal, Radio, Space } from 'antd'
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
+import { App, Button, Form, Input, Modal, Radio, Typography } from 'antd'
 import { useEffect } from 'react'
 import type { QuizItem } from '../../../shared/data/weeks'
+import { useBreakpointLayout } from '../../hooks/useBreakpointLayout'
+
+const { Text } = Typography
 
 interface QuizEditorFormValues {
   questions: Array<{
@@ -17,8 +20,113 @@ interface QuizEditorModalProps {
   initialQuestions: QuizItem[]
   saving?: boolean
   onCancel: () => void
-  onSave: (questions: QuizItem[]) => void
-  onRemove: () => void
+  onSave: (questions: QuizItem[]) => void | Promise<void>
+  onRemove: () => void | Promise<void>
+}
+
+function QuestionBlock({
+  field,
+  questionIndex,
+  canRemoveQuestion,
+  onRemoveQuestion,
+}: {
+  field: { name: number; key: number }
+  questionIndex: number
+  canRemoveQuestion: boolean
+  onRemoveQuestion: () => void
+}) {
+  const form = Form.useFormInstance<QuizEditorFormValues>()
+  const options = Form.useWatch(['questions', field.name, 'options'], form) ?? []
+
+  return (
+    <section className="quiz-editor-question" aria-labelledby={`quiz-question-${field.key}`}>
+      <div className="quiz-editor-question__header">
+        <Form.Item
+          name={[field.name, 'q']}
+          label={`Pergunta ${questionIndex + 1}`}
+          rules={[{ required: true, message: 'Enunciado obrigatório.' }]}
+          className="quiz-editor-question__enunciado"
+        >
+          <Input.TextArea
+            id={`quiz-question-${field.key}`}
+            rows={3}
+            placeholder="Digite o enunciado da pergunta"
+            showCount
+            maxLength={500}
+          />
+        </Form.Item>
+        {canRemoveQuestion && (
+          <Button
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            aria-label={`Remover pergunta ${questionIndex + 1}`}
+            onClick={onRemoveQuestion}
+            className="quiz-editor-question__remove"
+          />
+        )}
+      </div>
+
+      <Form.List name={[field.name, 'options']}>
+        {(optionFields, optionActions) => (
+          <>
+            <Text className="quiz-editor-question__label">
+              Alternativas <Text type="danger">*</Text>
+            </Text>
+            <div className="quiz-editor-options">
+              {optionFields.map((optionField, optionIndex) => (
+                <div key={optionField.key} className="quiz-editor-option-row">
+                  <Form.Item
+                    name={optionField.name}
+                    rules={[{ required: true, message: 'Alternativa obrigatória.' }]}
+                    className="quiz-editor-option-row__input"
+                  >
+                    <Input placeholder={`Alternativa ${optionIndex + 1}`} />
+                  </Form.Item>
+                  {optionFields.length > 2 && (
+                    <Button
+                      type="text"
+                      danger
+                      icon={<DeleteOutlined />}
+                      aria-label={`Remover alternativa ${optionIndex + 1}`}
+                      onClick={() => optionActions.remove(optionField.name)}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+            <Button
+              type="dashed"
+              onClick={() => optionActions.add('')}
+              icon={<PlusOutlined />}
+              block
+              className="quiz-editor-add-option"
+            >
+              Adicionar alternativa
+            </Button>
+
+            <Form.Item
+              name={[field.name, 'answer']}
+              label="Resposta correta"
+              rules={[{ required: true, message: 'Selecione a alternativa correta.' }]}
+              className="quiz-editor-question__answer"
+            >
+              <Radio.Group className="quiz-editor-answer-group">
+                {optionFields.map((_, optionIndex) => {
+                  const label = options[optionIndex]?.trim()
+                  return (
+                    <Radio key={optionIndex} value={optionIndex} className="quiz-editor-answer-option">
+                      {label ? `Alternativa ${optionIndex + 1} — ${label}` : `Alternativa ${optionIndex + 1}`}
+                    </Radio>
+                  )
+                })}
+              </Radio.Group>
+            </Form.Item>
+          </>
+        )}
+      </Form.List>
+    </section>
+  )
 }
 
 export function QuizEditorModal({
@@ -31,7 +139,9 @@ export function QuizEditorModal({
   onRemove,
 }: QuizEditorModalProps) {
   const { modal } = App.useApp()
+  const { isPhone } = useBreakpointLayout()
   const [form] = Form.useForm<QuizEditorFormValues>()
+  const isEditing = initialQuestions.length > 0
 
   useEffect(() => {
     if (!open) return
@@ -61,23 +171,38 @@ export function QuizEditorModal({
   return (
     <Modal
       open={open}
-      title={`Teste — ${resourceTitle}`}
+      title={isEditing ? `Editar teste — ${resourceTitle}` : `Criar teste — ${resourceTitle}`}
       onCancel={onCancel}
-      width={720}
+      centered
+      width={isPhone ? 'min(100vw - 32px, 720px)' : 720}
       destroyOnHidden
+      className="quiz-editor-modal"
+      styles={{
+        body: {
+          maxHeight: 'min(70dvh, 640px)',
+          overflowY: 'auto',
+          paddingTop: 8,
+        },
+      }}
       footer={
-        <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Button danger onClick={handleRemoveQuiz} disabled={initialQuestions.length === 0}>
-            Remover teste
-          </Button>
-          <Space wrap>
-            <Button onClick={onCancel}>Cancelar</Button>
+        <div className="quiz-editor-modal__footer">
+          {isEditing ? (
+            <Button danger onClick={handleRemoveQuiz} loading={saving}>
+              Remover teste
+            </Button>
+          ) : (
+            <span />
+          )}
+          <div className="quiz-editor-modal__footer-actions">
+            <Button onClick={onCancel} disabled={saving}>
+              Cancelar
+            </Button>
             <Button
               type="primary"
               loading={saving}
               onClick={async () => {
                 const values = await form.validateFields()
-                onSave(
+                await onSave(
                   values.questions.map((question) => ({
                     q: question.q.trim(),
                     options: question.options.map((option) => option.trim()),
@@ -88,100 +213,29 @@ export function QuizEditorModal({
             >
               Salvar teste
             </Button>
-          </Space>
-        </Space>
+          </div>
+        </div>
       }
     >
-      <Form form={form} layout="vertical">
+      <Form form={form} layout="vertical" className="quiz-editor-form">
         <Form.List name="questions">
           {(fields, { add, remove }) => (
             <>
               {fields.map((field, questionIndex) => (
-                <div
+                <QuestionBlock
                   key={field.key}
-                  style={{
-                    marginBottom: 24,
-                    paddingBottom: 16,
-                    borderBottom: '1px solid var(--ant-color-border-secondary)',
-                  }}
-                >
-                  <Space align="start" style={{ width: '100%', justifyContent: 'space-between' }}>
-                    <Form.Item
-                      {...field}
-                      name={[field.name, 'q']}
-                      label={`Pergunta ${questionIndex + 1}`}
-                      rules={[{ required: true, message: 'Enunciado obrigatório.' }]}
-                      style={{ flex: 1, marginBottom: 12 }}
-                    >
-                      <Input.TextArea rows={2} placeholder="Enunciado da pergunta" />
-                    </Form.Item>
-                    {fields.length > 1 && (
-                      <Button
-                        type="text"
-                        danger
-                        icon={<MinusCircleOutlined />}
-                        aria-label={`Remover pergunta ${questionIndex + 1}`}
-                        onClick={() => remove(field.name)}
-                      />
-                    )}
-                  </Space>
-
-                  <Form.List name={[field.name, 'options']}>
-                    {(optionFields, optionActions) => (
-                      <>
-                        <Form.Item label="Alternativas" required style={{ marginBottom: 8 }}>
-                          {optionFields.map((optionField, optionIndex) => (
-                            <Space key={optionField.key} align="baseline" style={{ display: 'flex', marginBottom: 8 }}>
-                              <Form.Item
-                                {...optionField}
-                                name={optionField.name}
-                                rules={[{ required: true, message: 'Alternativa obrigatória.' }]}
-                                style={{ flex: 1, marginBottom: 0 }}
-                              >
-                                <Input placeholder={`Alternativa ${optionIndex + 1}`} />
-                              </Form.Item>
-                              {optionFields.length > 2 && (
-                                <Button
-                                  type="text"
-                                  danger
-                                  icon={<MinusCircleOutlined />}
-                                  aria-label={`Remover alternativa ${optionIndex + 1}`}
-                                  onClick={() => optionActions.remove(optionField.name)}
-                                />
-                              )}
-                            </Space>
-                          ))}
-                          <Button
-                            type="dashed"
-                            onClick={() => optionActions.add('')}
-                            icon={<PlusOutlined />}
-                            block
-                          >
-                            Adicionar alternativa
-                          </Button>
-                        </Form.Item>
-
-                        <Form.Item
-                          name={[field.name, 'answer']}
-                          label="Resposta correta"
-                          rules={[{ required: true, message: 'Selecione a alternativa correta.' }]}
-                        >
-                          <Radio.Group>
-                            <Space direction="vertical">
-                              {optionFields.map((_, optionIndex) => (
-                                <Radio key={optionIndex} value={optionIndex}>
-                                  Alternativa {optionIndex + 1}
-                                </Radio>
-                              ))}
-                            </Space>
-                          </Radio.Group>
-                        </Form.Item>
-                      </>
-                    )}
-                  </Form.List>
-                </div>
+                  field={field}
+                  questionIndex={questionIndex}
+                  canRemoveQuestion={fields.length > 1}
+                  onRemoveQuestion={() => remove(field.name)}
+                />
               ))}
-              <Button type="dashed" onClick={() => add({ q: '', options: ['', ''], answer: 0 })} icon={<PlusOutlined />} block>
+              <Button
+                type="dashed"
+                onClick={() => add({ q: '', options: ['', ''], answer: 0 })}
+                icon={<PlusOutlined />}
+                block
+              >
                 Adicionar pergunta
               </Button>
             </>

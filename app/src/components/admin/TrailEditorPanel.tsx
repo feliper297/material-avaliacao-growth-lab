@@ -231,21 +231,45 @@ export function TrailEditorPanel() {
     resourceForm.resetFields()
   }
 
-  function saveQuiz(resourceId: string, questions: QuizItem[]) {
-    updateDraft({
-      ...draft,
-      quizzes: { ...draft.quizzes, [resourceId]: questions },
-    })
-    setQuizModal(null)
-    message.success('Teste atualizado. Clique em "Salvar alterações" para publicar.')
+  async function publishCatalog(next: TrailCatalog, successMessage: string): Promise<boolean> {
+    const errors = validateCatalog(next)
+    if (errors.length > 0) {
+      message.error(errors[0])
+      return false
+    }
+
+    setDraft(next)
+    try {
+      await saveCatalog(next)
+      setDirty(false)
+      message.success(successMessage)
+      return true
+    } catch (err) {
+      setDirty(true)
+      message.error(err instanceof Error ? err.message : 'Falha ao salvar trilha.')
+      return false
+    }
   }
 
-  function removeQuiz(resourceId: string) {
+  async function saveQuiz(resourceId: string, questions: QuizItem[]) {
+    const next = {
+      ...draft,
+      quizzes: { ...draft.quizzes, [resourceId]: questions },
+    }
+    const saved = await publishCatalog(next, 'Teste salvo. Participantes já podem respondê-lo.')
+    if (saved) {
+      setQuizModal(null)
+    }
+  }
+
+  async function removeQuiz(resourceId: string) {
     const quizzes = { ...draft.quizzes }
     delete quizzes[resourceId]
-    updateDraft({ ...draft, quizzes })
-    setQuizModal(null)
-    message.success('Teste removido. Clique em "Salvar alterações" para publicar.')
+    const next = { ...draft, quizzes }
+    const saved = await publishCatalog(next, 'Teste removido.')
+    if (saved) {
+      setQuizModal(null)
+    }
   }
 
   const collapseItems = draft.weeks.map((week) => ({
@@ -274,18 +298,32 @@ export function TrailEditorPanel() {
                     {resource.title}
                   </Text>
                   <div className="trail-editor-resource__actions">
-                    <Tag color={quizCount > 0 ? 'blue' : 'default'}>
-                      {quizCount > 0 ? `${quizCount} pergunta${quizCount === 1 ? '' : 's'}` : 'Sem teste'}
-                    </Tag>
-                    <Button
-                      size="small"
-                      type="primary"
-                      onClick={() =>
-                        setQuizModal({ resourceId: resource.id, resourceTitle: resource.title })
-                      }
-                    >
-                      {quizCount > 0 ? 'Editar teste' : 'Cadastrar teste'}
-                    </Button>
+                    {quizCount > 0 && (
+                      <Tag color="blue">
+                        {quizCount} pergunta{quizCount === 1 ? '' : 's'}
+                      </Tag>
+                    )}
+                    {quizCount > 0 ? (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() =>
+                          setQuizModal({ resourceId: resource.id, resourceTitle: resource.title })
+                        }
+                      >
+                        Editar teste
+                      </Button>
+                    ) : (
+                      <Button
+                        size="small"
+                        type="primary"
+                        onClick={() =>
+                          setQuizModal({ resourceId: resource.id, resourceTitle: resource.title })
+                        }
+                      >
+                        Criar teste
+                      </Button>
+                    )}
                     <Button
                       size="small"
                       variant="outlined"
