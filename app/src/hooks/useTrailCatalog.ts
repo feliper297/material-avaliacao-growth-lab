@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   getAllResourceIdsFromWeeks,
   getDefaultTrailCatalog,
@@ -13,15 +13,20 @@ export function useTrailCatalog(enabled: boolean): TrailCatalogContextValue {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const hasLoadedOnceRef = useRef(false)
 
   const reload = useCallback(async () => {
     if (!enabled) {
       setCatalog(getDefaultTrailCatalog())
       setLoading(false)
+      hasLoadedOnceRef.current = false
       return
     }
 
-    setLoading(true)
+    const isInitialLoad = !hasLoadedOnceRef.current
+    if (isInitialLoad) {
+      setLoading(true)
+    }
     setError(null)
     try {
       const next = await fetchTrailCatalog()
@@ -30,7 +35,10 @@ export function useTrailCatalog(enabled: boolean): TrailCatalogContextValue {
       setError(err instanceof Error ? err.message : 'Falha ao carregar trilha.')
       setCatalog(getDefaultTrailCatalog())
     } finally {
-      setLoading(false)
+      if (isInitialLoad) {
+        setLoading(false)
+      }
+      hasLoadedOnceRef.current = true
     }
   }, [enabled])
 

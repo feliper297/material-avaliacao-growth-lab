@@ -7,6 +7,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons'
 import { Alert, Button, Card, Col, Progress, Row, Space, Spin, Statistic, Table, Tabs, Tag, Typography } from 'antd'
+import { useState } from 'react'
 import type { ColumnsType } from 'antd/es/table'
 import type { BackOfficeStats, BackOfficeUserRow } from '../../../shared/types/backoffice'
 import { TrailEditorPanel } from './TrailEditorPanel'
@@ -220,6 +221,8 @@ function BackOfficeOverview({
 }
 
 export function BackOfficePanel({ stats, loading, error, weekCount, onReload }: BackOfficePanelProps) {
+  const [activeTab, setActiveTab] = useState('overview')
+
   return (
     <div className="backoffice-panel">
       <Title level={3} style={{ marginBottom: 16 }}>
@@ -227,7 +230,9 @@ export function BackOfficePanel({ stats, loading, error, weekCount, onReload }: 
       </Title>
 
       <Tabs
-        defaultActiveKey="overview"
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        destroyInactiveTabPane={false}
         items={[
           {
             key: 'overview',
