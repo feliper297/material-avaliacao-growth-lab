@@ -1,12 +1,7 @@
-import {
-  DeleteOutlined,
-  EditOutlined,
-  FileTextOutlined,
-  PlusOutlined,
-  SaveOutlined,
-} from '@ant-design/icons'
+import { PlusOutlined } from '@ant-design/icons'
 import {
   App,
+  Alert,
   Button,
   Card,
   Collapse,
@@ -51,7 +46,7 @@ interface ResourceFormValues {
 
 export function TrailEditorPanel() {
   const { message, modal } = App.useApp()
-  const { weeks, quizzes, saveCatalog, saving, reload, loading } = useTrailCatalogContext()
+  const { weeks, quizzes, saveCatalog, saving, reload, loading, setDraftPreview } = useTrailCatalogContext()
   const [draft, setDraft] = useState<TrailCatalog>(() => ({ weeks: [], quizzes: {} }))
   const [dirty, setDirty] = useState(false)
 
@@ -69,6 +64,11 @@ export function TrailEditorPanel() {
   useEffect(() => {
     void ensureTrailCatalogSeeded().then(() => reload())
   }, [reload])
+
+  useEffect(() => {
+    setDraftPreview(dirty ? draft : null)
+    return () => setDraftPreview(null)
+  }, [dirty, draft, setDraftPreview])
 
   useEffect(() => {
     if (!dirty) {
@@ -258,10 +258,10 @@ export function TrailEditorPanel() {
     ),
     extra: (
       <Space onClick={(event) => event.stopPropagation()} wrap>
-        <Button size="small" icon={<EditOutlined />} onClick={() => openWeekModal('edit', week)}>
+        <Button size="small" variant="outlined" onClick={() => openWeekModal('edit', week)}>
           Editar
         </Button>
-        <Button size="small" danger icon={<DeleteOutlined />} onClick={() => confirmRemoveWeek(week)}>
+        <Button size="small" type="text" danger onClick={() => confirmRemoveWeek(week)}>
           Remover
         </Button>
       </Space>
@@ -289,7 +289,7 @@ export function TrailEditorPanel() {
                       </Tag>
                       <Button
                         size="small"
-                        icon={<FileTextOutlined />}
+                        type="primary"
                         onClick={() =>
                           setQuizModal({ resourceId: resource.id, resourceTitle: resource.title })
                         }
@@ -298,15 +298,15 @@ export function TrailEditorPanel() {
                       </Button>
                       <Button
                         size="small"
-                        icon={<EditOutlined />}
+                        variant="outlined"
                         onClick={() => openResourceModal('edit', week.id, resource)}
                       >
                         Editar
                       </Button>
                       <Button
                         size="small"
+                        type="text"
                         danger
-                        icon={<DeleteOutlined />}
                         onClick={() => confirmRemoveResource(resource)}
                       >
                         Remover
@@ -321,8 +321,7 @@ export function TrailEditorPanel() {
             )
           })}
           <Button
-            type="dashed"
-            icon={<PlusOutlined />}
+            variant="outlined"
             onClick={() => openResourceModal('create', week.id)}
             block
           >
@@ -343,6 +342,16 @@ export function TrailEditorPanel() {
 
   return (
     <div className="trail-editor-panel">
+      {dirty && (
+        <Alert
+          type="warning"
+          showIcon
+          title="Alterações não publicadas"
+          description='Clique em "Salvar alterações" para atualizar o menu lateral e a trilha dos participantes.'
+          style={{ marginBottom: 16 }}
+        />
+      )}
+
       <Space wrap style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
           <Typography.Title level={4} style={{ marginBottom: 4 }}>
@@ -353,10 +362,10 @@ export function TrailEditorPanel() {
           </Paragraph>
         </div>
         <Space wrap>
-          <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={() => void handleSaveCatalog()}>
+          <Button type="primary" loading={saving} onClick={() => void handleSaveCatalog()}>
             Salvar alterações
           </Button>
-          <Button icon={<PlusOutlined />} onClick={() => openWeekModal('create')}>
+          <Button variant="outlined" onClick={() => openWeekModal('create')}>
             Adicionar semana
           </Button>
         </Space>

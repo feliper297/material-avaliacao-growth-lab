@@ -6,6 +6,8 @@ export interface TrailCatalogContextValue {
   weeks: TrailWeek[]
   quizzes: Record<string, QuizItem[]>
   allResourceIds: string[]
+  draftPreview: TrailCatalog | null
+  setDraftPreview: (catalog: TrailCatalog | null) => void
   loading: boolean
   saving: boolean
   error: string | null

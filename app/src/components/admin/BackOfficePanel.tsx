@@ -1,6 +1,5 @@
 import {
   DatabaseOutlined,
-  EditOutlined,
   ReloadOutlined,
   TeamOutlined,
   TrophyOutlined,
@@ -249,12 +248,7 @@ export function BackOfficePanel({ stats, loading, error, weekCount, onReload }: 
           },
           {
             key: 'editor',
-            label: (
-              <Space size={6}>
-                <EditOutlined />
-                Editor da trilha
-              </Space>
-            ),
+            label: 'Editor da trilha',
             children: <TrailEditorPanel />,
           },
         ]}

@@ -10,6 +10,7 @@ import { fetchTrailCatalog, saveTrailCatalog } from '../services/trailCatalogApi
 
 export function useTrailCatalog(enabled: boolean): TrailCatalogContextValue {
   const [catalog, setCatalog] = useState<TrailCatalog>(() => getDefaultTrailCatalog())
+  const [draftPreview, setDraftPreview] = useState<TrailCatalog | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -52,6 +53,7 @@ export function useTrailCatalog(enabled: boolean): TrailCatalogContextValue {
     try {
       const saved = await saveTrailCatalog(next)
       setCatalog(saved)
+      setDraftPreview(null)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Falha ao salvar trilha.'
       setError(message)
@@ -61,8 +63,8 @@ export function useTrailCatalog(enabled: boolean): TrailCatalogContextValue {
     }
   }, [])
 
-  const weeks = useMemo(() => catalog.weeks, [catalog.weeks])
-  const quizzes = useMemo(() => catalog.quizzes, [catalog.quizzes])
+  const weeks = catalog.weeks
+  const quizzes = catalog.quizzes
   const allResourceIds = useMemo(() => getAllResourceIdsFromWeeks(weeks), [weeks])
 
   const getResourceQuiz = useCallback(
@@ -74,6 +76,8 @@ export function useTrailCatalog(enabled: boolean): TrailCatalogContextValue {
     weeks,
     quizzes,
     allResourceIds,
+    draftPreview,
+    setDraftPreview,
     loading,
     saving,
     error,

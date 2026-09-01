@@ -290,7 +290,8 @@ function AppShell({
 }) {
   const { message, modal } = AntApp.useApp()
   const { token } = antdTheme.useToken()
-  const { weeks, allResourceIds, getResourceQuiz, quizzes } = useTrailCatalogContext()
+  const { weeks, allResourceIds, getResourceQuiz, quizzes, draftPreview } = useTrailCatalogContext()
+  const navWeeks = isAdmin && draftPreview ? draftPreview.weeks : weeks
   const {
     isMobile,
     isPhone,
@@ -324,12 +325,12 @@ function AppShell({
   )
 
   const weekEvaluationsAverage = useMemo(() => {
-    const weekScores = weeks.map((w) => getWeekEvaluation(w.id)?.scores.overall).filter(
+    const weekScores = navWeeks.map((w) => getWeekEvaluation(w.id)?.scores.overall).filter(
       (v): v is number => v != null,
     )
     if (weekScores.length === 0) return null
     return weekScores.reduce((sum, n) => sum + n, 0) / weekScores.length
-  }, [getWeekEvaluation, weeks])
+  }, [getWeekEvaluation, navWeeks])
 
   const finalAverage = useMemo(
     () =>
@@ -344,18 +345,18 @@ function AppShell({
   const activeWeek = useMemo(() => {
     if (!activeSection.startsWith('#week-')) return null
     const weekId = Number.parseInt(activeSection.slice('#week-'.length), 10)
-    return weeks.find((week) => week.id === weekId) ?? null
-  }, [activeSection, weeks])
+    return navWeeks.find((week) => week.id === weekId) ?? null
+  }, [activeSection, navWeeks])
 
   const closedWeekIds = useMemo(
-    () => new Set(weeks.filter((week) => isWeekClosed(week, store)).map((week) => week.id)),
-    [store, weeks],
+    () => new Set(navWeeks.filter((week) => isWeekClosed(week, store)).map((week) => week.id)),
+    [store, navWeeks],
   )
 
   const assessmentComplete = isFinalEvaluationComplete(finalEvaluation)
 
   const navItems = useMemo(() => {
-    const items = weeks.map((week) => ({
+    const items = navWeeks.map((week) => ({
       href: `#week-${week.id}`,
       label: `Semana ${week.id}`,
     }))
@@ -364,19 +365,19 @@ function AppShell({
       items.push({ href: '#backoffice', label: 'Back Office' })
     }
     return items
-  }, [isAdmin, weeks])
+  }, [isAdmin, navWeeks])
 
   const navIcon = useMemo(() => {
     const icons: Record<string, { icon: ReactNode; color: string }> = {
       '#assessment': { icon: <TrophyOutlined />, color: token.colorWarning },
       '#backoffice': { icon: <DashboardOutlined />, color: '#531dab' },
     }
-    weeks.forEach((week) => {
+    navWeeks.forEach((week) => {
       const Icon = WEEK_NAV_ICONS[(week.id - 1) % WEEK_NAV_ICONS.length]
       icons[`#week-${week.id}`] = { icon: <Icon />, color: weekAccentHex(week.id) }
     })
     return icons
-  }, [token.colorWarning, weeks])
+  }, [token.colorWarning, navWeeks])
 
   const menuItems: MenuProps['items'] = navItems.map((item) => {
     const meta = navIcon[item.href] ?? { icon: <ReadOutlined />, color: token.colorPrimary }
