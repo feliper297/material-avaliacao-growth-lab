@@ -1011,15 +1011,10 @@ body {
   max-width: 100%;
 }
 
-.trail-editor-resource__topic,
-.trail-editor-resource__url {
+.trail-editor-resource__topic {
   display: block;
   font-size: 12px;
   line-height: 1.5;
-}
-
-.trail-editor-resource__url {
-  word-break: break-all;
 }
 
 @media (max-width: 767px) {

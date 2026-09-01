@@ -311,9 +311,6 @@ export function TrailEditorPanel() {
                 <Text type="secondary" className="trail-editor-resource__topic">
                   {resource.topic}
                 </Text>
-                <Text type="secondary" className="trail-editor-resource__url">
-                  {resource.url}
-                </Text>
               </Card>
             )
           })}
