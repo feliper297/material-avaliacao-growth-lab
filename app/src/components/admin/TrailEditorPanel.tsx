@@ -24,6 +24,7 @@ import {
 import type { TrailCatalog } from '../../../shared/types/trail-catalog'
 import { useTrailCatalogContext } from '../../context/TrailCatalogContext'
 import { ensureTrailCatalogSeeded } from '../../services/trailCatalogApi'
+import { useBreakpointLayout } from '../../hooks/useBreakpointLayout'
 import { QuizEditorModal } from './QuizEditorModal'
 
 const { Text, Paragraph } = Typography
@@ -38,16 +39,15 @@ interface ResourceFormValues {
   title: string
   topic: string
   url: string
-  source?: string
-  type?: string
-  duration?: string
 }
 
 export function TrailEditorPanel() {
   const { message, modal } = App.useApp()
+  const { isPhone } = useBreakpointLayout()
   const { weeks, quizzes, saveCatalog, saving, reload, loading, setDraftPreview } = useTrailCatalogContext()
   const [draft, setDraft] = useState<TrailCatalog>(() => ({ weeks: [], quizzes: {} }))
   const [dirty, setDirty] = useState(false)
+  const [expandedWeekKeys, setExpandedWeekKeys] = useState<string[]>([])
 
   const [weekModal, setWeekModal] = useState<{ mode: 'create' | 'edit'; week?: TrailWeek } | null>(null)
   const [resourceModal, setResourceModal] = useState<{
@@ -74,6 +74,15 @@ export function TrailEditorPanel() {
       setDraft({ weeks, quizzes })
     }
   }, [weeks, quizzes, dirty])
+
+  useEffect(() => {
+    const weekKeys = draft.weeks.map((week) => String(week.id))
+    setExpandedWeekKeys((prev) => {
+      if (prev.length === 0) return weekKeys
+      const kept = prev.filter((key) => weekKeys.includes(key))
+      return kept.length > 0 ? kept : weekKeys
+    })
+  }, [draft.weeks])
 
   function updateDraft(next: TrailCatalog) {
     setDraft(next)
@@ -133,9 +142,6 @@ export function TrailEditorPanel() {
         title: resource.title,
         topic: resource.topic,
         url: resource.url,
-        source: resource.source,
-        type: resource.type,
-        duration: resource.duration,
       })
     } else {
       resourceForm.resetFields()
@@ -180,19 +186,13 @@ export function TrailEditorPanel() {
     weekForm.resetFields()
   }
 
-  function saveResourceFromModal(values: ResourceFormValues) {
+  async function saveResourceFromModal(values: ResourceFormValues) {
     if (!resourceModal) return
-    const payload = {
-      title: values.title,
-      topic: values.topic,
-      url: values.url,
-      source: values.source,
-      type: values.type,
-      duration: values.duration,
-    }
+
+    let next: TrailCatalog
 
     if (resourceModal.mode === 'edit' && resourceModal.resource) {
-      updateDraft({
+      next = {
         ...draft,
         weeks: draft.weeks.map((week) =>
           week.id === resourceModal.weekId
@@ -202,32 +202,42 @@ export function TrailEditorPanel() {
                   resource.id === resourceModal.resource!.id
                     ? {
                         ...resource,
-                        title: payload.title.trim(),
-                        topic: payload.topic.trim(),
-                        url: payload.url.trim(),
-                        source: payload.source?.trim() || resource.source,
-                        type: payload.type?.trim() || resource.type,
-                        duration: payload.duration?.trim() || resource.duration,
+                        title: values.title.trim(),
+                        topic: values.topic.trim(),
+                        url: values.url.trim(),
                       }
                     : resource,
                 ),
               }
             : week,
         ),
-      })
+      }
     } else {
-      const resource = createDefaultResource(resourceModal.weekId, payload)
-      updateDraft({
+      const resource = createDefaultResource(resourceModal.weekId, {
+        title: values.title,
+        topic: values.topic,
+        url: values.url,
+      })
+      next = {
         ...draft,
         weeks: draft.weeks.map((week) =>
           week.id === resourceModal.weekId
             ? { ...week, resources: [...week.resources, resource] }
             : week,
         ),
-      })
+      }
     }
-    setResourceModal(null)
-    resourceForm.resetFields()
+
+    const saved = await publishCatalog(
+      next,
+      resourceModal.mode === 'edit' ? 'Conteúdo atualizado.' : 'Conteúdo adicionado à semana.',
+    )
+
+    if (saved) {
+      setExpandedWeekKeys((prev) => [...new Set([...prev, String(resourceModal.weekId)])])
+      setResourceModal(null)
+      resourceForm.resetFields()
+    }
   }
 
   async function publishCatalog(next: TrailCatalog, successMessage: string): Promise<boolean> {
@@ -297,30 +307,20 @@ export function TrailEditorPanel() {
                     {resource.title}
                   </Text>
                   <div className="trail-editor-resource__actions">
-                    {quizCount > 0 ? (
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() =>
-                          setQuizModal({ resourceId: resource.id, resourceTitle: resource.title })
-                        }
-                      >
-                        Editar teste
-                      </Button>
-                    ) : (
-                      <Button
-                        size="small"
-                        type="primary"
-                        onClick={() =>
-                          setQuizModal({ resourceId: resource.id, resourceTitle: resource.title })
-                        }
-                      >
-                        Criar teste
-                      </Button>
-                    )}
+                    <Button
+                      size="small"
+                      type="primary"
+                      className="trail-editor-resource__action-primary"
+                      onClick={() =>
+                        setQuizModal({ resourceId: resource.id, resourceTitle: resource.title })
+                      }
+                    >
+                      {quizCount > 0 ? 'Editar teste' : 'Criar teste'}
+                    </Button>
                     <Button
                       size="small"
                       variant="outlined"
+                      className="trail-editor-resource__action-secondary"
                       onClick={() => openResourceModal('edit', week.id, resource)}
                     >
                       Editar
@@ -329,6 +329,7 @@ export function TrailEditorPanel() {
                       size="small"
                       type="text"
                       danger
+                      className="trail-editor-resource__action-tertiary"
                       onClick={() => confirmRemoveResource(resource)}
                     >
                       Remover
@@ -379,7 +380,7 @@ export function TrailEditorPanel() {
             Editar Trilha
           </Typography.Title>
           <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            Gerencie semanas, conteúdos e testes. As alterações só entram em vigor após salvar.
+            Gerencie semanas, conteúdos e testes. Conteúdos e testes são publicados ao salvar no modal.
           </Paragraph>
         </div>
         <Space wrap>
@@ -397,7 +398,13 @@ export function TrailEditorPanel() {
           <Paragraph type="secondary">Nenhuma semana cadastrada. Adicione a primeira semana.</Paragraph>
         </Card>
       ) : (
-        <Collapse items={collapseItems} defaultActiveKey={collapseItems.map((item) => item.key)} />
+        <Collapse
+          items={collapseItems}
+          activeKey={expandedWeekKeys}
+          onChange={(keys) =>
+            setExpandedWeekKeys(Array.isArray(keys) ? keys : keys != null ? [String(keys)] : [])
+          }
+        />
       )}
 
       <Modal
@@ -473,27 +480,27 @@ export function TrailEditorPanel() {
         }}
         onOk={() => resourceForm.submit()}
         okText="Salvar"
+        confirmLoading={saving}
+        centered
         destroyOnHidden
-        width={640}
+        width={isPhone ? 'min(100vw - 32px, 640px)' : 640}
       >
-        <Form form={resourceForm} layout="vertical" onFinish={saveResourceFromModal}>
+        <Form form={resourceForm} layout="vertical" onFinish={(values) => void saveResourceFromModal(values)}>
           <Form.Item name="title" label="Nome" rules={[{ required: true, message: 'Nome obrigatório.' }]}>
-            <Input />
+            <Input placeholder="Nome do conteúdo" />
           </Form.Item>
           <Form.Item name="topic" label="Descrição" rules={[{ required: true, message: 'Descrição obrigatória.' }]}>
-            <Input.TextArea rows={2} />
+            <Input.TextArea rows={3} placeholder="Breve descrição do conteúdo" />
           </Form.Item>
-          <Form.Item name="url" label="Link" rules={[{ required: true, message: 'Link obrigatório.' }]}>
+          <Form.Item
+            name="url"
+            label="Link"
+            rules={[
+              { required: true, message: 'Link obrigatório.' },
+              { type: 'url', warningOnly: true, message: 'Use um endereço completo (https://...).' },
+            ]}
+          >
             <Input placeholder="https://" />
-          </Form.Item>
-          <Form.Item name="source" label="Fonte">
-            <Input placeholder="Referência" />
-          </Form.Item>
-          <Form.Item name="type" label="Tipo">
-            <Input placeholder="Conteúdo" />
-          </Form.Item>
-          <Form.Item name="duration" label="Duração">
-            <Input placeholder="10 min" />
           </Form.Item>
         </Form>
       </Modal>
