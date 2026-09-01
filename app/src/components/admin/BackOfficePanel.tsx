@@ -248,7 +248,7 @@ export function BackOfficePanel({ stats, loading, error, weekCount, onReload }: 
           },
           {
             key: 'editor',
-            label: 'Editor da trilha',
+            label: 'Editar Trilha',
             children: <TrailEditorPanel />,
           },
         ]}

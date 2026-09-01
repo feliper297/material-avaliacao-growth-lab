@@ -9,7 +9,6 @@ import {
   Input,
   Modal,
   Space,
-  Tag,
   Typography,
 } from 'antd'
 import { useEffect, useState } from 'react'
@@ -298,11 +297,6 @@ export function TrailEditorPanel() {
                     {resource.title}
                   </Text>
                   <div className="trail-editor-resource__actions">
-                    {quizCount > 0 && (
-                      <Tag color="blue">
-                        {quizCount} pergunta{quizCount === 1 ? '' : 's'}
-                      </Tag>
-                    )}
                     {quizCount > 0 ? (
                       <Button
                         size="small"
@@ -382,7 +376,7 @@ export function TrailEditorPanel() {
       <Space wrap style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
           <Typography.Title level={4} style={{ marginBottom: 4 }}>
-            Editor da trilha
+            Editar Trilha
           </Typography.Title>
           <Paragraph type="secondary" style={{ marginBottom: 0 }}>
             Gerencie semanas, conteúdos e testes. As alterações só entram em vigor após salvar.
