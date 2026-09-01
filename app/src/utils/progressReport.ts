@@ -1,8 +1,9 @@
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import { ALL_RESOURCE_IDS, WEEKS } from '../../shared/data/weeks'
-import { getCycleStatus, getOverallProgress, getWeekProgress } from '../../shared/domain/progress'
+import type { QuizItem, TrailWeek } from '../../shared/data/weeks'
+import { getCycleStatus, getOverallProgress, getWeekProgress, resourceHasQuiz } from '../../shared/domain/progress'
 import { getQuizScore } from '../../shared/domain/quiz'
+import { getResourceQuizFromCatalog } from '../../shared/domain/trail-catalog'
 import type { AppStore } from '../../shared/types/store'
 
 function sanitize(text: string): string {
@@ -19,8 +20,14 @@ function sanitize(text: string): string {
     })
 }
 
-export function exportProgressPdf(store: AppStore, userEmail?: string): void {
-  const progress = getOverallProgress(store.completed.length, ALL_RESOURCE_IDS.length)
+export function exportProgressPdf(
+  store: AppStore,
+  weeks: TrailWeek[],
+  quizzes: Record<string, QuizItem[]>,
+  userEmail?: string,
+): void {
+  const totalResources = weeks.flatMap((week) => week.resources).length
+  const progress = getOverallProgress(store.completed.length, totalResources)
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
   const margin = 14
   let y = margin
@@ -46,7 +53,7 @@ export function exportProgressPdf(store: AppStore, userEmail?: string): void {
   doc.text(sanitize(`Progresso geral: ${progress}%`), margin, y)
   y += 6
   doc.text(
-    sanitize(`Conteudos concluidos: ${store.completed.length} de ${ALL_RESOURCE_IDS.length}`),
+    sanitize(`Conteudos concluidos: ${store.completed.length} de ${totalResources}`),
     margin,
     y,
   )
@@ -54,15 +61,16 @@ export function exportProgressPdf(store: AppStore, userEmail?: string): void {
   doc.text(sanitize(`Evidencias registradas: ${store.evidences.length}`), margin, y)
   y += 10
 
-  const weekRows = WEEKS.map((week) => {
-    const weekProgress = getWeekProgress(week, store)
+  const weekRows = weeks.map((week) => {
+    const weekProgress = getWeekProgress(week, store, quizzes)
     const quizzesDone = week.resources.filter((r) => store.quizzes[r.id] != null).length
+    const quizzesAvailable = week.resources.filter((r) => resourceHasQuiz(r.id, quizzes)).length
     const evidenceCount = store.evidences.filter((e) => e.week === week.id).length
     return [
       sanitize(`Semana ${week.id}`),
       sanitize(week.title),
       `${weekProgress}%`,
-      sanitize(`${quizzesDone}/${week.resources.length} testes`),
+      sanitize(`${quizzesDone}/${quizzesAvailable} testes`),
       String(evidenceCount),
     ]
   })
@@ -102,15 +110,18 @@ export function exportProgressPdf(store: AppStore, userEmail?: string): void {
     y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10
   }
 
-  const quizEntries = WEEKS.flatMap((week) =>
+  const quizEntries = weeks.flatMap((week) =>
     week.resources
       .filter((r) => store.quizzes[r.id] != null)
-      .map((r) => ({
-        week: week.id,
-        title: r.title,
-        score: getQuizScore(store.quizzes[r.id]) ?? 0,
-        total: 3,
-      })),
+      .map((r) => {
+        const questions = getResourceQuizFromCatalog(r.id, quizzes)
+        return {
+          week: week.id,
+          title: r.title,
+          score: getQuizScore(store.quizzes[r.id]) ?? 0,
+          total: questions.length || 3,
+        }
+      }),
   )
 
   if (quizEntries.length > 0) {
@@ -141,22 +152,28 @@ export function exportProgressPdf(store: AppStore, userEmail?: string): void {
   doc.save(`growth-lab-relatorio-${new Date().toISOString().slice(0, 10)}.pdf`)
 }
 
-export function openPrintReport(store: AppStore, userEmail?: string): void {
-  const progress = getOverallProgress(store.completed.length, ALL_RESOURCE_IDS.length)
+export function openPrintReport(
+  store: AppStore,
+  weeks: TrailWeek[],
+  quizzes: Record<string, QuizItem[]>,
+  userEmail?: string,
+): void {
+  const totalResources = weeks.flatMap((week) => week.resources).length
+  const progress = getOverallProgress(store.completed.length, totalResources)
   const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700')
   if (!printWindow) {
     window.print()
     return
   }
 
-  const weekSections = WEEKS.map((week) => {
-    const weekProgress = getWeekProgress(week, store)
-    const quizzes = week.resources
+  const weekSections = weeks.map((week) => {
+    const weekProgress = getWeekProgress(week, store, quizzes)
+    const quizItems = week.resources
       .filter((r) => store.quizzes[r.id] != null)
-      .map(
-        (r) =>
-          `<li>${escapeHtml(r.title)}: ${getQuizScore(store.quizzes[r.id]) ?? 0}/3 acertos</li>`,
-      )
+      .map((r) => {
+        const total = getResourceQuizFromCatalog(r.id, quizzes).length || 3
+        return `<li>${escapeHtml(r.title)}: ${getQuizScore(store.quizzes[r.id]) ?? 0}/${total} acertos</li>`
+      })
       .join('')
     const evidences = store.evidences
       .filter((e) => e.week === week.id)
@@ -166,7 +183,7 @@ export function openPrintReport(store: AppStore, userEmail?: string): void {
     return `
       <section class="week">
         <h2>Semana ${week.id} — ${escapeHtml(week.title)} (${weekProgress}%)</h2>
-        ${quizzes ? `<h3>Testes</h3><ul>${quizzes}</ul>` : ''}
+        ${quizItems ? `<h3>Testes</h3><ul>${quizItems}</ul>` : ''}
         ${evidences ? `<h3>Evidencias</h3><ul>${evidences}</ul>` : ''}
       </section>
     `
@@ -200,7 +217,7 @@ export function openPrintReport(store: AppStore, userEmail?: string): void {
   <div class="summary">
     <div>Status<strong>${escapeHtml(getCycleStatus(progress))}</strong></div>
     <div>Progresso geral<strong>${progress}%</strong></div>
-    <div>Conteudos<strong>${store.completed.length} / ${ALL_RESOURCE_IDS.length}</strong></div>
+    <div>Conteudos<strong>${store.completed.length} / ${totalResources}</strong></div>
     <div>Evidencias<strong>${store.evidences.length}</strong></div>
   </div>
   ${weekSections}

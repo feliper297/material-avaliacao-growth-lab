@@ -1,17 +1,19 @@
 import {
   ApiOutlined,
   CheckOutlined,
+  FileTextOutlined,
   LinkOutlined,
   ReadOutlined,
 } from '@ant-design/icons'
-import { Button, Collapse, Space, Typography } from 'antd'
+import { Button, Collapse, Modal, Space, Typography } from 'antd'
 import { useMemo, useState } from 'react'
-import type { TrailWeek } from '../../../shared/data/weeks'
-import {
-  groupEvidencesByResource,
-} from '../../../shared/domain/evidence-resource'
+import type { QuizItem, TrailWeek } from '../../../shared/data/weeks'
+import { groupEvidencesByResource } from '../../../shared/domain/evidence-resource'
+import { getQuizScore } from '../../../shared/domain/quiz'
 import type { AppStore, Evidence } from '../../../shared/types/store'
-import { EvidenceItem } from './EvidenceItem'
+import { useBreakpointLayout } from '../../hooks/useBreakpointLayout'
+import { EvidenceItem, QuizResultSummary } from './EvidenceItem'
+import { QuizForm } from './QuizForm'
 
 const { Text } = Typography
 
@@ -25,6 +27,8 @@ interface CourseContentListProps {
   onEditEvidence: (evidence: Evidence) => void
   onDeleteEvidence: (evidence: Evidence) => void
   onOpenPokemonApi: () => void
+  getResourceQuiz: (resourceId: string) => QuizItem[]
+  onSaveQuiz?: (resourceId: string, score: number, answers: number[]) => Promise<void>
 }
 
 export function CourseContentList({
@@ -37,19 +41,31 @@ export function CourseContentList({
   onEditEvidence,
   onDeleteEvidence,
   onOpenPokemonApi,
+  getResourceQuiz,
+  onSaveQuiz,
 }: CourseContentListProps) {
   const [expandedKey, setExpandedKey] = useState<string | undefined>()
+  const [quizResourceId, setQuizResourceId] = useState<string | null>(null)
+  const { modalWidth, modalStyle, modalStyles, isPhone } = useBreakpointLayout()
 
   const evidencesByResource = useMemo(
     () => groupEvidencesByResource(store.evidences, week),
     [store.evidences, week],
   )
 
+  const activeQuizResource = week.resources.find((resource) => resource.id === quizResourceId)
+  const activeQuizQuestions = quizResourceId ? getResourceQuiz(quizResourceId) : []
+  const activeQuizScore = quizResourceId ? getQuizScore(store.quizzes[quizResourceId]) : undefined
+
   const items = week.resources.map((resource) => {
     const completed = store.completed.includes(resource.id)
     const resourceEvidences = evidencesByResource.get(resource.id) ?? []
     const defaultPracticalTitle = resource.practicalTasks?.find((task) => !task.action)?.title
     const hasPokemonAction = resource.practicalTasks?.some((task) => task.action === 'pokemon-api')
+    const quizQuestions = getResourceQuiz(resource.id)
+    const hasQuiz = quizQuestions.length > 0
+    const quizResult = store.quizzes[resource.id]
+    const quizScore = getQuizScore(quizResult)
 
     return {
       key: resource.id,
@@ -92,6 +108,17 @@ export function CourseContentList({
                     Registrar evidência
                   </Button>
                 )}
+                {hasQuiz && !readOnly && quizScore == null && (
+                  <Button
+                    className="app-trail-action-btn"
+                    variant="outlined"
+                    size="small"
+                    icon={<FileTextOutlined />}
+                    onClick={() => setQuizResourceId(resource.id)}
+                  >
+                    Fazer teste
+                  </Button>
+                )}
                 {hasPokemonAction && (
                   <Button
                     className="app-trail-action-btn"
@@ -119,6 +146,14 @@ export function CourseContentList({
                 />
               </Space>
             </div>
+
+            {hasQuiz && quizScore != null && (
+              <QuizResultSummary
+                title={`Teste — ${resource.title}`}
+                score={quizScore}
+                total={quizQuestions.length}
+              />
+            )}
 
             {resourceEvidences.length > 0 && (
               <div className="course-content__evidences">
@@ -161,6 +196,36 @@ export function CourseContentList({
         onChange={(key) => setExpandedKey(typeof key === 'string' ? key : undefined)}
         items={items}
       />
+
+      <Modal
+        open={quizResourceId != null && activeQuizQuestions.length > 0}
+        title={activeQuizResource ? `Teste — ${activeQuizResource.title}` : 'Teste'}
+        onCancel={() => setQuizResourceId(null)}
+        footer={null}
+        destroyOnHidden
+        width={modalWidth}
+        style={modalStyle}
+        styles={modalStyles}
+        centered={!isPhone}
+      >
+        {activeQuizResource && activeQuizScore == null && onSaveQuiz && (
+          <QuizForm
+            title={activeQuizResource.title}
+            questions={activeQuizQuestions}
+            onClose={() => setQuizResourceId(null)}
+            onSubmit={async (score, answers) => {
+              await onSaveQuiz(activeQuizResource.id, score, answers)
+            }}
+          />
+        )}
+        {activeQuizResource && activeQuizScore != null && (
+          <QuizResultSummary
+            title={activeQuizResource.title}
+            score={activeQuizScore}
+            total={activeQuizQuestions.length}
+          />
+        )}
+      </Modal>
     </section>
   )
 }

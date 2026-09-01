@@ -35,11 +35,12 @@ import {
   FileSearchOutlined,
   LogoutOutlined,
   MenuOutlined,
+  ReadOutlined,
   RobotOutlined,
   StarOutlined,
   TrophyOutlined,
 } from '@ant-design/icons'
-import { ALL_RESOURCE_IDS, WEEKS, weekAccentHex } from '../shared/data/weeks'
+import { weekAccentHex } from '../shared/data/weeks'
 import { calculateAverage, getCycleStatus, getOverallProgress, isFinalEvaluationComplete, isWeekClosed } from '../shared/domain/progress'
 import { SCORE_DIMENSIONS } from '../shared/types/store'
 import type { Evaluation, EvaluationAttachment, Profile } from '../shared/types/evaluation'
@@ -51,6 +52,8 @@ import { useEvaluations } from './hooks/useEvaluations'
 import { FinalEvaluationPanel } from './components/admin/FinalEvaluationPanel'
 import { BackOfficePanel } from './components/admin/BackOfficePanel'
 import { useBackOffice } from './hooks/useBackOffice'
+import { useTrailCatalog } from './hooks/useTrailCatalog'
+import { TrailCatalogProvider, useTrailCatalogContext } from './context/TrailCatalogContext'
 import { SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_WIDTH, useBreakpointLayout } from './hooks/useBreakpointLayout'
 import { BrandLogo } from './components/BrandLogo'
 import type { Evidence } from '../shared/types/store'
@@ -59,15 +62,12 @@ import type { BackOfficeStats } from '../shared/types/backoffice'
 const { Sider, Header, Content } = Layout
 const { Title, Text, Paragraph } = Typography
 
-const BASE_NAV_ITEMS: { href: string; label: string }[] = [
-  ...WEEKS.map((w) => ({ href: `#week-${w.id}`, label: `Semana ${w.id}` })),
-  { href: '#assessment', label: 'Avaliação final' },
-]
+const WEEK_NAV_ICONS = [AppstoreOutlined, CompassOutlined, ApiOutlined, RobotOutlined]
 
-function getInitialTrailSection(): string {
+function getInitialTrailSection(weekIds: number[]): string {
   const hash = window.location.hash
   if (hash.startsWith('#week-') || hash === '#assessment') return hash
-  return '#week-1'
+  return weekIds.length > 0 ? `#week-${weekIds[0]}` : '#assessment'
 }
 
 export default function App() {
@@ -155,10 +155,14 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
   }, [isAdmin, evaluations.learners, selectedLearnerId])
 
   const store = useStore(evaluationUserId, { readOnly: isAdmin })
-  const backOffice = useBackOffice(isAdmin && !profileLoading && !!profile)
+  const trailCatalog = useTrailCatalog(!profileLoading && !!profile)
+  const backOffice = useBackOffice(
+    isAdmin && !profileLoading && !!profile,
+    trailCatalog.allResourceIds.length,
+  )
   const isDark = store.store.theme === 'dark'
 
-  if (profileLoading || store.loadStatus === 'loading' || evaluations.loading) {
+  if (profileLoading || store.loadStatus === 'loading' || evaluations.loading || trailCatalog.loading) {
     return (
       <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
         <Spin size="large" />
@@ -211,25 +215,27 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
       }}
     >
       <AntApp>
-        <AppShell
-          {...store}
-          userEmail={userEmail}
-          currentUserId={profile!.userId}
-          onSignOut={onSignOut}
-          isAdmin={isAdmin}
-          selectedLearnerId={selectedLearnerId}
-          learners={evaluations.learners}
-          onSelectLearner={setSelectedLearnerId}
-          getWeekEvaluation={evaluations.getWeekEvaluation}
-          finalEvaluation={evaluations.finalEvaluation}
-          evaluationSaving={evaluations.saving}
-          onSaveWeekEvaluation={evaluations.saveWeekEvaluation}
-          onSaveFinalEvaluation={evaluations.saveFinalEvaluation}
-          backOfficeStats={backOffice.stats}
-          backOfficeLoading={backOffice.loading}
-          backOfficeError={backOffice.error}
-          onReloadBackOffice={backOffice.reload}
-        />
+        <TrailCatalogProvider value={trailCatalog}>
+          <AppShell
+            {...store}
+            userEmail={userEmail}
+            currentUserId={profile!.userId}
+            onSignOut={onSignOut}
+            isAdmin={isAdmin}
+            selectedLearnerId={selectedLearnerId}
+            learners={evaluations.learners}
+            onSelectLearner={setSelectedLearnerId}
+            getWeekEvaluation={evaluations.getWeekEvaluation}
+            finalEvaluation={evaluations.finalEvaluation}
+            evaluationSaving={evaluations.saving}
+            onSaveWeekEvaluation={evaluations.saveWeekEvaluation}
+            onSaveFinalEvaluation={evaluations.saveFinalEvaluation}
+            backOfficeStats={backOffice.stats}
+            backOfficeLoading={backOffice.loading}
+            backOfficeError={backOffice.error}
+            onReloadBackOffice={backOffice.reload}
+          />
+        </TrailCatalogProvider>
       </AntApp>
     </ConfigProvider>
   )
@@ -246,6 +252,7 @@ function AppShell({
   deleteEvidence,
   updateEvidence,
   exportProgress,
+  saveQuiz,
   readOnly,
   userEmail,
   currentUserId,
@@ -283,6 +290,7 @@ function AppShell({
 }) {
   const { message, modal } = AntApp.useApp()
   const { token } = antdTheme.useToken()
+  const { weeks, allResourceIds, getResourceQuiz, quizzes } = useTrailCatalogContext()
   const {
     isMobile,
     isPhone,
@@ -301,7 +309,9 @@ function AppShell({
     window.location.hash === '#backoffice' ? 'backoffice' : 'trail',
   )
   const [activeSection, setActiveSection] = useState(() =>
-    window.location.hash === '#backoffice' ? '#backoffice' : getInitialTrailSection(),
+    window.location.hash === '#backoffice'
+      ? '#backoffice'
+      : getInitialTrailSection(weeks.map((week) => week.id)),
   )
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -309,17 +319,17 @@ function AppShell({
   const contentRef = useRef<HTMLDivElement>(null)
 
   const progress = useMemo(
-    () => getOverallProgress(store.completed.length, ALL_RESOURCE_IDS.length),
-    [store],
+    () => getOverallProgress(store.completed.length, allResourceIds.length),
+    [store.completed.length, allResourceIds.length],
   )
 
   const weekEvaluationsAverage = useMemo(() => {
-    const weekScores = WEEKS.map((w) => getWeekEvaluation(w.id)?.scores.overall).filter(
+    const weekScores = weeks.map((w) => getWeekEvaluation(w.id)?.scores.overall).filter(
       (v): v is number => v != null,
     )
     if (weekScores.length === 0) return null
     return weekScores.reduce((sum, n) => sum + n, 0) / weekScores.length
-  }, [getWeekEvaluation])
+  }, [getWeekEvaluation, weeks])
 
   const finalAverage = useMemo(
     () =>
@@ -334,35 +344,42 @@ function AppShell({
   const activeWeek = useMemo(() => {
     if (!activeSection.startsWith('#week-')) return null
     const weekId = Number.parseInt(activeSection.slice('#week-'.length), 10)
-    return WEEKS.find((week) => week.id === weekId) ?? null
-  }, [activeSection])
+    return weeks.find((week) => week.id === weekId) ?? null
+  }, [activeSection, weeks])
 
   const closedWeekIds = useMemo(
-    () => new Set(WEEKS.filter((week) => isWeekClosed(week, store)).map((week) => week.id)),
-    [store],
+    () => new Set(weeks.filter((week) => isWeekClosed(week, store)).map((week) => week.id)),
+    [store, weeks],
   )
 
   const assessmentComplete = isFinalEvaluationComplete(finalEvaluation)
 
   const navItems = useMemo(() => {
-    const items = [...BASE_NAV_ITEMS]
+    const items = weeks.map((week) => ({
+      href: `#week-${week.id}`,
+      label: `Semana ${week.id}`,
+    }))
+    items.push({ href: '#assessment', label: 'Avaliação final' })
     if (isAdmin) {
       items.push({ href: '#backoffice', label: 'Back Office' })
     }
     return items
-  }, [isAdmin])
+  }, [isAdmin, weeks])
 
-  const navIcon: Record<string, { icon: ReactNode; color: string }> = {
-    '#week-1': { icon: <AppstoreOutlined />, color: weekAccentHex(1) },
-    '#week-2': { icon: <CompassOutlined />, color: weekAccentHex(2) },
-    '#week-3': { icon: <ApiOutlined />, color: weekAccentHex(3) },
-    '#week-4': { icon: <RobotOutlined />, color: weekAccentHex(4) },
-    '#assessment': { icon: <TrophyOutlined />, color: token.colorWarning },
-    '#backoffice': { icon: <DashboardOutlined />, color: '#531dab' },
-  }
+  const navIcon = useMemo(() => {
+    const icons: Record<string, { icon: ReactNode; color: string }> = {
+      '#assessment': { icon: <TrophyOutlined />, color: token.colorWarning },
+      '#backoffice': { icon: <DashboardOutlined />, color: '#531dab' },
+    }
+    weeks.forEach((week) => {
+      const Icon = WEEK_NAV_ICONS[(week.id - 1) % WEEK_NAV_ICONS.length]
+      icons[`#week-${week.id}`] = { icon: <Icon />, color: weekAccentHex(week.id) }
+    })
+    return icons
+  }, [token.colorWarning, weeks])
 
   const menuItems: MenuProps['items'] = navItems.map((item) => {
-    const meta = navIcon[item.href]
+    const meta = navIcon[item.href] ?? { icon: <ReadOutlined />, color: token.colorPrimary }
     const weekMatch = item.href.match(/^#week-(\d+)$/)
     const weekId = weekMatch ? Number(weekMatch[1]) : null
     const weekClosed = weekId != null && closedWeekIds.has(weekId)
@@ -448,7 +465,7 @@ function AppShell({
             style={{ marginTop: 8 }}
           />
           <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 4 }}>
-            {store.completed.length} de {ALL_RESOURCE_IDS.length} conteúdos
+            {store.completed.length} de {allResourceIds.length} conteúdos
           </Text>
         </Card>
       )}
@@ -661,7 +678,7 @@ function AppShell({
               type="primary"
               icon={<DownloadOutlined />}
               onClick={() => {
-                exportProgress(userEmail)
+                exportProgress(userEmail, { weeks, quizzes })
                 message.success('Relatório PDF exportado.')
               }}
               aria-label="Exportar relatório"
@@ -712,6 +729,7 @@ function AppShell({
               stats={backOfficeStats}
               loading={backOfficeLoading}
               error={backOfficeError}
+              weekCount={weeks.length}
               onReload={onReloadBackOffice}
             />
           ) : (
@@ -758,6 +776,15 @@ function AppShell({
                   }
                   onEditEvidence={(evidence) => openEvidenceModal(evidence.week, evidence)}
                   onDeleteEvidence={confirmDeleteEvidence}
+                  getResourceQuiz={getResourceQuiz}
+                  onSaveQuiz={async (resourceId, score, answers) => {
+                    try {
+                      await saveQuiz(resourceId, score, answers)
+                      message.success('Resultado do teste salvo.')
+                    } catch (err) {
+                      message.error(err instanceof Error ? err.message : 'Falha ao salvar teste.')
+                    }
+                  }}
                 />
               )}
 

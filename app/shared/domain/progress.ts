@@ -1,11 +1,17 @@
 import type { AppStore } from '../types/store'
 import { SCORE_DIMENSIONS } from '../types/store'
-import { getResourceQuiz } from '../data/resource-quizzes'
-import type { TrailWeek } from '../data/weeks'
+import type { QuizItem, TrailWeek } from '../data/weeks'
 import type { Evaluation } from '../types/evaluation'
 
 export function getAllResourceIds(weekResources: { id: string }[][]): string[] {
   return weekResources.flat().map((r) => r.id)
+}
+
+export function resourceHasQuiz(
+  resourceId: string,
+  quizzes: Record<string, QuizItem[]>,
+): boolean {
+  return (quizzes[resourceId]?.length ?? 0) > 0
 }
 
 export function getOverallProgress(completedCount: number, totalResources: number): number {
@@ -16,12 +22,13 @@ export function getOverallProgress(completedCount: number, totalResources: numbe
 export function getWeekProgress(
   week: { id: number; resources: { id: string }[] },
   store: Pick<AppStore, 'completed' | 'evidences' | 'quizzes'>,
+  quizzes: Record<string, QuizItem[]> = {},
 ): number {
   const resourceCount = week.resources.length
   const done = week.resources.filter((r) => store.completed.includes(r.id)).length
-  const quizzesRequired = week.resources.filter((r) => getResourceQuiz(r.id).length > 0).length
+  const quizzesRequired = week.resources.filter((r) => resourceHasQuiz(r.id, quizzes)).length
   const quizzesDone = week.resources.filter(
-    (r) => getResourceQuiz(r.id).length > 0 && store.quizzes[r.id] != null,
+    (r) => resourceHasQuiz(r.id, quizzes) && store.quizzes[r.id] != null,
   ).length
   const evidenceDone = store.evidences.some((e) => e.week === week.id) ? 1 : 0
   const total = resourceCount + quizzesRequired + 1

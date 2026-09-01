@@ -18,6 +18,7 @@ import {
 } from '@ant-design/icons'
 import { Avatar, Card, Tag, Typography, theme as antdTheme } from 'antd'
 import { useState, type ComponentType } from 'react'
+import type { QuizItem } from '../../../shared/data/weeks'
 import { weekAccentHex, type TrailWeek } from '../../../shared/data/weeks'
 import { isWeekClosed } from '../../../shared/domain/progress'
 import type { AppStore, Evidence } from '../../../shared/types/store'
@@ -59,6 +60,8 @@ interface WeekSectionProps {
   onAddEvidence: (weekId: number, resourceId?: string, defaultTitle?: string) => void
   onEditEvidence: (evidence: Evidence) => void
   onDeleteEvidence: (evidence: Evidence) => void
+  getResourceQuiz: (resourceId: string) => QuizItem[]
+  onSaveQuiz?: (resourceId: string, score: number, answers: number[]) => Promise<void>
 }
 
 export function WeekSection({
@@ -74,6 +77,8 @@ export function WeekSection({
   onAddEvidence,
   onEditEvidence,
   onDeleteEvidence,
+  getResourceQuiz,
+  onSaveQuiz,
 }: WeekSectionProps) {
   const { token } = antdTheme.useToken()
   const { modalWidth, modalStyle, modalStyles } = useBreakpointLayout()
@@ -135,6 +140,8 @@ export function WeekSection({
             onEditEvidence={onEditEvidence}
             onDeleteEvidence={onDeleteEvidence}
             onOpenPokemonApi={() => setPokemonModalOpen(true)}
+            getResourceQuiz={getResourceQuiz}
+            onSaveQuiz={onSaveQuiz}
           />
 
           <WeekEvaluationPanel

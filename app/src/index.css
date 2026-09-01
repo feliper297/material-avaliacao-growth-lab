@@ -483,10 +483,6 @@ body {
   font-size: clamp(18px, 4vw, 24px);
 }
 
-.final-evaluation-section {
-  margin-top: 40px;
-}
-
 .final-evaluation-dimension-card {
   height: 100%;
 }

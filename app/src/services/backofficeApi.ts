@@ -1,11 +1,10 @@
-import { ALL_RESOURCE_IDS } from '../../shared/data/weeks'
 import { getOverallProgress } from '../../shared/domain/progress'
 import type { BackOfficeStats, BackOfficeUserRow, UpdateBackOfficeUserInput } from '../../shared/types/backoffice'
 import type { Profile } from '../../shared/types/evaluation'
 import { supabase } from '../lib/supabase'
 
 export const backofficeApi = {
-  async getStats(): Promise<BackOfficeStats> {
+  async getStats(totalResources: number): Promise<BackOfficeStats> {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Usuário não autenticado.')
 
@@ -72,7 +71,7 @@ export const backofficeApi = {
         quizCount,
         progressPercent:
           profile.role === 'learner'
-            ? getOverallProgress(completedCount, ALL_RESOURCE_IDS.length)
+            ? getOverallProgress(completedCount, totalResources)
             : 0,
         weekEvaluations: weekEvaluationsByUser.get(profile.userId) ?? 0,
         hasFinalEvaluation: finalEvaluationByUser.has(profile.userId),

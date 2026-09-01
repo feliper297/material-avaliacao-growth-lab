@@ -1,13 +1,15 @@
 import {
   DatabaseOutlined,
+  EditOutlined,
   ReloadOutlined,
   TeamOutlined,
   TrophyOutlined,
   UserOutlined,
 } from '@ant-design/icons'
-import { Alert, Button, Card, Col, Progress, Row, Space, Spin, Statistic, Table, Tag, Typography } from 'antd'
+import { Alert, Button, Card, Col, Progress, Row, Space, Spin, Statistic, Table, Tabs, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import type { BackOfficeStats, BackOfficeUserRow } from '../../../shared/types/backoffice'
+import { TrailEditorPanel } from './TrailEditorPanel'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -15,6 +17,7 @@ interface BackOfficePanelProps {
   stats: BackOfficeStats | null
   loading: boolean
   error: string | null
+  weekCount: number
   onReload: () => void
 }
 
@@ -23,7 +26,13 @@ const roleLabels = {
   learner: 'Participante',
 } as const
 
-export function BackOfficePanel({ stats, loading, error, onReload }: BackOfficePanelProps) {
+function BackOfficeOverview({
+  stats,
+  loading,
+  error,
+  weekCount,
+  onReload,
+}: BackOfficePanelProps) {
   const columns: ColumnsType<BackOfficeUserRow> = [
     {
       title: 'Usuário',
@@ -96,7 +105,9 @@ export function BackOfficePanel({ stats, loading, error, onReload }: BackOfficeP
       render: (_, row) =>
         row.role === 'learner' ? (
           <Space size={4} wrap>
-            <Tag>{row.weekEvaluations}/4 sem.</Tag>
+            <Tag>
+              {row.weekEvaluations}/{weekCount} sem.
+            </Tag>
             {row.hasFinalEvaluation ? <Tag color="success">Final</Tag> : <Tag>Final pend.</Tag>}
           </Space>
         ) : (
@@ -114,12 +125,9 @@ export function BackOfficePanel({ stats, loading, error, onReload }: BackOfficeP
   ]
 
   return (
-    <div className="backoffice-panel">
+    <>
       <Row justify="space-between" align="middle" wrap gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col>
-          <Title level={3} style={{ marginBottom: 4 }}>
-            Back Office
-          </Title>
           <Paragraph type="secondary" style={{ marginBottom: 0 }}>
             Visão operacional do sistema — usuários, progresso e indicadores consolidados.
           </Paragraph>
@@ -207,6 +215,45 @@ export function BackOfficePanel({ stats, loading, error, onReload }: BackOfficeP
           </Card>
         </>
       ) : null}
+    </>
+  )
+}
+
+export function BackOfficePanel({ stats, loading, error, weekCount, onReload }: BackOfficePanelProps) {
+  return (
+    <div className="backoffice-panel">
+      <Title level={3} style={{ marginBottom: 16 }}>
+        Back Office
+      </Title>
+
+      <Tabs
+        defaultActiveKey="overview"
+        items={[
+          {
+            key: 'overview',
+            label: 'Visão geral',
+            children: (
+              <BackOfficeOverview
+                stats={stats}
+                loading={loading}
+                error={error}
+                weekCount={weekCount}
+                onReload={onReload}
+              />
+            ),
+          },
+          {
+            key: 'editor',
+            label: (
+              <Space size={6}>
+                <EditOutlined />
+                Editor da trilha
+              </Space>
+            ),
+            children: <TrailEditorPanel />,
+          },
+        ]}
+      />
     </div>
   )
 }
