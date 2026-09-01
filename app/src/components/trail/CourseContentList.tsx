@@ -1,6 +1,7 @@
 import {
   ApiOutlined,
   CheckOutlined,
+  DownOutlined,
   FileTextOutlined,
   LinkOutlined,
   ReadOutlined,
@@ -152,6 +153,7 @@ export function CourseContentList({
                 title={`Teste — ${resource.title}`}
                 score={quizScore}
                 total={quizQuestions.length}
+                onReview={() => setQuizResourceId(resource.id)}
               />
             )}
 
@@ -195,6 +197,14 @@ export function CourseContentList({
         activeKey={expandedKey}
         onChange={(key) => setExpandedKey(typeof key === 'string' ? key : undefined)}
         items={items}
+        expandIcon={({ isActive }) => (
+          <DownOutlined
+            style={{
+              transition: 'transform 0.2s',
+              transform: isActive ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}
+          />
+        )}
       />
 
       <Modal

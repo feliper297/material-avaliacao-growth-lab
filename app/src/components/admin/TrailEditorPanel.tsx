@@ -1,16 +1,5 @@
-import { PlusOutlined } from '@ant-design/icons'
-import {
-  App,
-  Alert,
-  Button,
-  Card,
-  Collapse,
-  Form,
-  Input,
-  Modal,
-  Space,
-  Typography,
-} from 'antd'
+import { DownOutlined, PlusOutlined } from '@ant-design/icons'
+import { App, Button, Card, Collapse, Form, Input, Modal, Space, Typography } from 'antd'
 import { useEffect, useState } from 'react'
 import type { QuizItem, TrailResource, TrailWeek } from '../../../shared/data/weeks'
 import {
@@ -44,10 +33,9 @@ interface ResourceFormValues {
 export function TrailEditorPanel() {
   const { message, modal } = App.useApp()
   const { isPhone } = useBreakpointLayout()
-  const { weeks, quizzes, saveCatalog, saving, reload, loading, setDraftPreview } = useTrailCatalogContext()
+  const { weeks, quizzes, saveCatalog, saving, reload, loading } = useTrailCatalogContext()
   const [draft, setDraft] = useState<TrailCatalog>(() => ({ weeks: [], quizzes: {} }))
-  const [dirty, setDirty] = useState(false)
-  const [expandedWeekKeys, setExpandedWeekKeys] = useState<string[]>([])
+  const [expandedWeekKey, setExpandedWeekKey] = useState<string | undefined>()
 
   const [weekModal, setWeekModal] = useState<{ mode: 'create' | 'edit'; week?: TrailWeek } | null>(null)
   const [resourceModal, setResourceModal] = useState<{
@@ -65,44 +53,13 @@ export function TrailEditorPanel() {
   }, [reload])
 
   useEffect(() => {
-    setDraftPreview(dirty ? draft : null)
-    return () => setDraftPreview(null)
-  }, [dirty, draft, setDraftPreview])
-
-  useEffect(() => {
-    if (!dirty) {
-      setDraft({ weeks, quizzes })
-    }
-  }, [weeks, quizzes, dirty])
+    setDraft({ weeks, quizzes })
+  }, [weeks, quizzes])
 
   useEffect(() => {
     const weekKeys = draft.weeks.map((week) => String(week.id))
-    setExpandedWeekKeys((prev) => {
-      if (prev.length === 0) return weekKeys
-      const kept = prev.filter((key) => weekKeys.includes(key))
-      return kept.length > 0 ? kept : weekKeys
-    })
+    setExpandedWeekKey((prev) => (prev != null && weekKeys.includes(prev) ? prev : undefined))
   }, [draft.weeks])
-
-  function updateDraft(next: TrailCatalog) {
-    setDraft(next)
-    setDirty(true)
-  }
-
-  async function handleSaveCatalog() {
-    const errors = validateCatalog(draft)
-    if (errors.length > 0) {
-      message.error(errors[0])
-      return
-    }
-    try {
-      await saveCatalog(draft)
-      setDirty(false)
-      message.success('Trilha salva com sucesso.')
-    } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Falha ao salvar trilha.')
-    }
-  }
 
   function confirmRemoveWeek(week: TrailWeek) {
     modal.confirm({
@@ -111,18 +68,19 @@ export function TrailEditorPanel() {
       okText: 'Remover',
       okButtonProps: { danger: true },
       cancelText: 'Cancelar',
-      onOk: () => updateDraft(removeWeekFromCatalog(draft, week.id)),
+      onOk: () => publishCatalog(removeWeekFromCatalog(draft, week.id), 'Semana removida.'),
     })
   }
 
   function confirmRemoveResource(resource: TrailResource) {
     modal.confirm({
       title: 'Remover conteúdo?',
-      content: `"${resource.title}" será excluído. Evidências antigas dos participantes permanecem no sistema; o teste vinculado será removido.`,
+      content:
+        'Tem certeza que deseja remover o conteúdo? Evidências antigas dos participantes permanecem no sistema; o teste vinculado será removido.',
       okText: 'Remover',
       okButtonProps: { danger: true },
       cancelText: 'Cancelar',
-      onOk: () => updateDraft(removeResourceFromCatalog(draft, resource.id)),
+      onOk: () => publishCatalog(removeResourceFromCatalog(draft, resource.id), 'Conteúdo removido.'),
     })
   }
 
@@ -148,16 +106,18 @@ export function TrailEditorPanel() {
     }
   }
 
-  function saveWeekFromModal(values: WeekFormValues) {
+  async function saveWeekFromModal(values: WeekFormValues) {
+    let next: TrailCatalog
+
     if (weekModal?.mode === 'edit' && weekModal.week) {
-      updateDraft({
+      next = {
         ...draft,
         weeks: draft.weeks.map((week) =>
           week.id === weekModal.week!.id
             ? { ...week, title: values.title.trim(), objective: values.objective.trim() }
             : week,
         ),
-      })
+      }
     } else {
       const weekId = createWeekId(draft.weeks)
       const resources =
@@ -177,13 +137,21 @@ export function TrailEditorPanel() {
         resources,
       })
 
-      updateDraft({
+      next = {
         ...draft,
         weeks: [...draft.weeks, newWeek],
-      })
+      }
     }
-    setWeekModal(null)
-    weekForm.resetFields()
+
+    const saved = await publishCatalog(
+      next,
+      weekModal?.mode === 'edit' ? 'Semana atualizada.' : 'Semana adicionada.',
+    )
+
+    if (saved) {
+      setWeekModal(null)
+      weekForm.resetFields()
+    }
   }
 
   async function saveResourceFromModal(values: ResourceFormValues) {
@@ -234,7 +202,7 @@ export function TrailEditorPanel() {
     )
 
     if (saved) {
-      setExpandedWeekKeys((prev) => [...new Set([...prev, String(resourceModal.weekId)])])
+      setExpandedWeekKey(String(resourceModal.weekId))
       setResourceModal(null)
       resourceForm.resetFields()
     }
@@ -250,11 +218,10 @@ export function TrailEditorPanel() {
     setDraft(next)
     try {
       await saveCatalog(next)
-      setDirty(false)
       message.success(successMessage)
       return true
     } catch (err) {
-      setDirty(true)
+      setDraft({ weeks, quizzes })
       message.error(err instanceof Error ? err.message : 'Falha ao salvar trilha.')
       return false
     }
@@ -283,13 +250,17 @@ export function TrailEditorPanel() {
 
   const collapseItems = draft.weeks.map((week) => ({
     key: String(week.id),
-    label: <Text strong>{`Semana ${week.id} — ${week.title}`}</Text>,
+    label: (
+      <Text strong className="trail-editor-week__title">
+        {`Semana ${week.id} — ${week.title}`}
+      </Text>
+    ),
     extra: (
-      <Space onClick={(event) => event.stopPropagation()} wrap>
-        <Button size="small" variant="outlined" onClick={() => openWeekModal('edit', week)}>
+      <Space onClick={(event) => event.stopPropagation()} className="trail-editor-week__actions">
+        <Button size="small" type="primary" onClick={() => openWeekModal('edit', week)}>
           Editar
         </Button>
-        <Button size="small" type="text" danger onClick={() => confirmRemoveWeek(week)}>
+        <Button size="small" variant="outlined" danger onClick={() => confirmRemoveWeek(week)}>
           Remover
         </Button>
       </Space>
@@ -364,48 +335,45 @@ export function TrailEditorPanel() {
 
   return (
     <div className="trail-editor-panel">
-      {dirty && (
-        <Alert
-          type="warning"
-          showIcon
-          title="Alterações não publicadas"
-          description='Clique em "Salvar alterações" para atualizar o menu lateral e a trilha dos participantes.'
-          style={{ marginBottom: 16 }}
-        />
-      )}
-
-      <Space wrap style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div>
-          <Typography.Title level={4} style={{ marginBottom: 4 }}>
+      <Card className="trail-editor-panel__card">
+        <div className="trail-editor-panel__header">
+          <Typography.Title level={4} style={{ margin: 0 }}>
             Editar Trilha
           </Typography.Title>
-          <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            Gerencie semanas, conteúdos e testes. Conteúdos e testes são publicados ao salvar no modal.
-          </Paragraph>
+          <Space className="trail-editor-panel__header-actions">
+            <Button type="primary" onClick={() => openWeekModal('create')}>
+              Adicionar semana
+            </Button>
+          </Space>
         </div>
-        <Space wrap>
-          <Button type="primary" loading={saving} onClick={() => void handleSaveCatalog()}>
-            Salvar alterações
-          </Button>
-          <Button variant="outlined" onClick={() => openWeekModal('create')}>
-            Adicionar semana
-          </Button>
-        </Space>
-      </Space>
 
-      {draft.weeks.length === 0 ? (
-        <Card>
-          <Paragraph type="secondary">Nenhuma semana cadastrada. Adicione a primeira semana.</Paragraph>
-        </Card>
-      ) : (
-        <Collapse
-          items={collapseItems}
-          activeKey={expandedWeekKeys}
-          onChange={(keys) =>
-            setExpandedWeekKeys(Array.isArray(keys) ? keys : keys != null ? [String(keys)] : [])
-          }
-        />
-      )}
+        <Paragraph type="secondary" className="trail-editor-panel__subtitle">
+          Gerencie semanas, conteúdos e testes. As alterações são salvas automaticamente.
+        </Paragraph>
+
+        {draft.weeks.length === 0 ? (
+          <Card size="small" type="inner">
+            <Paragraph type="secondary">Nenhuma semana cadastrada. Adicione a primeira semana.</Paragraph>
+          </Card>
+        ) : (
+          <Collapse
+            accordion
+            bordered={false}
+            className="trail-editor-weeks-collapse"
+            items={collapseItems}
+            activeKey={expandedWeekKey}
+            onChange={(key) => setExpandedWeekKey(typeof key === 'string' ? key : undefined)}
+            expandIcon={({ isActive }) => (
+              <DownOutlined
+                style={{
+                  transition: 'transform 0.2s',
+                  transform: isActive ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              />
+            )}
+          />
+        )}
+      </Card>
 
       <Modal
         open={weekModal != null}
@@ -416,10 +384,11 @@ export function TrailEditorPanel() {
         }}
         onOk={() => weekForm.submit()}
         okText="Salvar"
+        confirmLoading={saving}
         destroyOnHidden
         width={640}
       >
-        <Form form={weekForm} layout="vertical" onFinish={saveWeekFromModal}>
+        <Form form={weekForm} layout="vertical" onFinish={(values) => void saveWeekFromModal(values)}>
           <Form.Item name="title" label="Nome da semana" rules={[{ required: true, message: 'Nome obrigatório.' }]}>
             <Input placeholder="Ex.: Semana de Discovery" />
           </Form.Item>

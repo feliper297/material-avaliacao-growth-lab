@@ -465,9 +465,6 @@ function AppShell({
             status={progress >= 100 ? 'success' : 'active'}
             style={{ marginTop: 8 }}
           />
-          <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 4 }}>
-            {store.completed.length} de {allResourceIds.length} conteúdos
-          </Text>
         </Card>
       )}
 

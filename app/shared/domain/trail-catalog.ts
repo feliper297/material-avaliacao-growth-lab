@@ -2,10 +2,16 @@ import { RESOURCE_QUIZZES } from '../data/resource-quizzes'
 import { WEEKS, type QuizItem, type TrailResource, type TrailWeek } from '../data/weeks'
 import type { TrailCatalog } from '../types/trail-catalog'
 
+/** Id do único conteúdo que já nasce com teste criado, como exemplo do fluxo. */
+const EXAMPLE_QUIZ_RESOURCE_ID = 'w1-auto-layout'
+
 export function getDefaultTrailCatalog(): TrailCatalog {
+  const exampleQuiz = RESOURCE_QUIZZES[EXAMPLE_QUIZ_RESOURCE_ID]
   return {
     weeks: structuredClone(WEEKS),
-    quizzes: structuredClone(RESOURCE_QUIZZES),
+    quizzes: exampleQuiz
+      ? { [EXAMPLE_QUIZ_RESOURCE_ID]: structuredClone(exampleQuiz) }
+      : {},
   }
 }
 
