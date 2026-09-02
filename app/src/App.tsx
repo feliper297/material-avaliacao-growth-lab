@@ -66,7 +66,11 @@ const WEEK_NAV_ICONS = [AppstoreOutlined, CompassOutlined, ApiOutlined, RobotOut
 
 function getInitialTrailSection(weekIds: number[]): string {
   const hash = window.location.hash
-  if (hash.startsWith('#week-') || hash === '#assessment') return hash
+  if (hash === '#assessment') return hash
+  if (hash.startsWith('#week-')) {
+    const weekId = Number.parseInt(hash.slice('#week-'.length), 10)
+    if (weekIds.includes(weekId)) return hash
+  }
   return weekIds.length > 0 ? `#week-${weekIds[0]}` : '#assessment'
 }
 
@@ -213,6 +217,7 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
         algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: { colorPrimary: '#0958d9' },
       }}
+      modal={{ centered: true }}
     >
       <AntApp>
         <TrailCatalogProvider value={trailCatalog}>
@@ -347,6 +352,15 @@ function AppShell({
     const weekId = Number.parseInt(activeSection.slice('#week-'.length), 10)
     return navWeeks.find((week) => week.id === weekId) ?? null
   }, [activeSection, navWeeks])
+
+  useEffect(() => {
+    if (navWeeks.length === 0) return
+    if (!activeSection.startsWith('#week-')) return
+    if (activeWeek) return
+    const fallback = `#week-${navWeeks[0].id}`
+    setActiveSection(fallback)
+    window.history.replaceState(null, '', fallback)
+  }, [activeSection, activeWeek, navWeeks])
 
   const closedWeekIds = useMemo(
     () => new Set(navWeeks.filter((week) => isWeekClosed(week, store)).map((week) => week.id)),
@@ -816,7 +830,6 @@ function AppShell({
         width={modalWidth}
         style={modalStyle}
         styles={modalStyles}
-        centered={!isPhone}
         wrapClassName={isPhone ? 'app-evidence-modal--phone' : undefined}
       >
         <EvidenceForm

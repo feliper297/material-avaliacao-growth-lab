@@ -10,10 +10,10 @@ import { Button, Collapse, Modal, Space, Typography } from 'antd'
 import { useMemo, useState } from 'react'
 import type { QuizItem, TrailWeek } from '../../../shared/data/weeks'
 import { groupEvidencesByResource } from '../../../shared/domain/evidence-resource'
-import { getQuizScore } from '../../../shared/domain/quiz'
+import { getQuizAnswers, getQuizScore } from '../../../shared/domain/quiz'
 import type { AppStore, Evidence } from '../../../shared/types/store'
 import { useBreakpointLayout } from '../../hooks/useBreakpointLayout'
-import { EvidenceItem, QuizResultSummary } from './EvidenceItem'
+import { EvidenceItem, QuizResultSummary, QuizReview } from './EvidenceItem'
 import { QuizForm } from './QuizForm'
 
 const { Text } = Typography
@@ -47,7 +47,7 @@ export function CourseContentList({
 }: CourseContentListProps) {
   const [expandedKey, setExpandedKey] = useState<string | undefined>()
   const [quizResourceId, setQuizResourceId] = useState<string | null>(null)
-  const { modalWidth, modalStyle, modalStyles, isPhone } = useBreakpointLayout()
+  const { modalWidth, modalStyle, modalStyles } = useBreakpointLayout()
 
   const evidencesByResource = useMemo(
     () => groupEvidencesByResource(store.evidences, week),
@@ -57,6 +57,7 @@ export function CourseContentList({
   const activeQuizResource = week.resources.find((resource) => resource.id === quizResourceId)
   const activeQuizQuestions = quizResourceId ? getResourceQuiz(quizResourceId) : []
   const activeQuizScore = quizResourceId ? getQuizScore(store.quizzes[quizResourceId]) : undefined
+  const activeQuizAnswers = quizResourceId ? getQuizAnswers(store.quizzes[quizResourceId]) : undefined
 
   const items = week.resources.map((resource) => {
     const completed = store.completed.includes(resource.id)
@@ -216,7 +217,6 @@ export function CourseContentList({
         width={modalWidth}
         style={modalStyle}
         styles={modalStyles}
-        centered={!isPhone}
       >
         {activeQuizResource && activeQuizScore == null && onSaveQuiz && (
           <QuizForm
@@ -229,10 +229,12 @@ export function CourseContentList({
           />
         )}
         {activeQuizResource && activeQuizScore != null && (
-          <QuizResultSummary
+          <QuizReview
             title={activeQuizResource.title}
             score={activeQuizScore}
             total={activeQuizQuestions.length}
+            questions={activeQuizQuestions}
+            answers={activeQuizAnswers}
           />
         )}
       </Modal>
