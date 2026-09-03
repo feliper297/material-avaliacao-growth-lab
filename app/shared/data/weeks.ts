@@ -355,6 +355,78 @@ export const WEEKS: TrailWeek[] = [
     ],
     resources: [
       {
+        id: 'w4-study-mode',
+        title: 'Using Study Mode in ChatGPT',
+        source: 'OpenAI',
+        type: 'Guia oficial',
+        duration: '8 min',
+        icon: 'ReadOutlined',
+        url: 'https://help.openai.com/en/articles/11780217-using-study-mode-in-chatgpt',
+        topic: 'Aprendizagem socrática, perguntas progressivas, testes e correção de entendimento com IA.',
+        practicalTasks: [
+          {
+            id: 'w4-study-mode-practice',
+            title: 'Aprendizado com Study Mode documentado',
+            typeLabel: 'Praticar tarefa',
+            duration: '30 min',
+          },
+        ],
+      },
+      {
+        id: 'w4-prompt',
+        title: 'Prompt Engineering Best Practices',
+        source: 'OpenAI',
+        type: 'Guia oficial',
+        duration: '7 min',
+        icon: 'EditOutlined',
+        url: 'https://help.openai.com/en/articles/10032626-prompt-engineering-best-practices-for-chatgpt',
+        topic: 'Construção de prompts com objetivo, contexto, restrições, formato de saída e critérios de qualidade.',
+        practicalTasks: [
+          {
+            id: 'w4-prompt-practice',
+            title: 'Prompts e decisões documentados',
+            typeLabel: 'Praticar tarefa',
+            duration: '45 min',
+          },
+        ],
+      },
+      {
+        id: 'w4-figma-ai',
+        title: 'Use AI Tools in Figma Design',
+        source: 'Figma',
+        type: 'Guia oficial',
+        duration: '10 min',
+        icon: 'RobotOutlined',
+        url: 'https://help.figma.com/hc/en-us/articles/23870272542231-Use-AI-tools-in-Figma-Design',
+        topic: 'IA aplicada à exploração, conteúdo, organização, prototipação e revisão crítica no Figma.',
+        practicalTasks: [
+          {
+            id: 'w4-figma-ai-practice',
+            title: 'Protótipo conduzido com IA',
+            typeLabel: 'Praticar tarefa',
+            duration: '60 min',
+          },
+        ],
+      },
+      {
+        id: 'w4-dev-mode',
+        title: 'Guide to Dev Mode',
+        source: 'Figma',
+        type: 'Bônus',
+        duration: '10 min',
+        icon: 'CodeOutlined',
+        url: 'https://help.figma.com/hc/en-us/articles/15023124644247-Guide-to-Dev-Mode',
+        topic: 'Handoff, inspeção, anotações, componentes, estados e comunicação com desenvolvimento.',
+        practicalTasks: [
+          {
+            id: 'w4-dev-mode-practice',
+            title: 'Handoff e inspeção no Dev Mode',
+            typeLabel: 'Praticar tarefa',
+            duration: '40 min',
+          },
+        ],
+      },
+      {
         id: 'w4-harness',
         title: 'Harness Design for Long-Running Application Development',
         source: 'Anthropic',

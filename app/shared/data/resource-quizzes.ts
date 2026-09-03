@@ -450,6 +450,134 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
       answer: 1,
     },
   ],
+  'w4-study-mode': [
+    {
+      q: 'O Study Mode do ChatGPT é mais adequado para:',
+      options: [
+        'Receber respostas prontas sem questionamento',
+        'Aprendizagem socrática com perguntas e verificação de entendimento',
+        'Substituir evidências da sprint',
+        'Gerar telas finais automaticamente',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Durante estudo com IA, respostas vagas devem ser:',
+      options: [
+        'Aceitas para ganhar tempo',
+        'Questionadas com "por quê?" e pedido de exemplo concreto',
+        'Ignoradas',
+        'Copiadas direto para o Figma',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Um bom encerramento de sessão com IA inclui:',
+      options: [
+        'Somente agradecer',
+        'Teste final, lacunas identificadas e aplicação na demanda real',
+        'Apagar o histórico',
+        'Publicar sem revisão humana',
+      ],
+      answer: 1,
+    },
+  ],
+  'w4-prompt': [
+    {
+      q: 'Um prompt profissional deve incluir:',
+      options: [
+        'Somente uma frase curta',
+        'Objetivo, contexto, restrições, tarefa e critério de qualidade',
+        'A resposta esperada pronta',
+        'O máximo de jargão possível',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Incluir contexto da demanda real no prompt ajuda a IA a:',
+      options: [
+        'Inventar requisitos',
+        'Relacionar o conceito ao problema, riscos e estados da sprint',
+        'Evitar perguntas',
+        'Eliminar handoff',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Restrições em um prompt servem para:',
+      options: [
+        'Limitar criatividade sem motivo',
+        'Delimitar formato, profundidade e o que não deve ser feito',
+        'Substituir revisão humana',
+        'Ocultar o objetivo',
+      ],
+      answer: 1,
+    },
+  ],
+  'w4-figma-ai': [
+    {
+      q: 'IA no Figma é mais útil para:',
+      options: [
+        'Substituir julgamento de produto',
+        'Explorar variações, conteúdo e acelerar com revisão crítica',
+        'Eliminar componentes',
+        'Publicar sem testes',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Resultado gerado por IA no Figma deve ser:',
+      options: [
+        'Aprovado automaticamente',
+        'Revisado quanto a consistência, acessibilidade e aderência ao DS',
+        'Ignorado',
+        'Usado sem documentação',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Usar IA para naming e organização de camadas exige:',
+      options: [
+        'Nenhum padrão de time',
+        'Validação humana contra convenções do projeto',
+        'Desativar Auto Layout',
+        'Remover variantes',
+      ],
+      answer: 1,
+    },
+  ],
+  'w4-dev-mode': [
+    {
+      q: 'Dev Mode no Figma facilita principalmente:',
+      options: [
+        'Substituir conversa com desenvolvimento',
+        'Inspeção, medidas, tokens e handoff estruturado',
+        'Eliminar estados de componente',
+        'Gerar backend automaticamente',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Anotações no handoff devem esclarecer:',
+      options: [
+        'Preferência pessoal de cor',
+        'Comportamentos, estados, exceções e dependências',
+        'Somente o nome do designer',
+        'Histórico de commits',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Componentes com variantes no handoff precisam indicar:',
+      options: [
+        'Apenas o estado default',
+        'Quais variantes existem e quando usar cada uma',
+        'Somente o ícone do Figma',
+        'Nada além do frame',
+      ],
+      answer: 1,
+    },
+  ],
   'w4-harness': [
     {
       q: 'Um harness de agente é, principalmente:',
