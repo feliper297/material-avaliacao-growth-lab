@@ -1,4 +1,5 @@
 import {
+  ApiOutlined,
   CheckCircleFilled,
   CloseCircleFilled,
   DeleteOutlined,
@@ -21,9 +22,17 @@ interface EvidenceItemProps {
   readOnly?: boolean
   onEdit?: (evidence: Evidence) => void
   onDelete?: (evidence: Evidence) => void
+  onOpenPokemonApi?: () => void
 }
 
-export function EvidenceItem({ evidence, accent, readOnly = false, onEdit, onDelete }: EvidenceItemProps) {
+export function EvidenceItem({
+  evidence,
+  accent,
+  readOnly = false,
+  onEdit,
+  onDelete,
+  onOpenPokemonApi,
+}: EvidenceItemProps) {
   const { token } = antdTheme.useToken()
 
   return (
@@ -90,6 +99,16 @@ export function EvidenceItem({ evidence, accent, readOnly = false, onEdit, onDel
                 rel="noreferrer"
               >
                 Abrir link
+              </Button>
+            )}
+            {onOpenPokemonApi && (
+              <Button
+                size="small"
+                variant="outlined"
+                icon={<ApiOutlined />}
+                onClick={onOpenPokemonApi}
+              >
+                Explorar API Pokémon
               </Button>
             )}
             {evidence.attachments.map((attachment) => (

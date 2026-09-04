@@ -1,5 +1,4 @@
 import {
-  ApiOutlined,
   CheckOutlined,
   DownOutlined,
   FileTextOutlined,
@@ -121,17 +120,6 @@ export function CourseContentList({
                     Fazer teste
                   </Button>
                 )}
-                {hasPokemonAction && (
-                  <Button
-                    className="app-trail-action-btn"
-                    variant="outlined"
-                    size="small"
-                    icon={<ApiOutlined />}
-                    onClick={onOpenPokemonApi}
-                  >
-                    Explorar API Pokémon
-                  </Button>
-                )}
                 <Button
                   size="small"
                   shape="circle"
@@ -168,6 +156,7 @@ export function CourseContentList({
                     readOnly={readOnly}
                     onEdit={onEditEvidence}
                     onDelete={onDeleteEvidence}
+                    onOpenPokemonApi={hasPokemonAction ? onOpenPokemonApi : undefined}
                   />
                 ))}
               </div>
