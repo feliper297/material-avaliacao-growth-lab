@@ -49,9 +49,14 @@ export function evidenceMatchesTask(evidence: Evidence, task: PracticalTask): bo
       'user journeys',
       'user journeys vs',
       'fluxo diferenciados',
-      'onboarding',
     ],
-    'w2-empty-states-practice': ['empty state', 'estados vazios', 'matriz de estados', 'casos de borda'],
+    'w2-empty-states-practice': [
+      'empty state',
+      'empty stats',
+      'estados vazios',
+      'matriz de estados',
+      'casos de borda',
+    ],
     'w3-github-repos-practice': [
       'github',
       'github do front',

@@ -159,6 +159,42 @@ describe('resolveEvidenceResourceId', () => {
     ).toBe('w2-problem-framing')
   })
 
+  it('does not let a shared project name (Onboarding) steal empty-states evidence into journeys-flows', () => {
+    const week2 = WEEKS[1]
+
+    expect(
+      resolveEvidenceResourceId(
+        {
+          id: '10',
+          week: 2,
+          resourceId: 'w2-empty-states',
+          type: 'Outro',
+          title: 'Utilização do Empty Stats no projeto de Onboarding',
+          description: 'Teste',
+          attachments: [],
+          createdAt: '2026-01-01',
+        },
+        week2,
+      ),
+    ).toBe('w2-empty-states')
+
+    expect(
+      resolveEvidenceResourceId(
+        {
+          id: '11',
+          week: 2,
+          resourceId: 'w2-empty-states',
+          type: 'Protótipo',
+          title: 'Uso do Empty Stats no meu projeto de Onboarding',
+          description: 'Teste',
+          attachments: [],
+          createdAt: '2026-01-01',
+        },
+        week2,
+      ),
+    ).toBe('w2-empty-states')
+  })
+
   it('maps GitHub evidences stored in week 1 to Sobre repositórios in week 3', () => {
     const week3 = WEEKS[2]
 
