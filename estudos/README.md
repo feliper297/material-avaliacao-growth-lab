@@ -15,5 +15,11 @@ Os módulos abaixo não são apostilas longas. Cada um tem um conceito, links co
 7. [07 — jornadas, feedback e testes](./07-jornadas-feedback-e-testes.md)
 8. [08 — CI/CD, deploy e operação](./08-cicd-deploy-e-operacao.md)
 
+## Referências do projeto
+
+Documentos de apoio com análise aplicada ao código do Growth Lab:
+
+- [Arquitetura cliente-servidor no Growth Lab](./referencias/arquitetura-client-server.md)
+
 Marcar um estudo como concluído exige registrar uma aplicação ou decisão. Assistir ao vídeo ou abrir a documentação não é evidência suficiente.
 
