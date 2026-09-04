@@ -642,38 +642,6 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
       answer: 1,
     },
   ],
-  'w4-agents': [
-    {
-      q: 'A principal diferença entre um agente e um assistente de chat é:',
-      options: [
-        'O agente nunca comete erros',
-        'O agente pode usar ferramentas, tomar decisões em múltiplos passos e agir sobre um ambiente',
-        'O assistente é mais rápido em qualquer cenário',
-        'Não existe diferença prática',
-      ],
-      answer: 1,
-    },
-    {
-      q: 'Um subagente é usado principalmente para:',
-      options: [
-        'Substituir o agente principal por completo',
-        'Isolar contexto e executar uma subtarefa especializada, com resultado devolvido ao agente principal',
-        'Rodar sem nenhuma ferramenta',
-        'Eliminar a necessidade de orquestração',
-      ],
-      answer: 1,
-    },
-    {
-      q: 'Restringir as ferramentas disponíveis para um agente serve para:',
-      options: [
-        'Deixar o agente mais lento sem motivo',
-        'Reduzir o raio de ação e o risco de ações não intencionais',
-        'Impedir qualquer tipo de automação',
-        'Não tem efeito prático',
-      ],
-      answer: 1,
-    },
-  ],
   'w4-cursor': [
     {
       q: 'O Agent mode do Cursor é voltado para:',
@@ -702,38 +670,6 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
         'Ser um editor completo com IA integrada à experiência visual, e não uma ferramenta de terminal',
         'Não permitir uso de ferramentas externas',
         'Ser exclusivo para um único sistema operacional',
-      ],
-      answer: 1,
-    },
-  ],
-  'w4-claude-code': [
-    {
-      q: 'O Claude Code opera principalmente:',
-      options: [
-        'Apenas sugerindo texto sem executar nada',
-        'Lendo o repositório, editando arquivos e rodando comandos dentro do fluxo de trabalho real',
-        'Só dentro do navegador, sem acesso a arquivos',
-        'Sem qualquer integração com Git',
-      ],
-      answer: 1,
-    },
-    {
-      q: 'Nesta avaliação, o Claude Code é usado como:',
-      options: [
-        'Um simples gerador de texto para preencher documentos',
-        'O executor que propõe, implementa, testa e explica as mudanças no projeto',
-        'Uma ferramenta apenas de leitura, sem permissão de escrita',
-        'Um substituto completo do julgamento humano',
-      ],
-      answer: 1,
-    },
-    {
-      q: 'Um bom uso do Claude Code em uma demanda real inclui:',
-      options: [
-        'Aceitar qualquer sugestão sem revisar',
-        'Verificar hipótese, testar o resultado e registrar o que foi comprovado',
-        'Pular a leitura da documentação do projeto',
-        'Ignorar o estado inicial antes de alterar código',
       ],
       answer: 1,
     },
