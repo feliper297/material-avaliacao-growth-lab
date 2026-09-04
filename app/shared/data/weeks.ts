@@ -284,25 +284,6 @@ export const WEEKS: TrailWeek[] = [
         ],
       },
       {
-        id: 'w3-git',
-        title: 'Sobre o controle de versão do Git',
-        source: 'GitHub Docs',
-        type: 'Texto técnico',
-        duration: '12 min',
-        icon: 'CodeOutlined',
-        url: 'https://docs.github.com/pt/get-started/using-git/about-git',
-        topic:
-          'Git, commits, histórico de alterações, branches e por que versionar código faz parte da arquitetura de um sistema.',
-        practicalTasks: [
-          {
-            id: 'w3-git-practice',
-            title: 'Commits e histórico no projeto',
-            typeLabel: 'Praticar tarefa',
-            duration: '25 min',
-          },
-        ],
-      },
-      {
         id: 'w3-github-repos',
         title: 'Sobre repositórios',
         source: 'GitHub Docs',

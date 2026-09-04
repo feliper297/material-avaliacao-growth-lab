@@ -354,38 +354,6 @@ export const RESOURCE_QUIZZES: Record<string, QuizItem[]> = {
       answer: 1,
     },
   ],
-  'w3-git': [
-    {
-      q: 'O Git ajuda um time a:',
-      options: [
-        'Eliminar a necessidade de testes',
-        'Registrar histórico de mudanças e trabalhar em paralelo com branches',
-        'Substituir banco de dados por arquivos locais',
-        'Publicar código sem revisão',
-      ],
-      answer: 1,
-    },
-    {
-      q: 'Um commit representa:',
-      options: [
-        'Apenas um backup automático do Figma',
-        'Um snapshot nomeado de alterações no código ou arquivos versionados',
-        'O deploy final em produção',
-        'Uma permissão de administrador',
-      ],
-      answer: 1,
-    },
-    {
-      q: 'Versionar código faz parte da arquitetura porque:',
-      options: [
-        'Dispensa documentação e evidências',
-        'Permite rastrear o que mudou, quando e por quê',
-        'Impede rollback em caso de erro',
-        'Só interessa ao time de marketing',
-      ],
-      answer: 1,
-    },
-  ],
   'w3-github-repos': [
     {
       q: 'Um repositório no GitHub é:',
