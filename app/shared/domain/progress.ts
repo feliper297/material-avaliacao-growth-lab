@@ -19,6 +19,17 @@ export function getOverallProgress(completedCount: number, totalResources: numbe
   return Math.round((completedCount / totalResources) * 100)
 }
 
+/**
+ * Conta apenas os ids de `completed` que ainda existem no catálogo atual.
+ * Conteúdos removidos da trilha continuam marcados no histórico do usuário
+ * (`completed` nunca é limpo ao editar o catálogo), então contar o array
+ * bruto infla o numerador e passa de 100%.
+ */
+export function countValidCompleted(completed: string[], resourceIds: Iterable<string>): number {
+  const validIds = resourceIds instanceof Set ? resourceIds : new Set(resourceIds)
+  return completed.filter((id) => validIds.has(id)).length
+}
+
 export function getWeekProgress(
   week: { id: number; resources: { id: string }[] },
   store: Pick<AppStore, 'completed' | 'evidences' | 'quizzes'>,

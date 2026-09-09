@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import type { QuizItem, TrailWeek } from '../../shared/data/weeks'
-import { getCycleStatus, getOverallProgress, getWeekProgress, resourceHasQuiz } from '../../shared/domain/progress'
+import { countValidCompleted, getCycleStatus, getOverallProgress, getWeekProgress, resourceHasQuiz } from '../../shared/domain/progress'
 import { getQuizScore } from '../../shared/domain/quiz'
 import { getResourceQuizFromCatalog } from '../../shared/domain/trail-catalog'
 import type { AppStore } from '../../shared/types/store'
@@ -26,8 +26,9 @@ export function exportProgressPdf(
   quizzes: Record<string, QuizItem[]>,
   userEmail?: string,
 ): void {
-  const totalResources = weeks.flatMap((week) => week.resources).length
-  const progress = getOverallProgress(store.completed.length, totalResources)
+  const resourceIds = weeks.flatMap((week) => week.resources).map((r) => r.id)
+  const totalResources = resourceIds.length
+  const progress = getOverallProgress(countValidCompleted(store.completed, resourceIds), totalResources)
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
   const margin = 14
   let y = margin
@@ -158,8 +159,9 @@ export function openPrintReport(
   quizzes: Record<string, QuizItem[]>,
   userEmail?: string,
 ): void {
-  const totalResources = weeks.flatMap((week) => week.resources).length
-  const progress = getOverallProgress(store.completed.length, totalResources)
+  const resourceIds = weeks.flatMap((week) => week.resources).map((r) => r.id)
+  const totalResources = resourceIds.length
+  const progress = getOverallProgress(countValidCompleted(store.completed, resourceIds), totalResources)
   const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700')
   if (!printWindow) {
     window.print()

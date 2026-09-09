@@ -1,10 +1,11 @@
-import { getOverallProgress } from '../../shared/domain/progress'
+import { countValidCompleted, getOverallProgress } from '../../shared/domain/progress'
 import type { BackOfficeStats, BackOfficeUserRow, UpdateBackOfficeUserInput } from '../../shared/types/backoffice'
 import type { Profile } from '../../shared/types/evaluation'
 import { supabase } from '../lib/supabase'
 
 export const backofficeApi = {
-  async getStats(totalResources: number): Promise<BackOfficeStats> {
+  async getStats(resourceIds: string[]): Promise<BackOfficeStats> {
+    const totalResources = resourceIds.length
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Usuário não autenticado.')
 
@@ -57,7 +58,7 @@ export const backofficeApi = {
 
     const users: BackOfficeUserRow[] = profiles.map((profile) => {
       const state = stateByUser.get(profile.userId)
-      const completedCount = state?.completed.length ?? 0
+      const completedCount = state ? countValidCompleted(state.completed, resourceIds) : 0
       const evidenceCount = evidenceCountByUser.get(profile.userId) ?? 0
       const quizCount = state ? Object.keys(state.quizzes).length : 0
 

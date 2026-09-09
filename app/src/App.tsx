@@ -41,7 +41,7 @@ import {
   TrophyOutlined,
 } from '@ant-design/icons'
 import { weekAccentHex } from '../shared/data/weeks'
-import { calculateAverage, getCycleStatus, getOverallProgress, isFinalEvaluationComplete, isWeekClosed } from '../shared/domain/progress'
+import { calculateAverage, countValidCompleted, getCycleStatus, getOverallProgress, isFinalEvaluationComplete, isWeekClosed } from '../shared/domain/progress'
 import { SCORE_DIMENSIONS } from '../shared/types/store'
 import type { Evaluation, EvaluationAttachment, Profile } from '../shared/types/evaluation'
 import { EvidenceForm } from './components/trail/EvidenceForm'
@@ -162,7 +162,7 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
   const trailCatalog = useTrailCatalog(!profileLoading && !!profile)
   const backOffice = useBackOffice(
     isAdmin && !profileLoading && !!profile,
-    trailCatalog.allResourceIds.length,
+    trailCatalog.allResourceIds,
   )
   const isDark = store.store.theme === 'dark'
 
@@ -325,8 +325,8 @@ function AppShell({
   const contentRef = useRef<HTMLDivElement>(null)
 
   const progress = useMemo(
-    () => getOverallProgress(store.completed.length, allResourceIds.length),
-    [store.completed.length, allResourceIds.length],
+    () => getOverallProgress(countValidCompleted(store.completed, allResourceIds), allResourceIds.length),
+    [store.completed, allResourceIds],
   )
 
   const weekEvaluationsAverage = useMemo(() => {
