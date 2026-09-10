@@ -41,7 +41,7 @@ import {
   TrophyOutlined,
 } from '@ant-design/icons'
 import { weekAccentHex } from '../shared/data/weeks'
-import { calculateAverage, countValidCompleted, getCycleStatus, getOverallProgress, isFinalEvaluationComplete, isWeekClosed } from '../shared/domain/progress'
+import { calculateAverage, countValidCompleted, getCycleStatus, getOverallProgress, isWeekClosed } from '../shared/domain/progress'
 import { SCORE_DIMENSIONS } from '../shared/types/store'
 import type { Evaluation, EvaluationAttachment, Profile } from '../shared/types/evaluation'
 import { EvidenceForm } from './components/trail/EvidenceForm'
@@ -234,7 +234,6 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
             finalEvaluation={evaluations.finalEvaluation}
             evaluationSaving={evaluations.saving}
             onSaveWeekEvaluation={evaluations.saveWeekEvaluation}
-            onSaveFinalEvaluation={evaluations.saveFinalEvaluation}
             backOfficeStats={backOffice.stats}
             backOfficeLoading={backOffice.loading}
             backOfficeError={backOffice.error}
@@ -270,7 +269,6 @@ function AppShell({
   finalEvaluation,
   evaluationSaving,
   onSaveWeekEvaluation,
-  onSaveFinalEvaluation,
   backOfficeStats,
   backOfficeLoading,
   backOfficeError,
@@ -287,7 +285,6 @@ function AppShell({
   finalEvaluation: Evaluation | null
   evaluationSaving: boolean
   onSaveWeekEvaluation: (week: number, overall: number, notes: string, attachments?: EvaluationAttachment[]) => Promise<void>
-  onSaveFinalEvaluation: (scores: Record<string, number>, notes: string, attachments?: EvaluationAttachment[]) => Promise<void>
   backOfficeStats: BackOfficeStats | null
   backOfficeLoading: boolean
   backOfficeError: string | null
@@ -367,7 +364,8 @@ function AppShell({
     [store, navWeeks],
   )
 
-  const assessmentComplete = isFinalEvaluationComplete(finalEvaluation)
+  const assessmentComplete =
+    navWeeks.length > 0 && navWeeks.every((week) => getWeekEvaluation(week.id)?.scores.overall != null)
 
   const navItems = useMemo(() => {
     const items = navWeeks.map((week) => ({
@@ -802,18 +800,8 @@ function AppShell({
 
               {activeSection === '#assessment' && (
                 <FinalEvaluationPanel
-                  learnerId={selectedLearnerId ?? ''}
-                  evaluation={finalEvaluation}
-                  readOnly={!isAdmin}
-                  saving={evaluationSaving}
-                  onSave={async (scores, notes, attachments) => {
-                    try {
-                      await onSaveFinalEvaluation(scores, notes, attachments)
-                      message.success('Avaliação final salva.')
-                    } catch (err) {
-                      message.error(err instanceof Error ? err.message : 'Falha ao salvar avaliação final.')
-                    }
-                  }}
+                  weeksAverage={weekEvaluationsAverage}
+                  allWeeksEvaluated={assessmentComplete}
                 />
               )}
             </>
