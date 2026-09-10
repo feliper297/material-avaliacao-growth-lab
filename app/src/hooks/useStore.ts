@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { AppStore } from '../../shared/types/store'
 import type { EvidenceInput } from '../../shared/domain/evidence'
+import type { QuizItem, TrailWeek } from '../../shared/data/weeks'
 import { createQuizResult } from '../../shared/domain/quiz'
 import { DEFAULT_STORE } from '../../shared/types/store'
 import { supabaseApi as api } from '../services/supabaseApi'
@@ -166,10 +167,16 @@ export function useStore(userId: string | null, options: UseStoreOptions = {}) {
     [persist, readOnly, store],
   )
 
-  const exportProgress = useCallback(async (userEmail?: string) => {
-    const { exportProgressPdf } = await import('../utils/progressReport')
-    exportProgressPdf(store, userEmail)
-  }, [store])
+  const exportProgress = useCallback(
+    async (
+      userEmail?: string,
+      catalog?: { weeks: TrailWeek[]; quizzes: Record<string, QuizItem[]> },
+    ) => {
+      const { exportProgressPdf } = await import('../utils/progressReport')
+      exportProgressPdf(store, catalog?.weeks ?? [], catalog?.quizzes ?? {}, userEmail)
+    },
+    [store],
+  )
 
   return {
     store,

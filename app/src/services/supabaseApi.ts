@@ -2,6 +2,33 @@ import { supabase } from '../lib/supabase'
 import type { AppStore, Evidence } from '../../shared/types/store'
 import type { EvidenceInput } from '../../shared/domain/evidence'
 import { DEFAULT_STORE } from '../../shared/types/store'
+import { parseEvidenceAttachments, removeEvidenceFile } from './evidenceAttachmentApi'
+
+const evidenceSelect = 'id, week, resource_id, type, title, url, description, attachments, created_at'
+
+function mapEvidence(row: {
+  id: string
+  week: number
+  resource_id: string | null
+  type: string
+  title: string
+  url: string | null
+  description: string
+  attachments?: unknown
+  created_at: string
+}): Evidence {
+  return {
+    id: row.id,
+    week: row.week,
+    resourceId: row.resource_id ?? undefined,
+    type: row.type,
+    title: row.title,
+    url: row.url ?? undefined,
+    description: row.description,
+    attachments: parseEvidenceAttachments(row.attachments),
+    createdAt: row.created_at,
+  }
+}
 
 export const supabaseApi = {
   async getState(userId?: string): Promise<AppStore> {
@@ -20,21 +47,13 @@ export const supabaseApi = {
 
     const { data: evData, error: evError } = await supabase
       .from('evidences')
-      .select('id, week, type, title, url, description, created_at')
+      .select(evidenceSelect)
       .eq('user_id', targetUserId)
       .order('created_at', { ascending: false })
 
     if (evError) throw new Error(evError.message)
 
-    const evidences: Evidence[] = (evData ?? []).map((e) => ({
-      id: e.id,
-      week: e.week,
-      type: e.type,
-      title: e.title,
-      url: e.url ?? undefined,
-      description: e.description,
-      createdAt: e.created_at,
-    }))
+    const evidences: Evidence[] = (evData ?? []).map(mapEvidence)
 
     if (!data) {
       return { ...DEFAULT_STORE, evidences }
@@ -79,30 +98,33 @@ export const supabaseApi = {
       .insert({
         user_id: user.id,
         week: input.week,
+        resource_id: input.resourceId ?? null,
         type: input.type ?? 'aplicacao',
         title: input.title,
         url: input.url ?? null,
         description: input.description,
+        attachments: input.attachments ?? [],
       })
-      .select('id, week, type, title, url, description, created_at')
+      .select(evidenceSelect)
       .single()
 
     if (error) throw new Error(error.message)
 
-    return {
-      id: data.id,
-      week: data.week,
-      type: data.type,
-      title: data.title,
-      url: data.url ?? undefined,
-      description: data.description,
-      createdAt: data.created_at,
-    }
+    return mapEvidence(data)
   },
 
   async deleteEvidence(id: string): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Usuário não autenticado.')
+
+    const { data: existing, error: fetchError } = await supabase
+      .from('evidences')
+      .select('attachments')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (fetchError) throw new Error(fetchError.message)
 
     const { error } = await supabase
       .from('evidences')
@@ -111,6 +133,9 @@ export const supabaseApi = {
       .eq('user_id', user.id)
 
     if (error) throw new Error(error.message)
+
+    const attachments = parseEvidenceAttachments(existing?.attachments)
+    await Promise.all(attachments.map((item) => removeEvidenceFile(item.url)))
   },
 
   async updateEvidence(id: string, input: EvidenceInput): Promise<Evidence> {
@@ -121,27 +146,21 @@ export const supabaseApi = {
       .from('evidences')
       .update({
         week: input.week,
+        resource_id: input.resourceId ?? null,
         type: input.type ?? 'aplicacao',
         title: input.title,
         url: input.url ?? null,
         description: input.description,
+        attachments: input.attachments ?? [],
       })
       .eq('id', id)
       .eq('user_id', user.id)
-      .select('id, week, type, title, url, description, created_at')
+      .select(evidenceSelect)
       .maybeSingle()
 
     if (error) throw new Error(error.message)
     if (!data) throw new Error('Evidência não encontrada ou sem permissão para editar.')
 
-    return {
-      id: data.id,
-      week: data.week,
-      type: data.type,
-      title: data.title,
-      url: data.url ?? undefined,
-      description: data.description,
-      createdAt: data.created_at,
-    }
+    return mapEvidence(data)
   },
 }

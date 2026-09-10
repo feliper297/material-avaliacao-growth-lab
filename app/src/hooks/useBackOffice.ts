@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { BackOfficeStats, UpdateBackOfficeUserInput } from '../../shared/types/backoffice'
 import { backofficeApi } from '../services/backofficeApi'
 
-export function useBackOffice(enabled: boolean) {
+export function useBackOffice(enabled: boolean, resourceIds: string[] = []) {
   const [stats, setStats] = useState<BackOfficeStats | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -13,14 +13,15 @@ export function useBackOffice(enabled: boolean) {
     setLoading(true)
     setError(null)
     try {
-      const data = await backofficeApi.getStats()
+      const data = await backofficeApi.getStats(resourceIds)
       setStats(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Falha ao carregar back office.')
     } finally {
       setLoading(false)
     }
-  }, [enabled])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, resourceIds.join(',')])
 
   const updateUser = useCallback(async (input: UpdateBackOfficeUserInput) => {
     setSaving(true)

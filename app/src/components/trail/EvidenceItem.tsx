@@ -1,5 +1,16 @@
-import { DeleteOutlined, EditOutlined, EyeOutlined, FileSearchOutlined, LinkOutlined } from '@ant-design/icons'
+import {
+  ApiOutlined,
+  CheckCircleFilled,
+  CloseCircleFilled,
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  FileOutlined,
+  FileSearchOutlined,
+  LinkOutlined,
+} from '@ant-design/icons'
 import { Button, Space, Tag, Typography, theme as antdTheme } from 'antd'
+import type { QuizItem } from '../../../shared/data/weeks'
 import type { Evidence } from '../../../shared/types/store'
 import { linkifyText } from '../../utils/linkifyText'
 
@@ -11,13 +22,22 @@ interface EvidenceItemProps {
   readOnly?: boolean
   onEdit?: (evidence: Evidence) => void
   onDelete?: (evidence: Evidence) => void
+  onOpenPokemonApi?: () => void
 }
 
-export function EvidenceItem({ evidence, accent, readOnly = false, onEdit, onDelete }: EvidenceItemProps) {
+export function EvidenceItem({
+  evidence,
+  accent,
+  readOnly = false,
+  onEdit,
+  onDelete,
+  onOpenPokemonApi,
+}: EvidenceItemProps) {
   const { token } = antdTheme.useToken()
 
   return (
     <article
+      className="evidence-item"
       style={{
         borderLeft: `3px solid ${accent}`,
         borderRadius: token.borderRadiusLG,
@@ -68,7 +88,7 @@ export function EvidenceItem({ evidence, accent, readOnly = false, onEdit, onDel
           <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 8 }}>
             {new Date(evidence.createdAt).toLocaleString('pt-BR')}
           </Text>
-          <Space size={8} wrap>
+          <Space size={8} wrap className="evidence-item__actions">
             {evidence.url && (
               <Button
                 size="small"
@@ -81,6 +101,29 @@ export function EvidenceItem({ evidence, accent, readOnly = false, onEdit, onDel
                 Abrir link
               </Button>
             )}
+            {onOpenPokemonApi && (
+              <Button
+                size="small"
+                variant="outlined"
+                icon={<ApiOutlined />}
+                onClick={onOpenPokemonApi}
+              >
+                Explorar API Pokémon
+              </Button>
+            )}
+            {evidence.attachments.map((attachment) => (
+              <Button
+                key={attachment.id}
+                size="small"
+                variant="outlined"
+                icon={<FileOutlined />}
+                href={attachment.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {attachment.name}
+              </Button>
+            ))}
             {!readOnly && onEdit && (
               <Button
                 size="small"
@@ -187,6 +230,107 @@ export function InlineQuizResult({ score, total }: { score: number; total: numbe
         </Tag>
         <QuizScoreTag score={score} total={total} />
       </Space>
+    </div>
+  )
+}
+
+interface QuizReviewProps {
+  title: string
+  score: number
+  total: number
+  questions: QuizItem[]
+  answers?: number[]
+}
+
+export function QuizReview({ title, score, total, questions, answers }: QuizReviewProps) {
+  const { token } = antdTheme.useToken()
+  const hasDetailedAnswers = answers != null && answers.length === questions.length
+
+  return (
+    <div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          marginBottom: 16,
+        }}
+      >
+        <Text strong>{title}</Text>
+        <QuizScoreTag score={score} total={total} />
+      </div>
+
+      {!hasDetailedAnswers && (
+        <Paragraph type="secondary">
+          Este teste foi respondido antes do registro detalhado de respostas — apenas a
+          pontuação final está disponível para revisão.
+        </Paragraph>
+      )}
+
+      {hasDetailedAnswers &&
+        questions.map((question, qi) => {
+          const selected = answers![qi]
+          return (
+            <div
+              key={qi}
+              style={{
+                marginBottom: 20,
+                paddingBottom: 16,
+                borderBottom:
+                  qi < questions.length - 1 ? `1px solid ${token.colorBorderSecondary}` : 'none',
+              }}
+            >
+              <Text strong style={{ display: 'block', marginBottom: 10 }}>
+                {qi + 1}. {question.q}
+              </Text>
+              <Space direction="vertical" style={{ width: '100%' }} size={6}>
+                {question.options.map((option, oi) => {
+                  const isSelected = oi === selected
+                  const isCorrectOption = oi === question.answer
+                  const isWrongSelection = isSelected && !isCorrectOption
+
+                  let borderColor = token.colorBorderSecondary
+                  let background = 'transparent'
+                  if (isCorrectOption) {
+                    borderColor = token.colorSuccessBorder
+                    background = token.colorSuccessBg
+                  } else if (isWrongSelection) {
+                    borderColor = token.colorErrorBorder
+                    background = token.colorErrorBg
+                  }
+
+                  return (
+                    <div
+                      key={oi}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '6px 10px',
+                        borderRadius: token.borderRadius,
+                        border: `1px solid ${borderColor}`,
+                        background,
+                      }}
+                    >
+                      {isCorrectOption ? (
+                        <CheckCircleFilled style={{ color: token.colorSuccess, flexShrink: 0 }} />
+                      ) : isWrongSelection ? (
+                        <CloseCircleFilled style={{ color: token.colorError, flexShrink: 0 }} />
+                      ) : (
+                        <span style={{ width: 14, flexShrink: 0 }} />
+                      )}
+                      <Text style={{ flex: 1 }}>{option}</Text>
+                      {isSelected && (
+                        <Tag style={{ margin: 0, flexShrink: 0 }}>Sua resposta</Tag>
+                      )}
+                    </div>
+                  )
+                })}
+              </Space>
+            </div>
+          )
+        })}
     </div>
   )
 }

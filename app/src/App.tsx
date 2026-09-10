@@ -35,17 +35,16 @@ import {
   FileSearchOutlined,
   LogoutOutlined,
   MenuOutlined,
+  ReadOutlined,
   RobotOutlined,
   StarOutlined,
   TrophyOutlined,
 } from '@ant-design/icons'
-import { ALL_RESOURCE_IDS, WEEKS, weekAccentHex, type TrailResource, type TrailWeek } from '../shared/data/weeks'
-import { getResourceQuiz } from '../shared/data/resource-quizzes'
-import { calculateAverage, getCycleStatus, getOverallProgress } from '../shared/domain/progress'
+import { weekAccentHex } from '../shared/data/weeks'
+import { calculateAverage, countValidCompleted, getCycleStatus, getOverallProgress, isWeekClosed } from '../shared/domain/progress'
 import { SCORE_DIMENSIONS } from '../shared/types/store'
 import type { Evaluation, EvaluationAttachment, Profile } from '../shared/types/evaluation'
 import { EvidenceForm } from './components/trail/EvidenceForm'
-import { QuizForm } from './components/trail/QuizForm'
 import { WeekSection } from './components/trail/WeekSection'
 import { useStore } from './hooks/useStore'
 import { useProfile } from './hooks/useProfile'
@@ -53,7 +52,9 @@ import { useEvaluations } from './hooks/useEvaluations'
 import { FinalEvaluationPanel } from './components/admin/FinalEvaluationPanel'
 import { BackOfficePanel } from './components/admin/BackOfficePanel'
 import { useBackOffice } from './hooks/useBackOffice'
-import { SIDEBAR_WIDTH, useBreakpointLayout } from './hooks/useBreakpointLayout'
+import { useTrailCatalog } from './hooks/useTrailCatalog'
+import { TrailCatalogProvider, useTrailCatalogContext } from './context/TrailCatalogContext'
+import { SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_WIDTH, useBreakpointLayout } from './hooks/useBreakpointLayout'
 import { BrandLogo } from './components/BrandLogo'
 import type { Evidence } from '../shared/types/store'
 import type { BackOfficeStats } from '../shared/types/backoffice'
@@ -61,10 +62,17 @@ import type { BackOfficeStats } from '../shared/types/backoffice'
 const { Sider, Header, Content } = Layout
 const { Title, Text, Paragraph } = Typography
 
-const BASE_NAV_ITEMS: { href: string; label: string }[] = [
-  ...WEEKS.map((w) => ({ href: `#week-${w.id}`, label: `Semana ${w.id}` })),
-  { href: '#assessment', label: 'Avaliação final' },
-]
+const WEEK_NAV_ICONS = [AppstoreOutlined, CompassOutlined, ApiOutlined, RobotOutlined]
+
+function getInitialTrailSection(weekIds: number[]): string {
+  const hash = window.location.hash
+  if (hash === '#assessment') return hash
+  if (hash.startsWith('#week-')) {
+    const weekId = Number.parseInt(hash.slice('#week-'.length), 10)
+    if (weekIds.includes(weekId)) return hash
+  }
+  return weekIds.length > 0 ? `#week-${weekIds[0]}` : '#assessment'
+}
 
 export default function App() {
   if (!isSupabaseConfigured) {
@@ -151,10 +159,14 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
   }, [isAdmin, evaluations.learners, selectedLearnerId])
 
   const store = useStore(evaluationUserId, { readOnly: isAdmin })
-  const backOffice = useBackOffice(isAdmin && !profileLoading && !!profile)
+  const trailCatalog = useTrailCatalog(!profileLoading && !!profile)
+  const backOffice = useBackOffice(
+    isAdmin && !profileLoading && !!profile,
+    trailCatalog.allResourceIds,
+  )
   const isDark = store.store.theme === 'dark'
 
-  if (profileLoading || store.loadStatus === 'loading' || evaluations.loading) {
+  if (profileLoading || store.loadStatus === 'loading' || evaluations.loading || trailCatalog.loading) {
     return (
       <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
         <Spin size="large" />
@@ -205,26 +217,29 @@ function AuthenticatedApp({ onSignOut, userEmail }: { onSignOut: () => void; use
         algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: { colorPrimary: '#0958d9' },
       }}
+      modal={{ centered: true }}
     >
       <AntApp>
-        <AppShell
-          {...store}
-          userEmail={userEmail}
-          onSignOut={onSignOut}
-          isAdmin={isAdmin}
-          selectedLearnerId={selectedLearnerId}
-          learners={evaluations.learners}
-          onSelectLearner={setSelectedLearnerId}
-          getWeekEvaluation={evaluations.getWeekEvaluation}
-          finalEvaluation={evaluations.finalEvaluation}
-          evaluationSaving={evaluations.saving}
-          onSaveWeekEvaluation={evaluations.saveWeekEvaluation}
-          onSaveFinalEvaluation={evaluations.saveFinalEvaluation}
-          backOfficeStats={backOffice.stats}
-          backOfficeLoading={backOffice.loading}
-          backOfficeError={backOffice.error}
-          onReloadBackOffice={backOffice.reload}
-        />
+        <TrailCatalogProvider value={trailCatalog}>
+          <AppShell
+            {...store}
+            userEmail={userEmail}
+            currentUserId={profile!.userId}
+            onSignOut={onSignOut}
+            isAdmin={isAdmin}
+            selectedLearnerId={selectedLearnerId}
+            learners={evaluations.learners}
+            onSelectLearner={setSelectedLearnerId}
+            getWeekEvaluation={evaluations.getWeekEvaluation}
+            finalEvaluation={evaluations.finalEvaluation}
+            evaluationSaving={evaluations.saving}
+            onSaveWeekEvaluation={evaluations.saveWeekEvaluation}
+            backOfficeStats={backOffice.stats}
+            backOfficeLoading={backOffice.loading}
+            backOfficeError={backOffice.error}
+            onReloadBackOffice={backOffice.reload}
+          />
+        </TrailCatalogProvider>
       </AntApp>
     </ConfigProvider>
   )
@@ -240,10 +255,11 @@ function AppShell({
   addEvidence,
   deleteEvidence,
   updateEvidence,
-  saveQuiz,
   exportProgress,
+  saveQuiz,
   readOnly,
   userEmail,
+  currentUserId,
   onSignOut,
   isAdmin,
   selectedLearnerId,
@@ -253,13 +269,13 @@ function AppShell({
   finalEvaluation,
   evaluationSaving,
   onSaveWeekEvaluation,
-  onSaveFinalEvaluation,
   backOfficeStats,
   backOfficeLoading,
   backOfficeError,
   onReloadBackOffice,
 }: ReturnType<typeof useStore> & {
   userEmail?: string
+  currentUserId: string
   onSignOut: () => void
   isAdmin: boolean
   selectedLearnerId: string | null
@@ -269,7 +285,6 @@ function AppShell({
   finalEvaluation: Evaluation | null
   evaluationSaving: boolean
   onSaveWeekEvaluation: (week: number, overall: number, notes: string, attachments?: EvaluationAttachment[]) => Promise<void>
-  onSaveFinalEvaluation: (scores: Record<string, number>, notes: string, attachments?: EvaluationAttachment[]) => Promise<void>
   backOfficeStats: BackOfficeStats | null
   backOfficeLoading: boolean
   backOfficeError: string | null
@@ -277,8 +292,11 @@ function AppShell({
 }) {
   const { message, modal } = AntApp.useApp()
   const { token } = antdTheme.useToken()
+  const { weeks, allResourceIds, getResourceQuiz, quizzes, draftPreview } = useTrailCatalogContext()
+  const navWeeks = isAdmin && draftPreview ? draftPreview.weeks : weeks
   const {
     isMobile,
+    isPhone,
     contentPadding,
     modalWidth,
     modalStyle,
@@ -287,39 +305,34 @@ function AppShell({
 
   const [evidenceOpen, setEvidenceOpen] = useState(false)
   const [evidenceWeek, setEvidenceWeek] = useState(1)
+  const [evidenceResourceId, setEvidenceResourceId] = useState<string | undefined>()
+  const [defaultEvidenceTitle, setDefaultEvidenceTitle] = useState<string | undefined>()
   const [editingEvidence, setEditingEvidence] = useState<Evidence | null>(null)
-  const [quizTarget, setQuizTarget] = useState<{ resource: TrailResource; week: TrailWeek } | null>(null)
-  const [activeView, setActiveView] = useState<'trail' | 'backoffice'>('trail')
-  const [activeSection, setActiveSection] = useState('#week-1')
+  const [activeView, setActiveView] = useState<'trail' | 'backoffice'>(() =>
+    window.location.hash === '#backoffice' ? 'backoffice' : 'trail',
+  )
+  const [activeSection, setActiveSection] = useState(() =>
+    window.location.hash === '#backoffice'
+      ? '#backoffice'
+      : getInitialTrailSection(weeks.map((week) => week.id)),
+  )
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  const isNavScrollingRef = useRef(false)
-
-  const scrollToSection = useCallback((sectionId: string, behavior: ScrollBehavior = 'smooth') => {
-    const container = contentRef.current
-    const target = document.getElementById(sectionId)
-    if (!container || !target) return
-
-    const scrollMarginTop = Number.parseFloat(window.getComputedStyle(target).scrollMarginTop) || 0
-    const delta = target.getBoundingClientRect().top - container.getBoundingClientRect().top
-    const nextTop = Math.max(0, container.scrollTop + delta - scrollMarginTop)
-
-    container.scrollTo({ top: nextTop, behavior })
-  }, [])
 
   const progress = useMemo(
-    () => getOverallProgress(store.completed.length, ALL_RESOURCE_IDS.length),
-    [store],
+    () => getOverallProgress(countValidCompleted(store.completed, allResourceIds), allResourceIds.length),
+    [store.completed, allResourceIds],
   )
 
   const weekEvaluationsAverage = useMemo(() => {
-    const weekScores = WEEKS.map((w) => getWeekEvaluation(w.id)?.scores.overall).filter(
+    const weekScores = navWeeks.map((w) => getWeekEvaluation(w.id)?.scores.overall).filter(
       (v): v is number => v != null,
     )
     if (weekScores.length === 0) return null
     return weekScores.reduce((sum, n) => sum + n, 0) / weekScores.length
-  }, [getWeekEvaluation])
+  }, [getWeekEvaluation, navWeeks])
 
   const finalAverage = useMemo(
     () =>
@@ -331,123 +344,141 @@ function AppShell({
 
   const displayAverage = finalAverage ?? weekEvaluationsAverage ?? 0
 
+  const activeWeek = useMemo(() => {
+    if (!activeSection.startsWith('#week-')) return null
+    const weekId = Number.parseInt(activeSection.slice('#week-'.length), 10)
+    return navWeeks.find((week) => week.id === weekId) ?? null
+  }, [activeSection, navWeeks])
+
+  useEffect(() => {
+    if (navWeeks.length === 0) return
+    if (!activeSection.startsWith('#week-')) return
+    if (activeWeek) return
+    const fallback = `#week-${navWeeks[0].id}`
+    setActiveSection(fallback)
+    window.history.replaceState(null, '', fallback)
+  }, [activeSection, activeWeek, navWeeks])
+
+  const closedWeekIds = useMemo(
+    () => new Set(navWeeks.filter((week) => isWeekClosed(week, store)).map((week) => week.id)),
+    [store, navWeeks],
+  )
+
+  const assessmentComplete =
+    navWeeks.length > 0 && navWeeks.every((week) => getWeekEvaluation(week.id)?.scores.overall != null)
+
   const navItems = useMemo(() => {
-    const items = [...BASE_NAV_ITEMS]
+    const items = navWeeks.map((week) => ({
+      href: `#week-${week.id}`,
+      label: `Semana ${week.id}`,
+    }))
+    items.push({ href: '#assessment', label: 'Avaliação final' })
     if (isAdmin) {
       items.push({ href: '#backoffice', label: 'Back Office' })
     }
     return items
-  }, [isAdmin])
+  }, [isAdmin, navWeeks])
 
-  const navIcon: Record<string, { icon: ReactNode; color: string }> = {
-    '#week-1': { icon: <AppstoreOutlined />, color: weekAccentHex(1) },
-    '#week-2': { icon: <CompassOutlined />, color: weekAccentHex(2) },
-    '#week-3': { icon: <ApiOutlined />, color: weekAccentHex(3) },
-    '#week-4': { icon: <RobotOutlined />, color: weekAccentHex(4) },
-    '#assessment': { icon: <TrophyOutlined />, color: token.colorWarning },
-    '#backoffice': { icon: <DashboardOutlined />, color: '#531dab' },
-  }
+  const navIcon = useMemo(() => {
+    const icons: Record<string, { icon: ReactNode; color: string }> = {
+      '#assessment': { icon: <TrophyOutlined />, color: token.colorWarning },
+      '#backoffice': { icon: <DashboardOutlined />, color: '#531dab' },
+    }
+    navWeeks.forEach((week) => {
+      const Icon = WEEK_NAV_ICONS[(week.id - 1) % WEEK_NAV_ICONS.length]
+      icons[`#week-${week.id}`] = { icon: <Icon />, color: weekAccentHex(week.id) }
+    })
+    return icons
+  }, [token.colorWarning, navWeeks])
 
   const menuItems: MenuProps['items'] = navItems.map((item) => {
-    const meta = navIcon[item.href]
+    const meta = navIcon[item.href] ?? { icon: <ReadOutlined />, color: token.colorPrimary }
+    const weekMatch = item.href.match(/^#week-(\d+)$/)
+    const weekId = weekMatch ? Number(weekMatch[1]) : null
+    const weekClosed = weekId != null && closedWeekIds.has(weekId)
+    const navComplete = item.href === '#assessment' ? assessmentComplete : weekClosed
+
     return {
       key: item.href,
       icon: (
-        <Avatar size={24} shape="square" style={{ background: `${meta.color}1f`, color: meta.color, fontSize: 13 }}>
-          {meta.icon}
+        <Avatar
+          size={24}
+          shape="square"
+          style={{
+            background: navComplete ? `${token.colorSuccess}1f` : `${meta.color}1f`,
+            color: navComplete ? token.colorSuccess : meta.color,
+            fontSize: 13,
+          }}
+        >
+          {navComplete ? <CheckCircleOutlined /> : meta.icon}
         </Avatar>
       ),
       label: item.label,
-      title: item.label,
+      title: navComplete ? `${item.label} — concluída` : item.label,
     }
   })
 
-  const handleNavClick = useCallback(
-    (key: string) => {
-      if (key === '#backoffice') {
-        setActiveView('backoffice')
-        setActiveSection('#backoffice')
-        contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-        setMobileMenuOpen(false)
-        return
-      }
-
-      setActiveView('trail')
-      setActiveSection(key)
-      isNavScrollingRef.current = true
-
-      scrollToSection(key.replace('#', ''))
-
-      window.setTimeout(() => {
-        isNavScrollingRef.current = false
-      }, 700)
-
+  const handleNavClick = useCallback((key: string) => {
+    if (key === '#backoffice') {
+      setActiveView('backoffice')
+      setActiveSection('#backoffice')
+      window.history.replaceState(null, '', key)
+      contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
       setMobileMenuOpen(false)
-    },
-    [scrollToSection],
-  )
+      return
+    }
 
-  useEffect(() => {
-    if (activeView !== 'trail') return
+    setActiveView('trail')
+    setActiveSection(key)
+    window.history.replaceState(null, '', key)
+    contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    setMobileMenuOpen(false)
+  }, [])
 
-    const container = contentRef.current
-    if (!container) return
-
-    const sectionIds = navItems
-      .filter((item) => item.href !== '#backoffice')
-      .map((item) => item.href.replace('#', ''))
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isNavScrollingRef.current) return
-
-        const intersecting = entries.filter((entry) => entry.isIntersecting)
-        if (intersecting.length === 0) return
-
-        const topmost = intersecting.reduce((best, entry) =>
-          entry.boundingClientRect.top < best.boundingClientRect.top ? entry : best,
-        )
-        setActiveSection(`#${topmost.target.id}`)
-      },
-      {
-        root: container,
-        rootMargin: '-10% 0px -55% 0px',
-        threshold: [0, 0.1, 0.25, 0.5],
-      },
-    )
-
-    sectionIds.forEach((id) => {
-      const el = document.getElementById(id)
-      if (el) observer.observe(el)
-    })
-
-    return () => observer.disconnect()
-  }, [activeView, navItems])
-
-  const sidebarPadding = isMobile ? 16 : 20
+  const sidebarPadding = isMobile ? 16 : sidebarCollapsed ? 8 : 20
 
   const sidebarBody = (
     <>
-      <div style={{ marginBottom: 20 }}>
-        <BrandLogo variant="sidebar" />
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: sidebarCollapsed ? 'center' : 'space-between',
+          gap: 8,
+          marginBottom: sidebarCollapsed ? 12 : 20,
+        }}
+      >
+        {!sidebarCollapsed && <BrandLogo variant="sidebar" />}
+        <Button
+          type="text"
+          icon={<MenuOutlined />}
+          aria-label={sidebarCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+          aria-expanded={!sidebarCollapsed}
+          onClick={() => {
+            if (isMobile) {
+              setMobileMenuOpen(false)
+              return
+            }
+            setSidebarCollapsed((value) => !value)
+          }}
+        />
       </div>
 
-      <Card size="small" style={{ marginBottom: 16 }}>
-        <Text type="secondary" style={{ fontSize: 11, textTransform: 'uppercase' }}>
-          Progresso
-        </Text>
-        <br />
-        <Text strong>{getCycleStatus(progress)}</Text>
-        <Progress
-          percent={progress}
-          size="small"
-          status={progress >= 100 ? 'success' : 'active'}
-          style={{ marginTop: 8 }}
-        />
-        <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 4 }}>
-          {store.completed.length} de {ALL_RESOURCE_IDS.length} conteúdos
-        </Text>
-      </Card>
+      {!sidebarCollapsed && (
+        <Card size="small" style={{ marginBottom: 16 }}>
+          <Text type="secondary" style={{ fontSize: 11, textTransform: 'uppercase' }}>
+            Progresso
+          </Text>
+          <br />
+          <Text strong>{getCycleStatus(progress)}</Text>
+          <Progress
+            percent={progress}
+            size="small"
+            status={progress >= 100 ? 'success' : 'active'}
+            style={{ marginTop: 8 }}
+          />
+        </Card>
+      )}
 
       <nav aria-label="Navegação da trilha">
         <Menu
@@ -455,6 +486,7 @@ function AppShell({
           mode="inline"
           theme={store.theme}
           selectable
+          inlineCollapsed={!isMobile && sidebarCollapsed}
           selectedKeys={[activeView === 'backoffice' ? '#backoffice' : activeSection]}
           items={menuItems}
           style={{ border: 'none', background: 'transparent' }}
@@ -470,8 +502,14 @@ function AppShell({
     message.success(wasDone ? 'Conteúdo marcado como pendente.' : 'Conteúdo concluído.')
   }
 
-  function openEvidenceModal(weekId = 1, evidence: Evidence | null = null) {
+  function openEvidenceModal(
+    weekId = 1,
+    evidence: Evidence | null = null,
+    options?: { resourceId?: string; defaultTitle?: string },
+  ) {
     setEvidenceWeek(weekId)
+    setEvidenceResourceId(options?.resourceId ?? evidence?.resourceId)
+    setDefaultEvidenceTitle(evidence ? undefined : options?.defaultTitle)
     setEditingEvidence(evidence)
     setEvidenceOpen(true)
   }
@@ -479,6 +517,8 @@ function AppShell({
   function closeEvidenceModal() {
     setEvidenceOpen(false)
     setEditingEvidence(null)
+    setEvidenceResourceId(undefined)
+    setDefaultEvidenceTitle(undefined)
   }
 
   function confirmDeleteEvidence(evidence: Evidence) {
@@ -541,7 +581,8 @@ function AppShell({
     )
   }
 
-  const mainOffset = isMobile ? 0 : SIDEBAR_WIDTH
+  const sidebarWidth = sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH
+  const mainOffset = isMobile ? 0 : sidebarWidth
 
   return (
     <Layout className="app-shell" style={{ minHeight: '100vh' }}>
@@ -552,6 +593,10 @@ function AppShell({
       {!isMobile && (
         <Sider
           width={SIDEBAR_WIDTH}
+          collapsedWidth={SIDEBAR_COLLAPSED_WIDTH}
+          collapsed={sidebarCollapsed}
+          collapsible
+          trigger={null}
           theme={store.theme}
           className="no-print app-sider-fixed"
           style={{
@@ -591,6 +636,7 @@ function AppShell({
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
+          transition: 'margin-left 0.2s ease, width 0.2s ease',
         }}
       >
         <Header
@@ -610,7 +656,7 @@ function AppShell({
             flexWrap: 'wrap',
           }}
         >
-          <Space size={token.marginSM} style={{ minWidth: 0, flex: 1 }} align="center" wrap>
+          <Space size={token.marginSM} style={{ minWidth: 0, flex: 1 }} align="center" wrap className="app-header__primary">
             {isMobile && (
               <Button
                 type="text"
@@ -622,7 +668,7 @@ function AppShell({
             {isAdmin && (
               <Select
                 style={{
-                  minWidth: isMobile ? 0 : 240,
+                  minWidth: isPhone ? 0 : isMobile ? 160 : 240,
                   flex: isMobile ? '1 1 120px' : undefined,
                   maxWidth: '100%',
                   width: isMobile ? '100%' : undefined,
@@ -636,18 +682,18 @@ function AppShell({
             )}
             {saveStatus === 'saving' && <Text type="secondary">Salvando…</Text>}
           </Space>
-          <Space size={token.marginXS} wrap align="center" className="app-header-actions">
+          <Space size={token.marginXS} wrap align="center" className="app-header-actions app-header__actions">
             <Button
               className="app-trail-action-btn"
               type="primary"
               icon={<DownloadOutlined />}
               onClick={() => {
-                exportProgress(userEmail)
+                exportProgress(userEmail, { weeks, quizzes })
                 message.success('Relatório PDF exportado.')
               }}
               aria-label="Exportar relatório"
             >
-              Exportar
+              {isPhone ? null : 'Exportar'}
             </Button>
             <Button
               className="app-trail-action-btn"
@@ -656,7 +702,7 @@ function AppShell({
               onClick={() => onSignOut()}
               aria-label="Sair da conta"
             >
-              Sair
+              {isPhone ? null : 'Sair'}
             </Button>
           </Space>
         </Header>
@@ -693,6 +739,7 @@ function AppShell({
               stats={backOfficeStats}
               loading={backOfficeLoading}
               error={backOfficeError}
+              weekCount={weeks.length}
               onReload={onReloadBackOffice}
             />
           ) : (
@@ -715,46 +762,48 @@ function AppShell({
                 ))}
               </div>
 
-              {WEEKS.map((week) => (
+              {activeWeek && (
                 <WeekSection
-                  key={week.id}
-                  week={week}
+                  key={activeWeek.id}
+                  week={activeWeek}
                   store={store}
                   readOnly={readOnly}
                   learnerId={selectedLearnerId ?? ''}
-                  evaluation={getWeekEvaluation(week.id)}
+                  evaluation={getWeekEvaluation(activeWeek.id)}
                   evaluationReadOnly={!isAdmin}
                   evaluationSaving={evaluationSaving}
                   onSaveEvaluation={async (overall, notes, attachments) => {
                     try {
-                      await onSaveWeekEvaluation(week.id, overall, notes, attachments)
-                      message.success(`Avaliação da semana ${week.id} salva.`)
+                      await onSaveWeekEvaluation(activeWeek.id, overall, notes, attachments)
+                      message.success(`Avaliação da semana ${activeWeek.id} salva.`)
                     } catch (err) {
                       message.error(err instanceof Error ? err.message : 'Falha ao salvar avaliação.')
                     }
                   }}
                   onToggleComplete={handleToggle}
-                  onOpenQuiz={(resource, week) => setQuizTarget({ resource, week })}
-                  onAddEvidence={(id) => openEvidenceModal(id)}
+                  onAddEvidence={(weekId, resourceId, defaultTitle) =>
+                    openEvidenceModal(weekId, null, { resourceId, defaultTitle })
+                  }
                   onEditEvidence={(evidence) => openEvidenceModal(evidence.week, evidence)}
                   onDeleteEvidence={confirmDeleteEvidence}
+                  getResourceQuiz={getResourceQuiz}
+                  onSaveQuiz={async (resourceId, score, answers) => {
+                    try {
+                      await saveQuiz(resourceId, score, answers)
+                      message.success('Resultado do teste salvo.')
+                    } catch (err) {
+                      message.error(err instanceof Error ? err.message : 'Falha ao salvar teste.')
+                    }
+                  }}
                 />
-              ))}
+              )}
 
-              <FinalEvaluationPanel
-                learnerId={selectedLearnerId ?? ''}
-                evaluation={finalEvaluation}
-                readOnly={!isAdmin}
-                saving={evaluationSaving}
-                onSave={async (scores, notes, attachments) => {
-                  try {
-                    await onSaveFinalEvaluation(scores, notes, attachments)
-                    message.success('Avaliação final salva.')
-                  } catch (err) {
-                    message.error(err instanceof Error ? err.message : 'Falha ao salvar avaliação final.')
-                  }
-                }}
-              />
+              {activeSection === '#assessment' && (
+                <FinalEvaluationPanel
+                  weeksAverage={weekEvaluationsAverage}
+                  allWeeksEvaluated={assessmentComplete}
+                />
+              )}
             </>
           )}
         </Content>
@@ -769,9 +818,14 @@ function AppShell({
         width={modalWidth}
         style={modalStyle}
         styles={modalStyles}
+        wrapClassName={isPhone ? 'app-evidence-modal--phone' : undefined}
       >
         <EvidenceForm
+          userId={currentUserId}
           defaultWeek={evidenceWeek}
+          defaultResourceId={evidenceResourceId}
+          defaultTitle={defaultEvidenceTitle}
+          lockWeek={!!evidenceResourceId}
           initialEvidence={editingEvidence}
           loading={saveStatus === 'saving'}
           onCancel={closeEvidenceModal}
@@ -786,30 +840,6 @@ function AppShell({
             closeEvidenceModal()
           }}
         />
-      </Modal>
-
-      <Modal
-        open={!!quizTarget}
-        title={quizTarget ? `Teste — ${quizTarget.resource.title}` : 'Mini teste'}
-        onCancel={() => setQuizTarget(null)}
-        footer={null}
-        destroyOnClose
-        width={modalWidth}
-        style={modalStyle}
-        styles={modalStyles}
-      >
-        {quizTarget && (
-          <QuizForm
-            key={quizTarget.resource.id}
-            title={quizTarget.resource.title}
-            questions={getResourceQuiz(quizTarget.resource.id)}
-            onSubmit={async (score, answers) => {
-              await saveQuiz(quizTarget.resource.id, score, answers)
-              message.success('Teste corrigido e salvo.')
-            }}
-            onClose={() => setQuizTarget(null)}
-          />
-        )}
       </Modal>
     </Layout>
   )
